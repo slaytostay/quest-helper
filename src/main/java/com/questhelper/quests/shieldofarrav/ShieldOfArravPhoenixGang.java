@@ -25,44 +25,48 @@
 package com.questhelper.quests.shieldofarrav;
 
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.ObjectCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.conditional.ObjectCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.SHIELD_OF_ARRAV_PHOENIX_GANG
 )
 public class ShieldOfArravPhoenixGang extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement book, intelReport, twentyCoins, shieldHalf, certificateHalf, blackArmCertificateHalf, certificate;
 
-	ConditionForStep hasBook, inPhoenixEntry, hasIntelReport, intelReportNearby, inPhoenixBase, hasShieldHalf, hasCertificateHalf, hasBlackArmCertificateHalf,
+	Requirement hasBook, inPhoenixEntry, hasIntelReport, intelReportNearby, inPhoenixBase, hasShieldHalf, hasCertificateHalf, hasBlackArmCertificateHalf,
 		hasCertificate, chestOpen;
 
 	QuestStep startQuest, searchBookcase, talkToReldoAgain, talkToBaraek, goDownToPhoenixGang, talkToStraven, goUpFromPhoenixGang, killJonny, pickupIntelReport,
 		returnDownLadder, talkToStravenAgain, getShieldHalf, getShieldHalf1, tradeCertificateHalf, combineCertificate, talkToHaig, talkToRoald, leaveAfterGettingShieldHalf;
 
+	//Zones
 	Zone phoenixEntry, phoenixBase;
 
 	@Override
@@ -111,7 +115,7 @@ public class ShieldOfArravPhoenixGang extends BasicQuestHelper
 		intelReport = new ItemRequirement("Intel report", ItemID.INTEL_REPORT);
 		twentyCoins = new ItemRequirement("Coins", ItemID.COINS_995, 20);
 		shieldHalf = new ItemRequirement("Broken shield", ItemID.BROKEN_SHIELD);
-		inPhoenixBase = new ZoneCondition(phoenixBase);
+		inPhoenixBase = new ZoneRequirement(phoenixBase);
 		chestOpen = new ObjectCondition(ObjectID.CHEST_2404);
 		certificateHalf = new ItemRequirement("Half certificate", ItemID.HALF_CERTIFICATE);
 		blackArmCertificateHalf = new ItemRequirement("Half certificate", ItemID.HALF_CERTIFICATE_11174);
@@ -126,14 +130,14 @@ public class ShieldOfArravPhoenixGang extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		hasBook = new ItemRequirementCondition(book);
-		inPhoenixEntry = new ZoneCondition(phoenixEntry);
-		hasIntelReport = new ItemRequirementCondition(intelReport);
-		intelReportNearby = new ItemCondition(intelReport);
-		hasShieldHalf = new ItemRequirementCondition(shieldHalf);
-		hasCertificateHalf = new ItemRequirementCondition(certificateHalf);
-		hasBlackArmCertificateHalf = new ItemRequirementCondition(blackArmCertificateHalf);
-		hasCertificate = new ItemRequirementCondition(certificate);
+		hasBook = new ItemRequirements(book);
+		inPhoenixEntry = new ZoneRequirement(phoenixEntry);
+		hasIntelReport = new ItemRequirements(intelReport);
+		intelReportNearby = new ItemOnTileRequirement(intelReport);
+		hasShieldHalf = new ItemRequirements(shieldHalf);
+		hasCertificateHalf = new ItemRequirements(certificateHalf);
+		hasBlackArmCertificateHalf = new ItemRequirements(blackArmCertificateHalf);
+		hasCertificate = new ItemRequirements(certificate);
 	}
 
 	public void setupSteps()
@@ -152,7 +156,7 @@ public class ShieldOfArravPhoenixGang extends BasicQuestHelper
 		goUpFromPhoenixGang = new ObjectStep(this, ObjectID.LADDER_2405, new WorldPoint(3244, 9783, 0), "Go back up to the surface.");
 		killJonny = new NpcStep(this, NpcID.JONNY_THE_BEARD, new WorldPoint(3222, 3395, 0), "Kill Jonny the Beard in the Blue Moon Inn in Varrock.");
 		pickupIntelReport = new DetailedQuestStep(this, "Pick up the Intel Report.", intelReport);
-		returnDownLadder =  new ObjectStep(this, ObjectID.LADDER_11803, new WorldPoint(3244, 3383, 0), "Return to the Phoenix Gang's base.");
+		returnDownLadder = new ObjectStep(this, ObjectID.LADDER_11803, new WorldPoint(3244, 3383, 0), "Return to the Phoenix Gang's base.");
 		talkToStravenAgain = new NpcStep(this, NpcID.STRAVEN, new WorldPoint(3247, 9781, 0), "Talk to Staven again.");
 
 		getShieldHalf = new ObjectStep(this, ObjectID.CHEST_2403, new WorldPoint(3235, 9761, 0), "Search the chest in the Phoenix base for half of the Shield of Arrav.");
@@ -169,7 +173,7 @@ public class ShieldOfArravPhoenixGang extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(twentyCoins);
@@ -177,27 +181,28 @@ public class ShieldOfArravPhoenixGang extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Locating the Phoenix Gang", new ArrayList<>(Arrays.asList(startQuest, searchBookcase, talkToReldoAgain, talkToBaraek, goDownToPhoenixGang, talkToStraven))));
-		allSteps.add(new PanelDetails("Joining the gang", new ArrayList<>(Arrays.asList(goUpFromPhoenixGang, killJonny, pickupIntelReport, returnDownLadder, talkToStravenAgain))));
-		allSteps.add(new PanelDetails("Returning the shield", new ArrayList<>(Arrays.asList(getShieldHalf, talkToHaig, tradeCertificateHalf, combineCertificate, talkToRoald))));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Locating the Phoenix Gang", Arrays.asList(startQuest,
+			searchBookcase, talkToReldoAgain, talkToBaraek, goDownToPhoenixGang, talkToStraven)));
+		allSteps.add(new PanelDetails("Joining the gang", Arrays.asList(goUpFromPhoenixGang, killJonny, pickupIntelReport, returnDownLadder, talkToStravenAgain)));
+		allSteps.add(new PanelDetails("Returning the shield", Arrays.asList(getShieldHalf, talkToHaig, tradeCertificateHalf, combineCertificate, talkToRoald)));
 		return allSteps;
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("Jonny the beard (level 2)"));
+		return Collections.singletonList("Jonny the beard (level 2)");
 	}
 
 	@Override
-	public ArrayList<String> getNotes()
+	public List<String> getNotes()
 	{
-		return new ArrayList<>(Arrays.asList("You can also do this quest by joining the Black Arm Gang, which instead requires you to kill the weaponsmaster (level 23), or have another player kill them for you.",
+		return Arrays.asList("You can also do this quest by joining the Black Arm Gang, which instead requires you to kill the weaponsmaster (level 23), or have another player kill them for you.",
 			"Once you're accepted into one of the gangs, you CANNOT change gang.",
-			"This quest requires you to swap items with another player who's in the other gang, so it's recommended to either find a friend to help you, or you can use the friend's chat 'OSRS SOA' and find someone to help there."));
+			"This quest requires you to swap items with another player who's in the other gang, so it's recommended to either find a friend to help you, or you can use the friend's chat 'OSRS SOA' and find someone to help there.");
 
 	}
 

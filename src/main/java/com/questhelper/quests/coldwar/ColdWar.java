@@ -5,32 +5,49 @@ import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.steps.*;
-import com.questhelper.steps.conditional.*;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.ObjectCondition;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.util.Operation;
+import com.questhelper.steps.ConditionalStep;
+import com.questhelper.steps.DetailedQuestStep;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
+import com.questhelper.steps.TileStep;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 @QuestDescriptor(
         quest = QuestHelperQuest.COLD_WAR
 )
 public class ColdWar extends BasicQuestHelper
 {
-
+	//Items Required
 	ItemRequirement oakPlanks, oakPlankHighlight, steelNails, hammer, spade, spadeHighlight, clockworkOrSteelBar,
 		clockwork, steelBar, plank, silk, rawCodOrCharos, swampTar, feathers, mahoganyPlank, leather, cowbell,
-		teleports, clockworkBookHighlight, clockworkSuit, clockworkSuitHighlight, missionReportHighlight,
-		lumbridgeMissionReport, mahoganyPlankHighlight, leatherHighlight, bongos, kgpId, combatGear;
+	    clockworkBookHighlight, clockworkSuit, clockworkSuitHighlight, missionReportHighlight, lumbridgeMissionReport, mahoganyPlankHighlight, leatherHighlight,
+		bongos, kgpId;
 
-	ConditionForStep isOnIceberg, birdHideBuilt, tableNearby, hasClockwork, hasSteelBar, hasClockworkSuit, isPenguin,
+	//Items Recommended
+	ItemRequirement combatGear, teleportArdougne, teleportLumbridge2, teleportHouse;
+
+	Requirement isOnIceberg, birdHideBuilt, tableNearby, hasClockwork, hasSteelBar, hasClockworkSuit, isPenguin,
 		isInPenguinPen, isAtZoo, isAtLumbridgeSheepFarm, hasCowbell, isInAgilityStart, isInAgilityWater,
 		isInAgilityStones, isInAgilityTreadSoftly, isInAgilityCrossIce, isInAgilityDone, isInPingPongRoom,
 		hasBongos, isPreWarRoom, isInIcelordPit, isInIcelordRoom, isEmoting, isInPenguinRooms, guardMoved;
@@ -38,13 +55,15 @@ public class ColdWar extends BasicQuestHelper
 	QuestStep talkToLarry, talkToLarryAgain, usePlankOnFirmSnow, useSpadeOnBirdHide, learnPenguinEmotes,
 		talkToLarryAfterEmotes, returnToRelleka, talkToLarryInRelleka, enterPoh, makeClockwork, makePenguin,
 		bringSuitToLarry, talkToLarryOnIcebergWithSuit, tuxedoTime, enterPenguinPen, talkToZooPenguin, emoteAtPenguin,
-	    exitSuit, talkToLarryMissionReport, readMissionReport, tuxedoTimeLumbridge, talkToThing, emoteAtPenguinInLumbridge,
+		exitSuit, talkToLarryMissionReport, readMissionReport, tuxedoTimeLumbridge, talkToThing, emoteAtPenguinInLumbridge,
 		returnToZooPenguin, returnToThing, fredTheFarmer, stealCowbell, askThingAboutOutpost, tellLarryAboutOutpost, kgpAgent,
 		emoteAtPenguinOutpost, noodle1, noodle2, kgpAgent2, enterAvalanche, kgpAgentInAvalanche, enterAgilityCourse, agilityCourse,
 		agilityEnterWater, agilityExitWater, agilityJumpStones, agilityTreadSoftly, agilityCrossIce, agilityDone,
 		tellLarryAboutArmy, kgpBeforePingPong, pingPong1, removePenguinSuitForBongos, makeBongos, pingPong2,
-		pingPong3, openControlDoor, enterWarRoom, exitIcelordPen, killIcelords, useChasm, tellLarryPlans;
+		pingPong3, openControlDoor, enterWarRoom, exitIcelordPen, killIcelords, useChasm, tellLarryPlans,
+		enterAvalanche2, enterAvalanche3;
 
+	//Zones
 	Zone onIceberg, inPenguinPen, inPenguinPen2, atZoo, atLumbridgeSheepFarm, inAgilityStart, inAgilityWater, inAgilityStones,
 		inAgilityTreadSoftly, inAgilityCrossIce, inAgilityDone, inPingPongRoom, preWarRoom, inIcelordPit, inIcelordRoom, inPenguinRooms;
 
@@ -66,7 +85,9 @@ public class ColdWar extends BasicQuestHelper
 
 		steps.put(10, learnPenguinEmotes);
 
-		steps.put(15, talkToLarryAfterEmotes);
+		ConditionalStep larryInAfterEmotes = new ConditionalStep(this, talkToLarryInRelleka);
+		larryInAfterEmotes.addStep(isOnIceberg, talkToLarryAfterEmotes);
+		steps.put(15, larryInAfterEmotes);
 
 		ConditionalStep larryInRelleka = new ConditionalStep(this, talkToLarryInRelleka);
 		larryInRelleka.addStep(isOnIceberg, returnToRelleka);
@@ -131,17 +152,21 @@ public class ColdWar extends BasicQuestHelper
 
 		steps.put(105, tellLarryAboutArmy);
 
-		steps.put(110, pingPong1);
+		ConditionalStep goTalkToPingPong = new ConditionalStep(this, enterAvalanche2);
+		goTalkToPingPong.addStep(isInPenguinRooms, pingPong1);
+		steps.put(110, goTalkToPingPong);
 
 		ConditionalStep gatherInstruments = new ConditionalStep(this, makeBongos);
-		gatherInstruments.addStep(new Conditions(hasBongos, hasCowbell), pingPong2);
+		gatherInstruments.addStep(new Conditions(hasBongos, hasCowbell, isInPenguinRooms), pingPong2);
+		gatherInstruments.addStep(new Conditions(hasBongos, hasCowbell), enterAvalanche3);
 		gatherInstruments.addStep(hasBongos, stealCowbell);
 		gatherInstruments.addStep(isPenguin, removePenguinSuitForBongos);
 		steps.put(115, gatherInstruments);
 
-		ConditionalStep enterControlRoom = new ConditionalStep(this, pingPong3);
+		ConditionalStep enterControlRoom = new ConditionalStep(this, enterAvalanche3);
 		enterControlRoom.addStep(isPreWarRoom, enterWarRoom);
 		enterControlRoom.addStep(guardMoved, openControlDoor);
+		enterControlRoom.addStep(isInPenguinRooms, pingPong3);
 		steps.put(120, enterControlRoom);
 
 		steps.put(125, killIcelords);
@@ -166,18 +191,25 @@ public class ColdWar extends BasicQuestHelper
 		spadeHighlight.setHighlightInInventory(true);
 		clockworkOrSteelBar = new ItemRequirement("Clockwork or Steel Bar", ItemID.STEEL_BAR);
 		clockworkOrSteelBar.addAlternates(ItemID.CLOCKWORK);
+		clockworkOrSteelBar.setDisplayMatchedItemName(true);
 		steelBar = new ItemRequirement("Steel Bar", ItemID.CLOCKWORK, 1);
 		clockwork = new ItemRequirement("Clockwork", ItemID.CLOCKWORK, 1);
 		plank = new ItemRequirement("Normal Plank", ItemID.PLANK, 1);
 		silk = new ItemRequirement("Silk", ItemID.SILK, 1);
-		rawCodOrCharos = new ItemRequirement("A Raw Cod or the Ring of Charos (a)", ItemID.RAW_COD);
+		rawCodOrCharos = new ItemRequirement("Raw Cod", ItemID.RAW_COD);
 		rawCodOrCharos.addAlternates(ItemID.RING_OF_CHAROSA);
+		rawCodOrCharos.setDisplayMatchedItemName(true);
+		rawCodOrCharos.setTooltip("Ring of Charos (a) can also be used.");
 		swampTar = new ItemRequirement("Swamp Tar", ItemID.SWAMP_TAR, 1);
 		feathers = new ItemRequirement("Feathers", ItemID.FEATHER, 5);
 		mahoganyPlank = new ItemRequirement("Mahogany Plank", ItemID.MAHOGANY_PLANK, 1);
 		leather = new ItemRequirement("Leather", ItemID.LEATHER, 1);
 		cowbell = new ItemRequirement("Cowbell", ItemID.COWBELLS, 1);
-		teleports = new ItemRequirement("Teleports to Lumbridge, POH and Ardougne", -1);
+		teleportLumbridge2 = new ItemRequirement("Teleports to Lumbridge", ItemID.LUMBRIDGE_TELEPORT, 2);
+		teleportHouse = new ItemRequirement("Teleport to PoH with a clockwork table", ItemID.TELEPORT_TO_HOUSE,
+			1);
+		teleportArdougne = new ItemRequirement("Teleport to Ardougne", ItemID.ARDOUGNE_TELEPORT, 4);
+
 		clockworkBookHighlight = new ItemRequirement("Clockwork book", ItemID.CLOCKWORK_BOOK);
 		clockworkBookHighlight.setHighlightInInventory(true);
 		clockworkSuit = new ItemRequirement("Clockwork suit", ItemID.CLOCKWORK_SUIT);
@@ -192,7 +224,7 @@ public class ColdWar extends BasicQuestHelper
 		leatherHighlight.setHighlightInInventory(true);
 		bongos = new ItemRequirement("Penguin bongos", ItemID.PENGUIN_BONGOS);
 		kgpId = new ItemRequirement("Kgp id card", ItemID.KGP_ID_CARD);
-		kgpId.setTip("You can get another from Noodle");
+		kgpId.setTooltip("You can get another from Noodle");
 		combatGear = new ItemRequirement("Combat gear and food", -1, -1);
 	}
 
@@ -218,33 +250,33 @@ public class ColdWar extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		isOnIceberg = new ZoneCondition(onIceberg);
-		birdHideBuilt = new VarbitCondition(3294, 1);
+		isOnIceberg = new ZoneRequirement(onIceberg);
+		birdHideBuilt = new VarbitRequirement(3294, 1);
 		tableNearby = new Conditions(LogicType.OR,
 			new ObjectCondition(ObjectID.CLOCKMAKERS_BENCH_6798),
 			new ObjectCondition(ObjectID.CLOCKMAKERS_BENCH_6799));
-		hasClockwork = new ItemRequirementCondition(clockwork);
-		hasSteelBar = new ItemRequirementCondition(steelBar);
-		hasClockworkSuit = new ItemRequirementCondition(clockworkSuit);
-		isPenguin = new VarbitCondition(3306, 1);
-		isInPenguinPen = new ZoneCondition(inPenguinPen, inPenguinPen2);
-		isEmoting = new VarbitCondition(3308, 1);
-		isAtZoo = new ZoneCondition(atZoo);
-		isAtLumbridgeSheepFarm = new ZoneCondition(atLumbridgeSheepFarm);
-		hasCowbell = new ItemRequirementCondition(cowbell);
-		isInAgilityStart = new ZoneCondition(inAgilityStart);
-		isInAgilityWater = new ZoneCondition(inAgilityWater);
-		isInAgilityStones = new ZoneCondition(inAgilityStones);
-		isInAgilityTreadSoftly = new ZoneCondition(inAgilityTreadSoftly);
-		isInAgilityCrossIce = new ZoneCondition(inAgilityCrossIce);
-		isInAgilityDone = new ZoneCondition(inAgilityDone);
-		isInPingPongRoom = new ZoneCondition(inPingPongRoom);
-		hasBongos = new ItemRequirementCondition(bongos);
-		isPreWarRoom = new ZoneCondition(preWarRoom);
-		isInIcelordPit = new ZoneCondition(inIcelordPit);
-		isInIcelordRoom = new ZoneCondition(inIcelordRoom);
-		isInPenguinRooms = new ZoneCondition(inPenguinRooms);
-		guardMoved = new VarbitCondition(3299, 2, Operation.GREATER_EQUAL);
+		hasClockwork = new ItemRequirements(clockwork);
+		hasSteelBar = new ItemRequirements(steelBar);
+		hasClockworkSuit = new ItemRequirements(clockworkSuit);
+		isPenguin = new VarbitRequirement(3306, 1);
+		isInPenguinPen = new ZoneRequirement(inPenguinPen, inPenguinPen2);
+		isEmoting = new VarbitRequirement(3308, 1);
+		isAtZoo = new ZoneRequirement(atZoo);
+		isAtLumbridgeSheepFarm = new ZoneRequirement(atLumbridgeSheepFarm);
+		hasCowbell = new ItemRequirements(cowbell);
+		isInAgilityStart = new ZoneRequirement(inAgilityStart);
+		isInAgilityWater = new ZoneRequirement(inAgilityWater);
+		isInAgilityStones = new ZoneRequirement(inAgilityStones);
+		isInAgilityTreadSoftly = new ZoneRequirement(inAgilityTreadSoftly);
+		isInAgilityCrossIce = new ZoneRequirement(inAgilityCrossIce);
+		isInAgilityDone = new ZoneRequirement(inAgilityDone);
+		isInPingPongRoom = new ZoneRequirement(inPingPongRoom);
+		hasBongos = new ItemRequirements(bongos);
+		isPreWarRoom = new ZoneRequirement(preWarRoom);
+		isInIcelordPit = new ZoneRequirement(inIcelordPit);
+		isInIcelordRoom = new ZoneRequirement(inIcelordRoom);
+		isInPenguinRooms = new ZoneRequirement(inPenguinRooms);
+		guardMoved = new VarbitRequirement(3299, 2, Operation.GREATER_EQUAL);
 	}
 
 	public void setupSteps()
@@ -262,37 +294,37 @@ public class ColdWar extends BasicQuestHelper
 		useSpadeOnBirdHide = new ObjectStep(this, NullObjectID.NULL_21246, new WorldPoint(2666, 3991, 1), "Use a spade on the bird hide to cover it in snow.", spadeHighlight);
 		useSpadeOnBirdHide.addIcon(ItemID.SPADE);
 
-		learnPenguinEmotes = new NpcStep(this, NpcID.LARRY_829, "Talk to Larry on the iceberg to enter the bird hide. PAY ATTENTION TO THIS CUTSCENE and note the 3 emotes the LEFT penguin does.");
+		learnPenguinEmotes = new NpcStep(this, NpcID.LARRY_829, new WorldPoint(2670,3988,1), "Talk to Larry on the iceberg to enter the bird hide. PAY ATTENTION TO THIS CUTSCENE and note the 3 emotes the LEFT penguin does.");
 
-		talkToLarryAfterEmotes = new NpcStep(this, NpcID.LARRY_829, "Talk to Larry again.");
+		talkToLarryAfterEmotes = new NpcStep(this, NpcID.LARRY_829, new WorldPoint(2670,3988,1), "Talk to Larry again.");
 		talkToLarryAfterEmotes.addDialogStep("That's crazy!");
 
 		returnToRelleka = new ObjectStep(this, ObjectID.BOAT_21175, "Click the boat to return to Relleka.");
 
-		talkToLarryInRelleka = new NpcStep(this, NpcID.LARRY_828, "Talk to Larry in Relleka.");
+		talkToLarryInRelleka = new NpcStep(this, NpcID.LARRY_828, new WorldPoint(2707,3732,0), "Talk to Larry in Relleka.");
 
 		enterPoh = new DetailedQuestStep(this, "Travel to your POH or another POH with a Crafting table 3 or 4.", clockworkOrSteelBar, plank, silk);
 
 		makeClockwork = new ObjectStep(this, ObjectID.CLOCKMAKERS_BENCH_6798, "Craft a steel bar into a clockwork at a crafting table 3.", steelBar);
 		makeClockwork.addDialogStep("Clockwork mechanism");
-		((ObjectStep)makeClockwork).addAlternateObjects(ObjectID.CLOCKMAKERS_BENCH_6799);
+		((ObjectStep) makeClockwork).addAlternateObjects(ObjectID.CLOCKMAKERS_BENCH_6799);
 
 		makePenguin = new ObjectStep(this, ObjectID.CLOCKMAKERS_BENCH_6798, "Craft a clockwork penguin at a crafting table 3 or 4.", clockwork, plank, silk);
 		makePenguin.addDialogStep("Clockwork toy");
 		makePenguin.addDialogStep("Clockwork penguin");
-		((ObjectStep)makePenguin).addAlternateObjects(ObjectID.CLOCKMAKERS_BENCH_6799);
+		((ObjectStep) makePenguin).addAlternateObjects(ObjectID.CLOCKMAKERS_BENCH_6799);
 
 		bringSuitToLarry = new NpcStep(this, NpcID.LARRY, new WorldPoint(2597, 3266, 0), "Talk to Larry back in the Ardougne Zoo.");
 		bringSuitToLarry.addDialogStep("Yes, I have it.");
 		bringSuitToLarry.addDialogStep("Yes");
 
-		talkToLarryOnIcebergWithSuit = new NpcStep(this, NpcID.LARRY_829, "Talk to Larry on the iceberg.");
+		talkToLarryOnIcebergWithSuit = new NpcStep(this, NpcID.LARRY_829, new WorldPoint(2670,3988,1), "Talk to Larry on the iceberg.");
 		talkToLarryOnIcebergWithSuit.addDialogStep("It looks like a warning message to keep us away.");
-		talkToLarryOnIcebergWithSuit.addDialogStep("Yes");
 
 		readMissionReport = new DetailedQuestStep(this, "Read the mission report.", missionReportHighlight);
 
 		tuxedoTime = new NpcStep(this, NpcID.LARRY, new WorldPoint(2597, 3266, 0), "Unequip cape and weapons and right-click Tuxedo-time Larry at the Ardougne Zoo.");
+		tuxedoTime.addDialogStep("Yes");
 
 		enterPenguinPen = new ObjectStep(this, ObjectID.DOOR_21243, new WorldPoint(2594, 3266, 0), "Enter the penguin pen.");
 
@@ -306,11 +338,11 @@ public class ColdWar extends BasicQuestHelper
 
 		tuxedoTimeLumbridge = new NpcStep(this, NpcID.LARRY, new WorldPoint(3212, 3263, 0), "Tuxedo-time Larry in the Lumbridge sheep farm.");
 
-		talkToThing = new NpcStep(this, NpcID.SHEEP, "Talk to the penguins disguised as a sheep in the Lumbridge sheep farm. You will need to use the same 3 emotes as the penguin from the bird hide cutscene.");
+		talkToThing = new NpcStep(this, NpcID.SHEEP,new WorldPoint(3201, 3266, 0), "Talk to the penguins disguised as a sheep in the Lumbridge sheep farm. You will need to use the same 3 emotes as the penguin from the bird hide cutscene.");
 
 		emoteAtPenguinInLumbridge = new PenguinEmote(this);
 
-		returnToZooPenguin = new NpcStep(this, NpcID.PENGUIN_845, "Return to the Ardougne Zoo penguin with either a raw cod, or wearing the ring of charos.", rawCodOrCharos);
+		returnToZooPenguin = new NpcStep(this, NpcID.PENGUIN_845, new WorldPoint(2596, 3270, 0), "Return to the Ardougne Zoo penguin with either a raw cod, or wearing the ring of charos.", rawCodOrCharos);
 		returnToZooPenguin.addDialogSteps(
 			"I need that phrase!", "The penguins in Lumbridge refuse to talk to me.",
 			"I must have left the outpost before they gave out the phrase.", "Sure!");
@@ -333,16 +365,19 @@ public class ColdWar extends BasicQuestHelper
 
 		emoteAtPenguinOutpost = new PenguinEmote(this);
 
-		noodle1 = new NpcStep(this, NpcID.NOODLE, "Talk to Noodle.");
+		noodle1 = new NpcStep(this, NpcID.NOODLE, new WorldPoint(2644,4008,1),"Talk to Noodle.");
 
-		noodle2 = new NpcStep(this, NpcID.NOODLE, "Give Noodle the swamp tar to get an ID card and a mission report.", swampTar, feathers);
+		noodle2 = new NpcStep(this, NpcID.NOODLE,new WorldPoint(2644,4008,1), "Give Noodle the swamp tar to get an ID card and a mission report.", swampTar, feathers);
 		noodle2.addDialogStep("Yeah, I got it.");
 
 		kgpAgent2 = new NpcStep(this, NpcID.KGP_AGENT, new WorldPoint(2639, 4008, 1), "Talk to the KGP Agent again.", kgpId);
-		enterAvalanche = new ObjectStep(this, ObjectID.AVALANCHE, "Enter the avalanche.");
+		enterAvalanche = new ObjectStep(this, ObjectID.AVALANCHE, new WorldPoint(2638,4011,1),"Enter the avalanche.");
+		enterAvalanche2 = new ObjectStep(this, ObjectID.AVALANCHE, new WorldPoint(2638,4011,1),"Enter the avalanche " +
+			"as a penguin");
+		enterAvalanche3 = new ObjectStep(this, ObjectID.AVALANCHE, new WorldPoint(2638,4011,1),"Enter the avalanche.");
 
 		kgpAgentInAvalanche = new NpcStep(this, NpcID.KGP_AGENT, new WorldPoint(2647, 10384, 0), "Talk to the KGP Agent in the first room to the west of the entrance.");
-		((NpcStep)kgpAgentInAvalanche).setMaxRoamRange(12);
+		((NpcStep) kgpAgentInAvalanche).setMaxRoamRange(12);
 		enterAgilityCourse = new ObjectStep(this, ObjectID.DOOR_21169, new WorldPoint(2633, 10404, 0), "Enter the door to the west of the KGP Agent to begin the agility course.");
 
 		agilityCourse = new DetailedQuestStep(this, "Complete the agility course.");
@@ -354,12 +389,12 @@ public class ColdWar extends BasicQuestHelper
 		agilityDone = new NpcStep(this, NpcID.AGILITY_INSTRUCTOR, "Talk to the Agility Instructor.");
 		agilityCourse.addSubSteps(enterAgilityCourse, agilityEnterWater, agilityExitWater, agilityJumpStones, agilityTreadSoftly, agilityCrossIce, agilityDone);
 
-		tellLarryAboutArmy = new NpcStep(this, NpcID.LARRY_829, "Return to Larry to tell him about the penguin army. You can quickly return to him by removing the penguin suit.");
+		tellLarryAboutArmy = new NpcStep(this, NpcID.LARRY_829,  new WorldPoint(2670,3988,1), "Return to Larry to tell him about the penguin army. You can quickly return to him by removing the penguin suit.");
 
 		kgpBeforePingPong = new NpcStep(this, NpcID.KGP_AGENT, new WorldPoint(2655, 10408, 0), "Re-enter the outpost and talk to the KGP agent north of the entrance.");
-		((NpcStep)kgpBeforePingPong).setMaxRoamRange(2);
+		((NpcStep) kgpBeforePingPong).setMaxRoamRange(2);
 
-		pingPong1 = new NpcStep(this, NpcID.PING_839, "Talk to Ping or Pong in the room to the east.");
+		pingPong1 = new NpcStep(this, NpcID.PING_839, new WorldPoint(2668,10396,0), "Talk to Ping or Pong in the room to the east.");
 		((NpcStep) pingPong1).addAlternateNpcs(NpcID.PONG_840);
 
 		removePenguinSuitForBongos = new DetailedQuestStep(this, "Remove the penguin suit.");
@@ -367,10 +402,10 @@ public class ColdWar extends BasicQuestHelper
 		makeBongos = new DetailedQuestStep(this, "Use the mahogany plank on the leather to make bongos.", mahoganyPlankHighlight, leatherHighlight);
 		makeBongos.addSubSteps(removePenguinSuitForBongos);
 
-		pingPong2 = new NpcStep(this, NpcID.PING_839, "Return to Ping or Pong to give them the bongos and cowbells.", bongos, cowbell);
+		pingPong2 = new NpcStep(this, NpcID.PING_839, new WorldPoint(2668,10396,0), "Return to Ping or Pong to give them the bongos and cowbells.", bongos, cowbell);
 		((NpcStep) pingPong2).addAlternateNpcs(NpcID.PONG_840);
 		pingPong2.addDialogStep("Yes.");
-		pingPong3 = new NpcStep(this, NpcID.PING_839, "Return to Ping or Pong.");
+		pingPong3 = new NpcStep(this, NpcID.PING_839, new WorldPoint(2668,10396,0), "Return to Ping or Pong.");
 		((NpcStep) pingPong3).addAlternateNpcs(NpcID.PONG_840);
 		pingPong3.addDialogStep("Yes.");
 		pingPong2.addSubSteps(pingPong3);
@@ -379,33 +414,35 @@ public class ColdWar extends BasicQuestHelper
 
 		enterWarRoom = new ObjectStep(this, ObjectID.DOOR_21160, new WorldPoint(2671, 10418, 0), "Enter the war room and walk a few steps in to be captured.");
 
-		killIcelords = new NpcStep(this, NpcID.ICELORD, new WorldPoint(2647, 10425, 0),  "Kill icelords until you are able to leave through the door to the west. May take up to 3 kills.", true);
+		killIcelords = new NpcStep(this, NpcID.ICELORD, new WorldPoint(2647, 10425, 0), "Kill icelords until you are able to leave through the door to the west. May take up to 3 kills.", true);
 		((NpcStep) killIcelords).addAlternateNpcs(NpcID.ICELORD_853, NpcID.ICELORD_854, NpcID.ICELORD_855);
 		exitIcelordPen = new ObjectStep(this, ObjectID.DOOR_21167, new WorldPoint(2639, 10424, 0), "Leave through the door to the west.");
 		killIcelords.addSubSteps(killIcelords);
 
 		useChasm = new ObjectStep(this, ObjectID.CHASM, new WorldPoint(2657, 10423, 0), "Use the chasm to exit the cave.");
 
-		tellLarryPlans = new NpcStep(this, NpcID.LARRY_829, "Return to Larry to finish the quest.");
+		tellLarryPlans = new NpcStep(this, NpcID.LARRY_829,  new WorldPoint(2670,3988,1), "Return to Larry to finish the quest.");
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(oakPlanks, steelNails, hammer, spade, clockworkOrSteelBar, plank, silk, rawCodOrCharos, swampTar, feathers, mahoganyPlank, leather));
+		return Arrays.asList(oakPlanks, steelNails, hammer, spade, clockworkOrSteelBar, plank, silk, rawCodOrCharos, swampTar, feathers, mahoganyPlank, leather);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
-		reqs.add(teleports);
+		reqs.add(teleportArdougne);
+		reqs.add(teleportHouse);
+		reqs.add(teleportLumbridge2);
 		reqs.add(combatGear);
 		return reqs;
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("1-3 Icelords (level 51)");
@@ -413,20 +450,40 @@ public class ColdWar extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-		allSteps.add(new PanelDetails("Larry's Story", new ArrayList<>(Arrays.asList(talkToLarry, talkToLarryAgain)), oakPlanks, steelNails, hammer, spade));
-		allSteps.add(new PanelDetails("Penguin Stake-out", new ArrayList<>(Arrays.asList(usePlankOnFirmSnow, useSpadeOnBirdHide, learnPenguinEmotes, talkToLarryAfterEmotes, returnToRelleka)), oakPlanks, steelNails, hammer, spade));
-		allSteps.add(new PanelDetails("A Clockwork Penguin", new ArrayList<>(Arrays.asList(talkToLarryInRelleka, enterPoh, makeClockwork, makePenguin, bringSuitToLarry, talkToLarryOnIcebergWithSuit)), plank, clockworkOrSteelBar, silk));
-		allSteps.add(new PanelDetails("Ardougne Mission Report", new ArrayList<>(Arrays.asList(tuxedoTime, enterPenguinPen, talkToZooPenguin, readMissionReport, talkToLarryMissionReport)), clockworkSuit));
-		allSteps.add(new PanelDetails("Lumbridge Mission Report", new ArrayList<>(Arrays.asList(tuxedoTimeLumbridge, talkToThing, returnToZooPenguin, returnToThing, fredTheFarmer, stealCowbell, askThingAboutOutpost)), clockworkSuit, rawCodOrCharos, feathers, swampTar, mahoganyPlank, leather, combatGear));
-		allSteps.add(new PanelDetails("Penguin Outpost", new ArrayList<>(Arrays.asList(tellLarryAboutOutpost, kgpAgent, noodle1, noodle2, kgpAgent2, enterAvalanche)), clockworkSuit, feathers, swampTar, mahoganyPlank, leather, combatGear));
-		allSteps.add(new PanelDetails("Briefing and Agility", new ArrayList<>(Arrays.asList(kgpAgentInAvalanche, agilityCourse, tellLarryAboutArmy)), clockworkSuit, mahoganyPlank, leather, combatGear));
-		allSteps.add(new PanelDetails("Musical Penguins", new ArrayList<>(Arrays.asList(kgpBeforePingPong, pingPong1, makeBongos, pingPong2)), clockworkSuit, mahoganyPlank, leather, combatGear));
-		allSteps.add(new PanelDetails("The War Room", new ArrayList<>(Arrays.asList(openControlDoor, enterWarRoom, killIcelords, useChasm, tellLarryPlans)), clockworkSuit, combatGear));
+		allSteps.add(new PanelDetails("Larry's Story", Arrays.asList(talkToLarry, talkToLarryAgain), oakPlanks, steelNails, hammer, spade));
+		allSteps.add(new PanelDetails("Penguin Stake-out", Arrays.asList(usePlankOnFirmSnow, useSpadeOnBirdHide, learnPenguinEmotes, talkToLarryAfterEmotes, returnToRelleka), oakPlanks, steelNails, hammer, spade));
+		allSteps.add(new PanelDetails("A Clockwork Penguin", Arrays.asList(talkToLarryInRelleka, enterPoh, makeClockwork, makePenguin, bringSuitToLarry, talkToLarryOnIcebergWithSuit), plank, clockworkOrSteelBar, silk));
+		allSteps.add(new PanelDetails("Ardougne Mission Report", Arrays.asList(tuxedoTime, enterPenguinPen, talkToZooPenguin, talkToLarryMissionReport), clockworkSuit));
+		allSteps.add(new PanelDetails("Lumbridge Mission Report", Arrays.asList(tuxedoTimeLumbridge, talkToThing, returnToZooPenguin, returnToThing, fredTheFarmer, stealCowbell, askThingAboutOutpost), clockworkSuit, rawCodOrCharos, feathers, swampTar, mahoganyPlank, leather, combatGear));
+		allSteps.add(new PanelDetails("Penguin Outpost", Arrays.asList(tellLarryAboutOutpost, kgpAgent, noodle1, noodle2, kgpAgent2, enterAvalanche), clockworkSuit, feathers, swampTar, mahoganyPlank, leather, combatGear));
+		allSteps.add(new PanelDetails("Briefing and Agility", Arrays.asList(kgpAgentInAvalanche, agilityCourse, tellLarryAboutArmy), clockworkSuit, mahoganyPlank, leather, combatGear));
+		allSteps.add(new PanelDetails("Musical Penguins", Arrays.asList(pingPong1, makeBongos, pingPong2), clockworkSuit, mahoganyPlank, leather, combatGear));
+		allSteps.add(new PanelDetails("The War Room", Arrays.asList(openControlDoor, enterWarRoom, killIcelords, useChasm, tellLarryPlans), clockworkSuit, combatGear));
 
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRecommended()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new ItemRequirement("Access to a Crafting Table 3", -1));
+		return req;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new SkillRequirement(Skill.HUNTER, 10, true));
+		req.add(new SkillRequirement(Skill.AGILITY, 30));
+		req.add(new SkillRequirement(Skill.CRAFTING, 30));
+		req.add(new SkillRequirement(Skill.CONSTRUCTION, 34, true));
+		req.add(new SkillRequirement(Skill.THIEVING, 15));
+		return req;
 	}
 }

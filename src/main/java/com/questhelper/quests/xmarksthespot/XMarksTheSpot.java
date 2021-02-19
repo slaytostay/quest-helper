@@ -27,12 +27,14 @@ package com.questhelper.quests.xmarksthespot;
 import com.questhelper.QuestHelperQuest;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
 import com.questhelper.steps.DigStep;
@@ -45,6 +47,7 @@ import com.questhelper.QuestDescriptor;
 )
 public class XMarksTheSpot extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement spade;
 
 	QuestStep speakVeosLumbridge, digOutsideBob, digCastle, digDraynor, digMartin, speakVeosSarim, speakVeosSarimWithoutCasket;
@@ -94,7 +97,7 @@ public class XMarksTheSpot extends BasicQuestHelper
 			new ItemRequirement("Treasure scroll", ItemID.TREASURE_SCROLL_23070));
 
 		ItemRequirement ancientCasket = new ItemRequirement("Ancient casket", ItemID.ANCIENT_CASKET);
-		ancientCasket.setTip("If you've lost this you can get another by digging in the pig pen in Draynor Village.");
+		ancientCasket.setTooltip("If you've lost this you can get another by digging in the pig pen in Draynor Village.");
 
 		speakVeosSarim = new NpcStep(this, NpcID.VEOS_8484, new WorldPoint(3054, 3245, 0),
 			"Talk to Veos directly south of the Rusty Anchor Inn in Port Sarim to finish the quest.",
@@ -107,7 +110,7 @@ public class XMarksTheSpot extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(spade);
@@ -115,12 +118,12 @@ public class XMarksTheSpot extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Speak to Veos", new ArrayList<>(Arrays.asList(speakVeosLumbridge)), spade));
-		allSteps.add(new PanelDetails("Solve the clue scroll", new ArrayList<>(Arrays.asList(digOutsideBob, digCastle, digDraynor, digMartin))));
-		allSteps.add(new PanelDetails("Bring the casket to Veos", new ArrayList<>(Arrays.asList(speakVeosSarim))));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Speak to Veos", Collections.singletonList(speakVeosLumbridge), spade));
+		allSteps.add(new PanelDetails("Solve the clue scroll", Arrays.asList(digOutsideBob, digCastle, digDraynor, digMartin)));
+		allSteps.add(new PanelDetails("Bring the casket to Veos", Collections.singletonList(speakVeosSarim)));
 		return allSteps;
 	}
 }

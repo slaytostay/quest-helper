@@ -1,44 +1,73 @@
+/*
+ * Copyright (c) 2020, Zoinkwiz
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.questhelper.quests.eaglespeak;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.ObjectCondition;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.steps.ConditionalStep;
+import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ItemStep;
-import com.questhelper.steps.conditional.ItemCondition;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.ConditionalStep;
-import com.questhelper.steps.DetailedQuestStep;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.ObjectCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.EAGLES_PEAK
 )
 public class EaglesPeak extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement yellowDye, coins, tar, birdBook, metalFeather, tenEagleFeathers, fakeBeak, eagleCape, bronzeFeather, silverFeather, goldFeather,
 		birdFeed6, ferret, metalFeatherHighlighted, birdFeed, bronzeFeatherHighlighted, silverFeatherHighlighted, goldFeatherHighlighted;
 
-	ConditionForStep hasBirdBook, hasMetalFeather, inMainCavern, spokenToNickolaus, hasTenFeathers, spokenOnceToAsyff, spokenTwiceToAsyff, inBronzeRoom,
+	Requirement hasBirdBook, hasMetalFeather, inMainCavern, spokenToNickolaus, hasTenFeathers, spokenOnceToAsyff, spokenTwiceToAsyff, inBronzeRoom,
 		bronzeRoomPedestalUp, bronzeRoomPedestalLowered, winch1NotDone, winch2NotDone, winch3NotDone, winch4NotDone, hasSolvedBronze, hasBronzeFeather, hasSilverFeather,
 		hasGoldFeather, hasInspectedSilverPedestal, inSilverRoom, hasInspectedRocks1, hasInspectedRocks2, hasInspectedOpening, threatenedKebbit, inGoldRoom, hasBirdFeed,
 		lever1OriginalPosition, lever1Pulled, lever2Pulled, lever3Pulled, lever4Pulled, bird1Moved, bird2Moved, bird3Moved, bird4Moved, bird5Moved, hasInsertedBronzeFeather,
@@ -52,6 +81,7 @@ public class EaglesPeak extends BasicQuestHelper
 		useSilverFeathersOnStoneDoor, useBronzeFeathersOnStoneDoor, useGoldFeathersOnStoneDoor, useGoldBronzeFeathersOnStoneDoor, useGoldSilverFeathersOnStoneDoor,
 		useBronzeSilverFeathersOnStoneDoor, sneakPastEagle, speakToNickolaus, speakToNickolausInTheCamp, speakToCharlieAgain, pickUpActualSilverFeather, leavePeak;
 
+	//Zones
 	Zone inMainCave, inSilverRoomZone, inGoldRoomZone1, inGoldRoomZone2, inNest;
 
 	@Override
@@ -122,7 +152,7 @@ public class EaglesPeak extends BasicQuestHelper
 		createDisguises.addStep(new Conditions(bronzeRoomPedestalUp, winch2NotDone), winch2);
 		createDisguises.addStep(new Conditions(bronzeRoomPedestalUp, winch1NotDone), winch1);
 		createDisguises.addStep(new Conditions(inBronzeRoom, spokenTwiceToAsyff), attemptToTakeBronzeFeather);
-		createDisguises.addStep(new Conditions(new ZoneCondition(inMainCave), spokenTwiceToAsyff), enterBronzeRoom);
+		createDisguises.addStep(new Conditions(new ZoneRequirement(inMainCave), spokenTwiceToAsyff), enterBronzeRoom);
 		createDisguises.addStep(new Conditions(spokenTwiceToAsyff), returnToEaglesPeak);
 		createDisguises.addStep(new Conditions(spokenOnceToAsyff, hasTenFeathers), speakAsyffAgain);
 		createDisguises.addStep(new Conditions(spokenToNickolaus, hasTenFeathers), goToFancyStore);
@@ -131,7 +161,7 @@ public class EaglesPeak extends BasicQuestHelper
 		steps.put(15, createDisguises);
 
 		ConditionalStep freeNickolaus = new ConditionalStep(this, enterPeak);
-		freeNickolaus.addStep(new Conditions(new ZoneCondition(inNest)), speakToNickolaus);
+		freeNickolaus.addStep(new Conditions(new ZoneRequirement(inNest)), speakToNickolaus);
 		freeNickolaus.addStep(new Conditions(inMainCavern), sneakPastEagle);
 		steps.put(20, freeNickolaus);
 
@@ -156,14 +186,14 @@ public class EaglesPeak extends BasicQuestHelper
 		birdBook.setHighlightInInventory(true);
 		metalFeatherHighlighted = new ItemRequirement("Metal feather", ItemID.METAL_FEATHER);
 		metalFeatherHighlighted.setHighlightInInventory(true);
-		metalFeatherHighlighted.setTip("You can get another Metal Feather by searching the books in the camp north of Eagles' Peak");
+		metalFeatherHighlighted.setTooltip("You can get another Metal Feather by searching the books in the camp north of Eagles' Peak");
 		metalFeather = new ItemRequirement("Metal feather", ItemID.METAL_FEATHER);
-		metalFeather.setTip("You can get another Metal Feather by searching the books in the camp north of Eagles' Peak");
+		metalFeather.setTooltip("You can get another Metal Feather by searching the books in the camp north of Eagles' Peak");
 		tenEagleFeathers = new ItemRequirement("Eagle feather", ItemID.EAGLE_FEATHER, 10);
 		fakeBeak = new ItemRequirement("Fake beak", ItemID.FAKE_BEAK, 2);
-		fakeBeak.setTip("If you lose one of your beaks you'll need to have Azyff make you a new one.");
+		fakeBeak.setTooltip("If you lose one of your beaks you'll need to have Azyff make you a new one.");
 		eagleCape = new ItemRequirement("Eagle cape", ItemID.EAGLE_CAPE, 2);
-		eagleCape.setTip("If you lose one of your capes you'll need to have Azyff make you a new one.");
+		eagleCape.setTooltip("If you lose one of your capes you'll need to have Azyff make you a new one.");
 		bronzeFeather = new ItemRequirement("Bronze feather", ItemID.BRONZE_FEATHER);
 		silverFeather = new ItemRequirement("Silver feather", ItemID.SILVER_FEATHER);
 		goldFeather = new ItemRequirement("Golden feather", ItemID.GOLDEN_FEATHER_10175);
@@ -179,7 +209,7 @@ public class EaglesPeak extends BasicQuestHelper
 		birdFeed = new ItemRequirement("Odd bird seed", ItemID.ODD_BIRD_SEED);
 		birdFeed.setHighlightInInventory(true);
 		ferret = new ItemRequirement("Ferret", ItemID.FERRET);
-		ferret.setTip("If you lose your ferret you'll need to catch a new one with a box trap north of Eagles' Peak.");
+		ferret.setTooltip("If you lose your ferret you'll need to catch a new one with a box trap north of Eagles' Peak.");
 	}
 
 	public void loadZones()
@@ -193,47 +223,47 @@ public class EaglesPeak extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		hasBirdBook = new ItemRequirementCondition(birdBook);
-		hasMetalFeather = new ItemRequirementCondition(metalFeather);
+		hasBirdBook = new ItemRequirements(birdBook);
+		hasMetalFeather = new ItemRequirements(metalFeather);
 		inBronzeRoom = new ObjectCondition(ObjectID.PEDESTAL_19980);
 		bronzeRoomPedestalUp = new ObjectCondition(ObjectID.PEDESTAL_19981);
 		bronzeRoomPedestalLowered = new ObjectCondition(ObjectID.STONE_PEDESTAL_19984);
-		inMainCavern = new ZoneCondition(inMainCave);
-		spokenToNickolaus = new VarbitCondition(3110, 3);
-		hasTenFeathers = new ItemRequirementCondition(tenEagleFeathers);
-		spokenOnceToAsyff = new VarbitCondition(3110, 4);
-		spokenTwiceToAsyff = new VarbitCondition(3110, 5);
-		winch1NotDone = new VarbitCondition(3101, 0);
-		winch2NotDone = new VarbitCondition(3102, 0);
-		winch3NotDone = new VarbitCondition(3103, 0);
-		winch4NotDone = new VarbitCondition(3104, 0);
-		hasSolvedBronze = new VarbitCondition(3105, 0);
-		hasBronzeFeather = new ItemRequirementCondition(bronzeFeather);
-		hasSilverFeather = new ItemRequirementCondition(silverFeather);
-		hasGoldFeather = new ItemRequirementCondition(goldFeather);
-		hasInspectedSilverPedestal = new VarbitCondition(3099, 1);
-		hasInspectedRocks1 = new VarbitCondition(3099, 2);
-		hasInspectedRocks2 = new VarbitCondition(3099, 3);
-		hasInspectedOpening = new VarbitCondition(3099, 4);
-		threatenedKebbit = new VarbitCondition(3099, 5);
-		inSilverRoom = new ZoneCondition(inSilverRoomZone);
-		inGoldRoom = new ZoneCondition(inGoldRoomZone1, inGoldRoomZone2);
-		lever1OriginalPosition = new VarbitCondition(3092, 0);
-		lever1Pulled = new VarbitCondition(3092, 1);
-		lever2Pulled = new VarbitCondition(3093, 1);
-		lever3Pulled = new VarbitCondition(3090, 1);
-		lever4Pulled = new VarbitCondition(3091, 1);
-		bird1Moved = new VarbitCondition(3098, 1);
-		bird2Moved = new VarbitCondition(3097, 1);
-		bird3Moved = new VarbitCondition(3095, 1);
-		bird4Moved = new VarbitCondition(3094, 1);
-		bird5Moved = new VarbitCondition(3096, 1);
-		hasBirdFeed = new ItemRequirementCondition(birdFeed6);
-		hasInsertedBronzeFeather = new VarbitCondition(3108, 1);
-		hasInsertedSilverFeather = new VarbitCondition(3099, 6);
-		hasInsertedGoldFeather = new VarbitCondition(3107, 1);
+		inMainCavern = new ZoneRequirement(inMainCave);
+		spokenToNickolaus = new VarbitRequirement(3110, 3);
+		hasTenFeathers = new ItemRequirements(tenEagleFeathers);
+		spokenOnceToAsyff = new VarbitRequirement(3110, 4);
+		spokenTwiceToAsyff = new VarbitRequirement(3110, 5);
+		winch1NotDone = new VarbitRequirement(3101, 0);
+		winch2NotDone = new VarbitRequirement(3102, 0);
+		winch3NotDone = new VarbitRequirement(3103, 0);
+		winch4NotDone = new VarbitRequirement(3104, 0);
+		hasSolvedBronze = new VarbitRequirement(3105, 0);
+		hasBronzeFeather = new ItemRequirements(bronzeFeather);
+		hasSilverFeather = new ItemRequirements(silverFeather);
+		hasGoldFeather = new ItemRequirements(goldFeather);
+		hasInspectedSilverPedestal = new VarbitRequirement(3099, 1);
+		hasInspectedRocks1 = new VarbitRequirement(3099, 2);
+		hasInspectedRocks2 = new VarbitRequirement(3099, 3);
+		hasInspectedOpening = new VarbitRequirement(3099, 4);
+		threatenedKebbit = new VarbitRequirement(3099, 5);
+		inSilverRoom = new ZoneRequirement(inSilverRoomZone);
+		inGoldRoom = new ZoneRequirement(inGoldRoomZone1, inGoldRoomZone2);
+		lever1OriginalPosition = new VarbitRequirement(3092, 0);
+		lever1Pulled = new VarbitRequirement(3092, 1);
+		lever2Pulled = new VarbitRequirement(3093, 1);
+		lever3Pulled = new VarbitRequirement(3090, 1);
+		lever4Pulled = new VarbitRequirement(3091, 1);
+		bird1Moved = new VarbitRequirement(3098, 1);
+		bird2Moved = new VarbitRequirement(3097, 1);
+		bird3Moved = new VarbitRequirement(3095, 1);
+		bird4Moved = new VarbitRequirement(3094, 1);
+		bird5Moved = new VarbitRequirement(3096, 1);
+		hasBirdFeed = new ItemRequirements(birdFeed6);
+		hasInsertedBronzeFeather = new VarbitRequirement(3108, 1);
+		hasInsertedSilverFeather = new VarbitRequirement(3099, 6);
+		hasInsertedGoldFeather = new VarbitRequirement(3107, 1);
 
-		silverFeatherNearby = new ItemCondition(silverFeather);
+		silverFeatherNearby = new ItemOnTileRequirement(silverFeather);
 	}
 
 	public void setupSteps()
@@ -410,7 +440,7 @@ public class EaglesPeak extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(yellowDye);
@@ -420,20 +450,26 @@ public class EaglesPeak extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Start the quest", new ArrayList<>(Arrays.asList(speakToCharlie))));
-		allSteps.add(new PanelDetails("Go to Eagles' Peak", new ArrayList<>(Arrays.asList(inspectBooks, clickBook, useFeatherOnDoor))));
-		allSteps.add(new PanelDetails("In Eagles' Peak", new ArrayList<>(Arrays.asList(enterPeak, shoutAtNickolaus, pickupFeathers))));
-		allSteps.add(new PanelDetails("Make a disguise", new ArrayList<>(Arrays.asList(goToFancyStore, speakAsyffAgain)), yellowDye, coins, tar, tenEagleFeathers));
-		allSteps.add(new PanelDetails("Return to Eagles' Peak", new ArrayList<>(Arrays.asList(returnToEaglesPeak)), fakeBeak, eagleCape));
-		allSteps.add(new PanelDetails("Get the bronze feather", new ArrayList<>(Arrays.asList(enterBronzeRoom, attemptToTakeBronzeFeather, winch1, grabBronzeFeather))));
-		allSteps.add(new PanelDetails("Get the silver feather", new ArrayList<>(Arrays.asList(enterSilverRoom, inspectSilverPedestal, inspectRocks1, inspectRocks2, inspectOpening, threatenKebbit, pickupSilverFeather))));
-		allSteps.add(new PanelDetails("Get the golden feather", new ArrayList<>(Arrays.asList(enterGoldRoom, collectFeed, pullLever1Down, fillFeeder1, fillFeeder2, pullLever2Down, pushLever1Up, fillFeeder4, pullLever3Down, fillFeeder5,
-			pullLever4Down, fillFeeder6, fillFeeder4Again, grabGoldFeather))));
-		allSteps.add(new PanelDetails("Free Nickolaus", new ArrayList<>(Arrays.asList(useFeathersOnStoneDoor, sneakPastEagle, speakToNickolaus))));
-		allSteps.add(new PanelDetails("Learn how to catch ferrets", new ArrayList<>(Arrays.asList(speakToNickolausInTheCamp, speakToCharlieAgain))));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Start the quest", Collections.singletonList(speakToCharlie)));
+		allSteps.add(new PanelDetails("Go to Eagles' Peak", Arrays.asList(inspectBooks, clickBook, useFeatherOnDoor)));
+		allSteps.add(new PanelDetails("In Eagles' Peak", Arrays.asList(enterPeak, shoutAtNickolaus, pickupFeathers)));
+		allSteps.add(new PanelDetails("Make a disguise", Arrays.asList(goToFancyStore, speakAsyffAgain), yellowDye, coins, tar, tenEagleFeathers));
+		allSteps.add(new PanelDetails("Return to Eagles' Peak", Collections.singletonList(returnToEaglesPeak), fakeBeak, eagleCape));
+		allSteps.add(new PanelDetails("Get the bronze feather", Arrays.asList(enterBronzeRoom, attemptToTakeBronzeFeather, winch1, grabBronzeFeather)));
+		allSteps.add(new PanelDetails("Get the silver feather", Arrays.asList(enterSilverRoom, inspectSilverPedestal, inspectRocks1, inspectRocks2, inspectOpening, threatenKebbit, pickupSilverFeather)));
+		allSteps.add(new PanelDetails("Get the golden feather", Arrays.asList(enterGoldRoom, collectFeed, pullLever1Down, fillFeeder1, fillFeeder2, pullLever2Down, pushLever1Up, fillFeeder4, pullLever3Down, fillFeeder5,
+			pullLever4Down, fillFeeder6, fillFeeder4Again, grabGoldFeather)));
+		allSteps.add(new PanelDetails("Free Nickolaus", Arrays.asList(useFeathersOnStoneDoor, sneakPastEagle, speakToNickolaus)));
+		allSteps.add(new PanelDetails("Learn how to catch ferrets", Arrays.asList(speakToNickolausInTheCamp, speakToCharlieAgain)));
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		return Collections.singletonList(new SkillRequirement(Skill.HUNTER, 27, true));
 	}
 }

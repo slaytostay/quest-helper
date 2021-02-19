@@ -30,7 +30,14 @@ import com.questhelper.QuestVarbits;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.questhelpers.QuestUtil;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.DigStep;
@@ -38,23 +45,22 @@ import com.questhelper.steps.ItemStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.util.Operation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -62,12 +68,13 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class GhostsAhoy extends BasicQuestHelper
 {
+	//Required Items
 	ItemRequirement ghostspeak, coins400, milk, silk, dyes, spade, oakLongbow, knife, needle, thread, bucketOfSlime, nettleTea, ectoToken2, ectoToken4, chestKey,
 		nettleTeaHighlighted, milkHighlighted, milkyTea, cup, cupWithMilkyTea, cupWithTea, modelShip, repairedShip, ectoToken12, ectoToken27, charos, map, signedOakBow,
 		ectoToken10, ectoToken25, ectoSheets, bedsheet, petition, boneKey, boneKeyHighlighted, robes, book, manual, mapPiece1, mapPiece2, mapPiece3, silkHighlighted,
 		ectoTokensCharos, ectoTokensNoCharos, ectoSheetsEquipped, enchantedGhostspeakEquipped;
 
-	ConditionForStep inPhas, onDragontooth, hasCupOfMilkyTea, hasCupOfTea, hasModelShip, hasRepairedShip, hasPiece1, hasPiece2, hasPiece3, hasMap, lobsterNearby,
+	Requirement inPhas, onDragontooth, hasCupOfMilkyTea, hasCupOfTea, hasModelShip, hasRepairedShip, hasPiece1, hasPiece2, hasPiece3, hasMap, lobsterNearby,
 		hasCup, killedLobster, hadChestKey, onDeck, onTopOfShip, onRocks, unlockedChest2, hasBook, hasSheet, hasEctoSheet, hasMysticalRobes, hasManual, boneKeyNearby,
 		hasBoneKey, talkedToAkHaranu, hasSignedOakBow, hasPetition, hasSignatures, givenPetitionToNecro, inUpstairsEcto, doorUnlocked;
 
@@ -81,6 +88,7 @@ public class GhostsAhoy extends BasicQuestHelper
 
 	DyeShipSteps dyeFlags;
 
+	//Zones
 	Zone phas1, phas2, phas3, phas4, phas5, phas6, phas7, phas8, dragontooth, deck, topOfShip, rocks, upstairsEcto;
 
 	boolean canUseCharos;
@@ -177,19 +185,22 @@ public class GhostsAhoy extends BasicQuestHelper
 	{
 		ectoToken2 = new ItemRequirement("Ecto-token, or travel by Charter Ship", ItemID.ECTOTOKEN, 2);
 		charos = new ItemRequirement("Ring of Charos (a)", ItemID.RING_OF_CHAROSA);
-		ectoTokensCharos = new ItemRequirement("20 Ecto-token, OR 10 Ecto-Tokens and coins to travel by Charter Ship", ItemID.ECTOTOKEN, -1);
-		ectoTokensNoCharos = new ItemRequirement("31 Ecto-token, OR 25 Ecto-Tokens and coins to travel by Charter Ship", ItemID.ECTOTOKEN, -1);
-		ectoToken4 = new ItemRequirement("Ecto-token, or travel by Charter Ship", ItemID.ECTOTOKEN, 4);
+		ectoTokensCharos = new ItemRequirement("20 Ecto-token, OR 10 Ecto-Tokens and coins to travel by Charter Ship", ItemID.ECTOTOKEN, 20);
+		ectoTokensNoCharos = new ItemRequirement("31 Ecto-token, OR 25 Ecto-Tokens and coins to travel by Charter Ship", ItemID.ECTOTOKEN, 31);ectoToken4 = new ItemRequirement("Ecto-token, or travel by Charter Ship", ItemID.ECTOTOKEN, 4);
 		ectoToken12 = new ItemRequirement("Ecto-token, or travel by Charter Ship and 10 ecto-tokens", ItemID.ECTOTOKEN, 12);
 		ectoToken27 = new ItemRequirement("Ecto-token, or travel by Charter Ship and 25 ecto-tokens", ItemID.ECTOTOKEN, 27);
 		ectoToken10 = new ItemRequirement("Ecto-token", ItemID.ECTOTOKEN, 10);
 		ectoToken25 = new ItemRequirement("Ecto-token", ItemID.ECTOTOKEN, 25);
 		chestKey = new ItemRequirement("Chest key", ItemID.CHEST_KEY_4273);
-		chestKey.setTip("You can get another from the Old man on the abandoned ship");
+		chestKey.setTooltip("You can get another from the Old man on the abandoned ship");
 		chestKey.setHighlightInInventory(true);
 
 		nettleTea = new ItemRequirement("Nettle tea", ItemID.NETTLE_TEA);
+		nettleTea.setTooltip("You can make this by picking nettles whilst wearing gloves (Edgeville yews for example), " +
+			"then using them on a bowl of water. Cook this to have nettle tea");
 		nettleTeaHighlighted = new ItemRequirement("Nettle tea", ItemID.NETTLE_TEA);
+		nettleTeaHighlighted.setTooltip("You can make this by picking nettles whilst wearing gloves (Edgeville yews for example), " +
+			"then using them on a bowl of water. Cook this to have nettle tea");
 		nettleTeaHighlighted.setHighlightInInventory(true);
 
 		milk = new ItemRequirement("Bucket of milk", ItemID.BUCKET_OF_MILK);
@@ -213,7 +224,12 @@ public class GhostsAhoy extends BasicQuestHelper
 		silk = new ItemRequirement("Silk", ItemID.SILK);
 		silkHighlighted = new ItemRequirement("Silk", ItemID.SILK);
 		silkHighlighted.setHighlightInInventory(true);
-		dyes = new ItemRequirement("3 colours of dyes. Which you'll need is random. To be prepared, bring 3 red/blue/yellow dyes", -1, -1);
+		ItemRequirement redDye = new ItemRequirement("Red dye", ItemID.RED_DYE, 3);
+		ItemRequirement blueDye = new ItemRequirement("Blue dye", ItemID.BLUE_DYE, 3);
+		ItemRequirement yellowDye = new ItemRequirement("Yellow dye", ItemID.YELLOW_DYE, 3);
+		dyes = new ItemRequirements("3 colours of dyes. Which you'll need is random. To be prepared, bring 3 red/blue/yellow dyes",
+			redDye, blueDye, yellowDye);
+
 		spade = new ItemRequirement("Spade", ItemID.SPADE);
 		oakLongbow = new ItemRequirement("Oak longbow", ItemID.OAK_LONGBOW);
 
@@ -221,7 +237,7 @@ public class GhostsAhoy extends BasicQuestHelper
 		needle = new ItemRequirement("Needle", ItemID.NEEDLE);
 		thread = new ItemRequirement("Thread", ItemID.THREAD);
 		bucketOfSlime = new ItemRequirement("Bucket of slime", ItemID.BUCKET_OF_SLIME);
-		bucketOfSlime.setTip("You can buy one from the Charter Ship crew");
+		bucketOfSlime.setTooltip("You can buy one from the Charter Ship crew");
 		bucketOfSlime.setHighlightInInventory(true);
 
 		modelShip = new ItemRequirement("Model ship", ItemID.MODEL_SHIP);
@@ -244,7 +260,7 @@ public class GhostsAhoy extends BasicQuestHelper
 		robes = new ItemRequirement("Mystical robes", ItemID.MYSTICAL_ROBES);
 		book = new ItemRequirement("Book of haricanto", ItemID.BOOK_OF_HARICANTO);
 		manual = new ItemRequirement("Translation manual", ItemID.TRANSLATION_MANUAL);
-		manual.setTip("You can get another from Ak-Haranu");
+		manual.setTooltip("You can get another from Ak-Haranu");
 		signedOakBow = new ItemRequirement("Signed oak bow", ItemID.SIGNED_OAK_BOW);
 	}
 
@@ -269,42 +285,42 @@ public class GhostsAhoy extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inPhas = new ZoneCondition(phas1, phas2, phas3, phas4, phas5, phas6, phas7, phas8);
-		inUpstairsEcto = new ZoneCondition(upstairsEcto);
-		onTopOfShip = new ZoneCondition(topOfShip);
-		onDeck = new ZoneCondition(deck);
-		onRocks = new ZoneCondition(rocks);
-		onDragontooth = new ZoneCondition(dragontooth);
+		inPhas = new ZoneRequirement(phas1, phas2, phas3, phas4, phas5, phas6, phas7, phas8);
+		inUpstairsEcto = new ZoneRequirement(upstairsEcto);
+		onTopOfShip = new ZoneRequirement(topOfShip);
+		onDeck = new ZoneRequirement(deck);
+		onRocks = new ZoneRequirement(rocks);
+		onDragontooth = new ZoneRequirement(dragontooth);
 
-		hasCupOfMilkyTea = new ItemRequirementCondition(cupWithMilkyTea);
-		hasCupOfTea = new ItemRequirementCondition(cupWithTea);
-		hasMap = new ItemRequirementCondition(map);
-		hasPiece1 = new ItemRequirementCondition(mapPiece1);
-		hasPiece2 = new ItemRequirementCondition(mapPiece2);
-		hasPiece3 = new ItemRequirementCondition(mapPiece3);
-		hasModelShip = new ItemRequirementCondition(modelShip);
-		hasRepairedShip = new ItemRequirementCondition(repairedShip);
-		hasCup = new ItemRequirementCondition(cup);
-		hasBook = new Conditions(LogicType.OR, new VarbitCondition(208, 1), new ItemRequirementCondition(book));
-		hasManual = new Conditions(LogicType.OR, new VarbitCondition(206, 1), new VarbitCondition(212, 8));
-		hasSheet = new ItemRequirementCondition(bedsheet);
-		hasEctoSheet = new ItemRequirementCondition(ectoSheets);
-		hasMysticalRobes = new Conditions(LogicType.OR, new VarbitCondition(207, 1), new ItemRequirementCondition(robes));
-		hasSignedOakBow = new ItemRequirementCondition(signedOakBow);
-		hasPetition = new ItemRequirementCondition(petition);
-		hasSignatures = new VarbitCondition(209, 11, Operation.GREATER_EQUAL);
-		givenPetitionToNecro = new VarbitCondition(209, 31, Operation.GREATER_EQUAL);
-		hadChestKey = new Conditions(LogicType.OR, new ItemRequirementCondition(chestKey), new VarbitCondition(214, 2, Operation.GREATER_EQUAL));
-		unlockedChest2 = new VarbitCondition(214, 3, Operation.GREATER_EQUAL);
-		doorUnlocked = new VarbitCondition(213, 1);
+		hasCupOfMilkyTea = new ItemRequirements(cupWithMilkyTea);
+		hasCupOfTea = new ItemRequirements(cupWithTea);
+		hasMap = new ItemRequirements(map);
+		hasPiece1 = new ItemRequirements(mapPiece1);
+		hasPiece2 = new ItemRequirements(mapPiece2);
+		hasPiece3 = new ItemRequirements(mapPiece3);
+		hasModelShip = new ItemRequirements(modelShip);
+		hasRepairedShip = new ItemRequirements(repairedShip);
+		hasCup = new ItemRequirements(cup);
+		hasBook = new Conditions(LogicType.OR, new VarbitRequirement(208, 1), new ItemRequirements(book));
+		hasManual = new Conditions(LogicType.OR, new VarbitRequirement(206, 1), new VarbitRequirement(212, 8));
+		hasSheet = new ItemRequirements(bedsheet);
+		hasEctoSheet = new ItemRequirements(ectoSheets);
+		hasMysticalRobes = new Conditions(LogicType.OR, new VarbitRequirement(207, 1), new ItemRequirements(robes));
+		hasSignedOakBow = new ItemRequirements(signedOakBow);
+		hasPetition = new ItemRequirements(petition);
+		hasSignatures = new VarbitRequirement(209, 11, Operation.GREATER_EQUAL);
+		givenPetitionToNecro = new VarbitRequirement(209, 31, Operation.GREATER_EQUAL);
+		hadChestKey = new Conditions(LogicType.OR, new ItemRequirements(chestKey), new VarbitRequirement(214, 2, Operation.GREATER_EQUAL));
+		unlockedChest2 = new VarbitRequirement(214, 3, Operation.GREATER_EQUAL);
+		doorUnlocked = new VarbitRequirement(213, 1);
 
 		lobsterNearby = new NpcCondition(NpcID.GIANT_LOBSTER);
-		killedLobster = new VarbitCondition(215, 1);
+		killedLobster = new VarbitRequirement(215, 1);
 
-		boneKeyNearby = new ItemCondition(boneKey);
-		hasBoneKey = new Conditions(LogicType.OR, new ItemRequirementCondition(boneKey), doorUnlocked);
+		boneKeyNearby = new ItemOnTileRequirement(boneKey);
+		hasBoneKey = new Conditions(LogicType.OR, new ItemRequirements(boneKey), doorUnlocked);
 
-		talkedToAkHaranu = new VarbitCondition(212, 1, Operation.GREATER_EQUAL);
+		talkedToAkHaranu = new VarbitRequirement(212, 1, Operation.GREATER_EQUAL);
 	}
 
 	public void setupSteps()
@@ -328,10 +344,10 @@ public class GhostsAhoy extends BasicQuestHelper
 		repairShip = new DetailedQuestStep(this, "Use the silk on the model ship.", silkHighlighted, needle, thread, knife, modelShip);
 
 		searchChestForLobster = new ObjectStep(this, ObjectID.CLOSED_CHEST_16118, new WorldPoint(3618, 3542, 0), "Attempt to search the chest in the east of the hull of the ship west of Port Phasmatys. A giant lobster will spawn you need to kill.");
-		((ObjectStep)(searchChestForLobster)).addAlternateObjects(ObjectID.OPEN_CHEST_16119);
+		((ObjectStep) (searchChestForLobster)).addAlternateObjects(ObjectID.OPEN_CHEST_16119);
 		killLobster = new NpcStep(this, NpcID.GIANT_LOBSTER, "Kill the Giant Lobster.");
 		searchChestAfterLobster = new ObjectStep(this, ObjectID.CLOSED_CHEST_16118, new WorldPoint(3618, 3542, 0), "Search the chest in the east of the hull again.");
-		((ObjectStep)(searchChestAfterLobster)).addAlternateObjects(ObjectID.OPEN_CHEST_16119);
+		((ObjectStep) (searchChestAfterLobster)).addAlternateObjects(ObjectID.OPEN_CHEST_16119);
 
 		dyeFlags = new DyeShipSteps(this);
 		useKeyOnChest = new ObjectStep(this, ObjectID.CLOSED_CHEST_16116, new WorldPoint(3619, 3545, 1), "Use the key on the chest in the Captain's Room, then search it.", chestKey);
@@ -345,8 +361,8 @@ public class GhostsAhoy extends BasicQuestHelper
 		goAcrossPlank.addSubSteps(goDownFromMast, goUpToDeck);
 
 		openThirdChest = new ObjectStep(this, ObjectID.CLOSED_CHEST_16118, new WorldPoint(3606, 3564, 0), "Jump across the rocks to the chest and search it for a map piece.");
-		((ObjectStep)(openThirdChest)).addAlternateObjects(ObjectID.OPEN_CHEST_16119);
-		((ObjectStep)(openThirdChest)).setLinePoints(new ArrayList<>(Arrays.asList(
+		((ObjectStep) (openThirdChest)).addAlternateObjects(ObjectID.OPEN_CHEST_16119);
+		((ObjectStep) (openThirdChest)).setLinePoints(Arrays.asList(
 			new WorldPoint(3604, 3550, 0),
 			new WorldPoint(3601, 3550, 0),
 			new WorldPoint(3601, 3552, 0),
@@ -355,7 +371,7 @@ public class GhostsAhoy extends BasicQuestHelper
 			new WorldPoint(3597, 3557, 0),
 			new WorldPoint(3597, 3564, 0),
 			new WorldPoint(3605, 3564, 0)
-		)));
+		));
 
 		useMapsTogether = new DetailedQuestStep(this, "Use the map pieces together.", mapPiece1, mapPiece2, mapPiece3);
 
@@ -397,7 +413,7 @@ public class GhostsAhoy extends BasicQuestHelper
 		useKeyOnDoor = new ObjectStep(this, ObjectID.DOOR_5244, new WorldPoint(3656, 3514, 1), "Use the key on the south room's door.", boneKeyHighlighted);
 		useKeyOnDoor.addIcon(ItemID.BONE_KEY_4272);
 		takeRobes = new ObjectStep(this, ObjectID.COFFIN_16644, new WorldPoint(3660, 3514, 1), "Search the coffin.");
-		((ObjectStep)(takeRobes)).addAlternateObjects(ObjectID.COFFIN_16645);
+		((ObjectStep) (takeRobes)).addAlternateObjects(ObjectID.COFFIN_16645);
 		returnToCrone = new NpcStep(this, NpcID.OLD_CRONE, new WorldPoint(3462, 3558, 0), "Bring the items to the Old Crone east of the Slayer Tower.", robes, book, manual, ghostspeak);
 		returnToCrone.addDialogSteps("I'm here about Necrovarus.");
 		bringCroneAmulet = new NpcStep(this, NpcID.OLD_CRONE, new WorldPoint(3462, 3558, 0), "Bring a ghostspeak amulet to the Old Crone east of the Slayer Tower.", ghostspeak);
@@ -410,34 +426,34 @@ public class GhostsAhoy extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		if (canUseCharos)
 		{
-			return new ArrayList<>(Arrays.asList(ghostspeak, charos, ectoTokensCharos, coins400, nettleTea, milk, silk, knife, needle, thread, dyes, spade, oakLongbow, bucketOfSlime));
+			return Arrays.asList(ghostspeak, charos, ectoTokensCharos, coins400, nettleTea, milk, silk, knife, needle, thread, dyes, spade, oakLongbow, bucketOfSlime);
 		}
 		else
 		{
-			return new ArrayList<>(Arrays.asList(ghostspeak, ectoTokensNoCharos, coins400, nettleTea, milk, silk, knife, needle, thread, dyes, spade, oakLongbow, bucketOfSlime));
+			return Arrays.asList(ghostspeak, ectoTokensNoCharos, coins400, nettleTea, milk, silk, knife, needle, thread, dyes, spade, oakLongbow, bucketOfSlime);
 		}
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Collections.singletonList("Giant lobster (level 32) (safespottable)"));
+		return Collections.singletonList("Giant lobster (level 32) (safespottable)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Start the quest", new ArrayList<>(Arrays.asList(enterPhas, talkToVelorina, talkToNecrovarus, talkToVelorinaAfterNecro)), ghostspeak, ectoToken4));
-		allSteps.add(new PanelDetails("Getting help", new ArrayList<>(Arrays.asList(talkToCrone, useTeaOnCup, useMilkOnTea, talkToCroneAgain, talkToCroneAgainForShip)), ghostspeak, nettleTea, milk));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Start the quest", Arrays.asList(enterPhas, talkToVelorina, talkToNecrovarus, talkToVelorinaAfterNecro), ghostspeak, ectoToken4));
+		allSteps.add(new PanelDetails("Getting help", Arrays.asList(talkToCrone, useTeaOnCup, useMilkOnTea, talkToCroneAgain, talkToCroneAgainForShip), ghostspeak, nettleTea, milk));
 
-		ArrayList<QuestStep> mapSteps = new ArrayList<>(Arrays.asList(repairShip, searchChestForLobster, killLobster, searchChestAfterLobster));
+		List<QuestStep> mapSteps = QuestUtil.toArrayList(repairShip, searchChestForLobster, killLobster, searchChestAfterLobster);
 		mapSteps.addAll(dyeFlags.getDisplaySteps());
-		mapSteps.addAll(new ArrayList<>(Arrays.asList(useKeyOnChest, goAcrossPlank, openThirdChest, useMapsTogether, enterPhasForDigging, takeRowingBoat, digForBook, returnToPhas)));
+		mapSteps.addAll(Arrays.asList(useKeyOnChest, goAcrossPlank, openThirdChest, useMapsTogether, enterPhasForDigging, takeRowingBoat, digForBook, returnToPhas));
 		PanelDetails bookPanel;
 		if (canUseCharos)
 		{
@@ -450,17 +466,27 @@ public class GhostsAhoy extends BasicQuestHelper
 		bookPanel.setLockingStep(getBookSteps);
 		allSteps.add(bookPanel);
 
-		PanelDetails manualPanel = new PanelDetails("Finding the manual", new ArrayList<>(Arrays.asList(talkToAkHaranu, talkToRobin, bringBowToAkHaranu)), coins400, oakLongbow);
+		PanelDetails manualPanel = new PanelDetails("Finding the manual", Arrays.asList(talkToAkHaranu, talkToRobin, bringBowToAkHaranu), coins400, oakLongbow);
 		manualPanel.setLockingStep(getManualSteps);
 		allSteps.add(manualPanel);
 
 		PanelDetails robePanel = new PanelDetails("Finding the robes",
-			new ArrayList<>(Arrays.asList(talkToInnkeeper, useSlimeOnSheet, talkToGravingas, talkToVillagers, showPetitionToNecro, goUpFromNecro, useKeyOnDoor, takeRobes)), ghostspeak, bucketOfSlime);
+			Arrays.asList(talkToInnkeeper, useSlimeOnSheet, talkToGravingas, talkToVillagers, showPetitionToNecro, goUpFromNecro, useKeyOnDoor, takeRobes), ghostspeak, bucketOfSlime);
 		robePanel.setLockingStep(getRobesSteps);
 		allSteps.add(robePanel);
 
-		allSteps.add(new PanelDetails("Undoing the curse", new ArrayList<>(Arrays.asList(returnToCrone, talkToNecroAfterCurse, talkToVelorinaFinal)), ghostspeak, book, manual, robes));
+		allSteps.add(new PanelDetails("Undoing the curse", Arrays.asList(returnToCrone, talkToNecroAfterCurse, talkToVelorinaFinal), ghostspeak, book, manual, robes));
 
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.PRIEST_IN_PERIL, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.AGILITY, 25, true));
+		req.add(new SkillRequirement(Skill.COOKING, 20, true));
+		return req;
 	}
 }

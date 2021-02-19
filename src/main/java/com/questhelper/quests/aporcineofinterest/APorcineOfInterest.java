@@ -24,43 +24,47 @@
  */
 package com.questhelper.quests.aporcineofinterest;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.A_PORCINE_OF_INTEREST
 )
 public class APorcineOfInterest extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement rope, slashItem, reinforcedGoggles, combatGear, hoof;
 
-	ConditionForStep inCave, hasFoot;
+	Requirement inCave, hasFoot;
 
 	DetailedQuestStep readNotice, talkToSarah, useRopeOnHole, enterHole, investigateSkeleton, talkToSpria, enterHoleAgain, killSourhog,
 		enterHoleForFoot, cutOffFoot, returnToSarah, returnToSpria;
 
+	//Zones
 	Zone cave;
 
 	@Override
@@ -103,14 +107,16 @@ public class APorcineOfInterest extends BasicQuestHelper
 		rope.setHighlightInInventory(true);
 
 		slashItem = new ItemRequirement("A knife or slash weapon", ItemID.KNIFE);
+		slashItem.setTooltip("Except abyssal whip, abyssal tentacle, or dragon claws.");
 
 		reinforcedGoggles = new ItemRequirement("Reinforced goggles", ItemID.REINFORCED_GOGGLES, 1, true);
-		reinforcedGoggles.setTip("You can get another pair from Spria");
+		reinforcedGoggles.setTooltip("You can get another pair from Spria");
 
 		combatGear = new ItemRequirement("Combat gear", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 
 		hoof = new ItemRequirement("Sourhog foot", ItemID.SOURHOG_FOOT);
-		hoof.setTip("You can get another from Sourhog's corpse in his cave");
+		hoof.setTooltip("You can get another from Sourhog's corpse in his cave");
 	}
 
 	public void loadZones()
@@ -120,8 +126,8 @@ public class APorcineOfInterest extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inCave = new ZoneCondition(cave);
-		hasFoot = new ItemRequirementCondition(hoof);
+		inCave = new ZoneRequirement(cave);
+		hasFoot = new ItemRequirements(hoof);
 	}
 
 	public void setupSteps()
@@ -147,6 +153,7 @@ public class APorcineOfInterest extends BasicQuestHelper
 
 		enterHoleForFoot = new ObjectStep(this, NullObjectID.NULL_40341, new WorldPoint(3151, 3348, 0), "Climb down into the Strange Hole east of Draynor Manor.", slashItem);
 		cutOffFoot = new ObjectStep(this, NullObjectID.NULL_40348, "Cut off Sourhog's foot.", slashItem);
+		((ObjectStep) cutOffFoot).addAlternateObjects(NullObjectID.NULL_40349);
 		cutOffFoot.addSubSteps(enterHoleForFoot);
 
 		returnToSarah = new NpcStep(this, NpcID.SARAH, new WorldPoint(3033, 3293, 0), "Return to Sarah in the South Falador Farm.", hoof);
@@ -155,30 +162,30 @@ public class APorcineOfInterest extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(rope, slashItem));
+		return Arrays.asList(rope, slashItem);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Collections.singletonList(combatGear));
+		return Collections.singletonList(combatGear);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Collections.singletonList("Sourhog (level 37)"));
+		return Collections.singletonList("Sourhog (level 37)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(readNotice, talkToSarah, useRopeOnHole, enterHole, investigateSkeleton, talkToSpria, enterHoleAgain,
-			killSourhog, cutOffFoot, returnToSarah, returnToSpria)), rope, slashItem, combatGear));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(readNotice, talkToSarah, useRopeOnHole,
+			enterHole, investigateSkeleton, talkToSpria, enterHoleAgain, killSourhog, cutOffFoot, returnToSarah,
+			returnToSpria), rope, slashItem, combatGear));
 		return allSteps;
 	}
 }
-

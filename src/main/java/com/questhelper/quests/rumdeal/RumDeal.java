@@ -24,48 +24,56 @@
  */
 package com.questhelper.quests.rumdeal;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.questhelpers.QuestUtil;
+import com.questhelper.requirements.player.FreeInventorySlotRequirement;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
 import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ItemStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import net.runelite.api.InventoryID;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.RUM_DEAL
 )
 public class RumDeal extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement combatGear, dibber, rake, slayerGloves, blindweedSeed, rakeHighlight, blindweedSeedHighlight, blindweed, blindweedHighlight, bucket, bucketHighlight,
 		stagnantWater, stagnantWaterHighlight, netBowl, sluglings5, holyWrench, wrench, spiderCarcass, spiderCarcassHighlight, swill;
 
 	Requirement prayerPoints47;
 
-	ConditionForStep onIsland, onIslandF1, onIslandF2, onIslandF0, rakedPatch, plantedPatch, grownPatch, hasBlindweed, onNorthIsland, hasStagnantWater, added5Sluglings,
+	Requirement onIsland, onIslandF1, onIslandF2, onIslandF0, rakedPatch, plantedPatch, grownPatch, hasBlindweed, onNorthIsland, hasStagnantWater, added5Sluglings,
 		inSpiderRoom, hasHolyWrench, evilSpiritNearby, hasSpiderCarcass, hasSwill, carcassNearby;
 
 	DetailedQuestStep talkToPete, talkToBraindeath, goDownstairs, rakePatch, plantSeed, waitForGrowth, pickPlant, goUpStairsWithPlant, talkToBraindeathWithPlant, talkToPeteWithPlant,
@@ -76,6 +84,7 @@ public class RumDeal extends BasicQuestHelper
 
 	SlugSteps getSlugs;
 
+	//Zones
 	Zone island, islandF0, islandF1, islandF2, northIsland, spiderRoom;
 
 	@Override
@@ -235,6 +244,7 @@ public class RumDeal extends BasicQuestHelper
 	public void setupItemRequirements()
 	{
 		combatGear = new ItemRequirement("Combat gear", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 		slayerGloves = new ItemRequirement("Slayer gloves", ItemID.SLAYER_GLOVES);
 		blindweedSeed = new ItemRequirement("Blindweed seed", ItemID.BLINDWEED_SEED);
 		blindweedSeedHighlight = new ItemRequirement("Blindweed seed", ItemID.BLINDWEED_SEED);
@@ -244,10 +254,10 @@ public class RumDeal extends BasicQuestHelper
 		rakeHighlight.setHighlightInInventory(true);
 		dibber = new ItemRequirement("Dibber", ItemID.SEED_DIBBER);
 		blindweed = new ItemRequirement("Blindweed", ItemID.BLINDWEED);
-		blindweed.setTip("You can get another from Captain Braindeath");
+		blindweed.setTooltip("You can get another from Captain Braindeath");
 
 		blindweedHighlight = new ItemRequirement("Blindweed", ItemID.BLINDWEED);
-		blindweedHighlight.setTip("You can get another from Captain Braindeath");
+		blindweedHighlight.setTooltip("You can get another from Captain Braindeath");
 
 		bucket = new ItemRequirement("Bucket", ItemID.BUCKET);
 
@@ -255,14 +265,14 @@ public class RumDeal extends BasicQuestHelper
 		bucketHighlight.setHighlightInInventory(true);
 
 		stagnantWater = new ItemRequirement("Bucket of water", ItemID.BUCKET_OF_WATER_6712);
-		stagnantWater.setTip("You can get more from Captain Braindeath");
+		stagnantWater.setTooltip("You can get more from Captain Braindeath");
 
 		stagnantWaterHighlight = new ItemRequirement("Bucket of water", ItemID.BUCKET_OF_WATER_6712);
-		stagnantWaterHighlight.setTip("You can get more from Captain Braindeath");
+		stagnantWaterHighlight.setTooltip("You can get more from Captain Braindeath");
 		stagnantWaterHighlight.setHighlightInInventory(true);
 
 		netBowl = new ItemRequirement("Fishbowl and net", ItemID.FISHBOWL_AND_NET);
-		netBowl.setTip("You can get another from Captain Braindeath, or make it with a fishbowl and large net");
+		netBowl.setTooltip("You can get another from Captain Braindeath, or make it with a fishbowl and large net");
 
 		sluglings5 = new ItemRequirement("Sluglings", ItemID.SLUGLINGS, 5);
 
@@ -270,7 +280,7 @@ public class RumDeal extends BasicQuestHelper
 		holyWrench.setHighlightInInventory(true);
 
 		wrench = new ItemRequirement("Wrench", ItemID.WRENCH);
-		wrench.setTip("You can get another from Captain Braindeath");
+		wrench.setTooltip("You can get another from Captain Braindeath");
 
 		spiderCarcass = new ItemRequirement("Fever spider body", ItemID.FEVER_SPIDER_BODY);
 
@@ -294,28 +304,28 @@ public class RumDeal extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		onIsland = new ZoneCondition(island);
-		onIslandF0 = new ZoneCondition(islandF0);
-		onIslandF1 = new ZoneCondition(islandF1);
-		onIslandF2 = new ZoneCondition(islandF2);
-		onNorthIsland = new ZoneCondition(northIsland);
-		inSpiderRoom = new ZoneCondition(spiderRoom);
+		onIsland = new ZoneRequirement(island);
+		onIslandF0 = new ZoneRequirement(islandF0);
+		onIslandF1 = new ZoneRequirement(islandF1);
+		onIslandF2 = new ZoneRequirement(islandF2);
+		onNorthIsland = new ZoneRequirement(northIsland);
+		inSpiderRoom = new ZoneRequirement(spiderRoom);
 
-		rakedPatch = new VarbitCondition(1366, 3);
-		plantedPatch = new VarbitCondition(1366, 4);
-		grownPatch = new VarbitCondition(1366, 5);
-		hasBlindweed = new ItemRequirementCondition(blindweed);
-		hasStagnantWater = new ItemRequirementCondition(stagnantWater);
+		rakedPatch = new VarbitRequirement(1366, 3);
+		plantedPatch = new VarbitRequirement(1366, 4);
+		grownPatch = new VarbitRequirement(1366, 5);
+		hasBlindweed = new ItemRequirements(blindweed);
+		hasStagnantWater = new ItemRequirements(stagnantWater);
 
-		added5Sluglings = new VarbitCondition(1354, 5);
-		hasHolyWrench = new ItemRequirementCondition(holyWrench);
+		added5Sluglings = new VarbitRequirement(1354, 5);
+		hasHolyWrench = new ItemRequirements(holyWrench);
 
 		evilSpiritNearby = new NpcCondition(NpcID.EVIL_SPIRIT);
 
-		hasSpiderCarcass = new ItemRequirementCondition(spiderCarcass);
-		hasSwill = new ItemRequirementCondition(swill);
+		hasSpiderCarcass = new ItemRequirements(spiderCarcass);
+		hasSwill = new ItemRequirements(swill);
 
-		carcassNearby = new ItemCondition(spiderCarcass);
+		carcassNearby = new ItemOnTileRequirement(spiderCarcass);
 		// 1359-64 0->1 given swill
 	}
 
@@ -394,12 +404,12 @@ public class RumDeal extends BasicQuestHelper
 		goUpFromSpiders = new ObjectStep(this, ObjectID.LADDER_10167, new WorldPoint(2139, 5105, 0), "Go up the ladder.");
 
 		talkToBraindeathAfterSpirit = new NpcStep(this, NpcID.CAPTAIN_BRAINDEATH, new WorldPoint(2145, 5108, 1), "Talk to Captain Braindeath.");
-		goDownToSpiders = new ObjectStep(this, ObjectID.LADDER_10168, new WorldPoint(2139, 5105, 1), "Go into the brewery's basement and kill a fever spider. If you're not wearing slayer gloves they'll afflcit you with disease.", slayerGloves);
+		goDownToSpiders = new ObjectStep(this, ObjectID.LADDER_10168, new WorldPoint(2139, 5105, 1), "Go into the brewery's basement and kill a fever spider. If you're not wearing slayer gloves they'll afflict you with disease.", slayerGloves);
 
-		killSpider = new NpcStep(this, NpcID.FEVER_SPIDER, "Go into the brewery's basement and kill a fever spider. If you're not wearing slayer gloves they'll afflcit you with disease.", slayerGloves);
+		killSpider = new NpcStep(this, NpcID.FEVER_SPIDER, "Go into the brewery's basement and kill a fever spider. If you're not wearing slayer gloves they'll afflict you with disease.", slayerGloves);
 		pickUpCarcass = new ItemStep(this, "Pick up the fever spider body.", spiderCarcass);
 		goUpFromSpidersWithCorpse = new ObjectStep(this, ObjectID.LADDER_10167, new WorldPoint(2139, 5105, 0), "Add the spider body to the hopper on the top floor.", spiderCarcass);
-		goUpToDropSpider =  new ObjectStep(this, ObjectID.LADDER_10167, new WorldPoint(2163, 5092, 1), "Add the spider body to the hopper on the top floor.", spiderCarcass);
+		goUpToDropSpider = new ObjectStep(this, ObjectID.LADDER_10167, new WorldPoint(2163, 5092, 1), "Add the spider body to the hopper on the top floor.", spiderCarcass);
 		dropSpider = new ObjectStep(this, ObjectID.HOPPER_10170, new WorldPoint(2142, 5102, 2), "Add the spider body to the hopper on the top floor.", spiderCarcassHighlight);
 		dropSpider.addIcon(ItemID.FEVER_SPIDER_BODY);
 		dropSpider.addSubSteps(goUpFromSpidersWithCorpse, goUpToDropSpider);
@@ -421,34 +431,56 @@ public class RumDeal extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(combatGear, dibber, rake, slayerGloves));
+		return Arrays.asList(combatGear, dibber, rake, slayerGloves);
 	}
 
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("Evil spirit (level 150)", "Fever spider (level 49)"));
+		return Arrays.asList("Evil spirit (level 150)", "Fever spider (level 49)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(talkToPete, talkToBraindeath)), rake, dibber, slayerGloves, combatGear));
-		allSteps.add(new PanelDetails("Get blindweed", new ArrayList<>(Arrays.asList(goDownstairs, rakePatch, plantSeed, waitForGrowth, pickPlant, goUpStairsWithPlant, dropPlant)), rake, dibber));
-		allSteps.add(new PanelDetails("Get stagnant water", new ArrayList<>(Arrays.asList(talkToBraindeathAfterPlant, useBucketOnWater, dropWater))));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(talkToPete, talkToBraindeath), rake, dibber, slayerGloves, combatGear));
+		allSteps.add(new PanelDetails("Get blindweed", Arrays.asList(goDownstairs, rakePatch, plantSeed, waitForGrowth, pickPlant, goUpStairsWithPlant, dropPlant), rake, dibber));
+		allSteps.add(new PanelDetails("Get stagnant water", Arrays.asList(talkToBraindeathAfterPlant, useBucketOnWater, dropWater)));
 
-		ArrayList<QuestStep> sluglingSteps = new ArrayList<>(Collections.singletonList(talkToBraindeathAfterWater));
+		List<QuestStep> sluglingSteps = QuestUtil.toArrayList(talkToBraindeathAfterWater);
 		sluglingSteps.addAll(getSlugs.getDisplaySteps());
 		allSteps.add(new PanelDetails("Get sluglings", sluglingSteps));
 
-		allSteps.add(new PanelDetails("Kill evil spirit", new ArrayList<>(Arrays.asList(talkToBraindeathAfterSlugs, talkToDavey, useWrenchOnControl, killSpirit)), combatGear));
-		allSteps.add(new PanelDetails("Get spider carcass", new ArrayList<>(Arrays.asList(talkToBraindeathAfterSpirit, killSpider, pickUpCarcass, dropSpider)), combatGear, slayerGloves));
-		allSteps.add(new PanelDetails("Giving swill to Donnie", new ArrayList<>(Arrays.asList(talkToBraindeathAfterSpider, useBucketOnTap, talkToDonnie, talkToBraindeathToFinish))));
+		allSteps.add(new PanelDetails("Kill evil spirit", Arrays.asList(talkToBraindeathAfterSlugs, talkToDavey, useWrenchOnControl, killSpirit), combatGear));
+		allSteps.add(new PanelDetails("Get spider carcass", Arrays.asList(talkToBraindeathAfterSpirit, killSpider, pickUpCarcass, dropSpider), combatGear, slayerGloves));
+		allSteps.add(new PanelDetails("Giving swill to Donnie", Arrays.asList(talkToBraindeathAfterSpider, useBucketOnTap, talkToDonnie, talkToBraindeathToFinish)));
 
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRecommended()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new FreeInventorySlotRequirement(InventoryID.INVENTORY, 6));
+		return req;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.ZOGRE_FLESH_EATERS, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.PRIEST_IN_PERIL, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.CRAFTING, 42, true));
+		req.add(new SkillRequirement(Skill.FISHING, 50, true));
+		req.add(new SkillRequirement(Skill.FARMING, 40, true));
+		req.add(new SkillRequirement(Skill.PRAYER, 47, true));
+		req.add(new SkillRequirement(Skill.SLAYER, 42));
+		return req;
 	}
 }

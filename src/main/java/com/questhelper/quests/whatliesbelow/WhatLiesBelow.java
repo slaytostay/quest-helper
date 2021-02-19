@@ -24,46 +24,56 @@
  */
 package com.questhelper.quests.whatliesbelow;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.WHAT_LIES_BELOW
 )
 public class WhatLiesBelow extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement intel5, bowl, chaosRunes15, emptyFolder, usedFolder, fullFolder, chaosTalismanOrAbyss, folder, wand,
-		wandHighlight, beaconRing, letterToSurok, infusedWand, suroksLetter, chronicle;
+		wandHighlight, beaconRing, letterToSurok, infusedWand, suroksLetter;
 
-	ConditionForStep inChaosAltar, hasFullFolder, inBattle;
+	//Items Recommended
+	ItemRequirement chronicle;
+
+	Requirement inChaosAltar, hasFullFolder, inBattle;
 
 	QuestStep talkToRat, bringFolderToRat, talkToRatAfterFolder, talkToSurok, talkToSurokNoLetter, enterChaosAltar, useWandOnAltar, bringWandToSurok,
 		talkToRatAfterSurok, talkToZaff, talkToSurokToFight, fightRoald, talkToRatToFinish, talkToRatAfterSurokNoLetter;
 
 	NpcStep killOutlaws;
 
+	//Zones
 	Zone chaosAltar;
 
 	@Override
@@ -128,7 +138,7 @@ public class WhatLiesBelow extends BasicQuestHelper
 
 		folder = new ItemRequirement("Folder", ItemID.AN_EMPTY_FOLDER);
 		folder.addAlternates(ItemID.USED_FOLDER, ItemID.FULL_FOLDER);
-		folder.setTip("You can get another empty folder from Rat");
+		folder.setTooltip("You can get another empty folder from Rat");
 		folder.setHighlightInInventory(true);
 
 		bowl = new ItemRequirement("Bowl", ItemID.BOWL);
@@ -138,17 +148,17 @@ public class WhatLiesBelow extends BasicQuestHelper
 		wandHighlight.setHighlightInInventory(true);
 
 		infusedWand = new ItemRequirement("Infused wand", ItemID.INFUSED_WAND);
-		infusedWand.setTip("You can make another by getting a wand from Surok, and using it on the chaos altar with 15 chaos runes");
+		infusedWand.setTooltip("You can make another by getting a wand from Surok, and using it on the chaos altar with 15 chaos runes");
 		chaosTalismanOrAbyss = new ItemRequirement("Chaos Talisman or access to the Abyss", ItemID.CHAOS_TALISMAN);
 
 		beaconRing = new ItemRequirement("Beacon ring", ItemID.BEACON_RING);
-		beaconRing.setTip("You can get another from Zaff");
+		beaconRing.setTooltip("You can get another from Zaff");
 
 		letterToSurok = new ItemRequirement("Letter to Surok", ItemID.LETTER_TO_SUROK);
-		letterToSurok.setTip("You can get another from Rat");
+		letterToSurok.setTooltip("You can get another from Rat");
 
 		suroksLetter = new ItemRequirement("Surok's letter", ItemID.SUROKS_LETTER);
-		suroksLetter.setTip("You can get another from Surok");
+		suroksLetter.setTooltip("You can get another from Surok");
 
 		chronicle = new ItemRequirement("Chronicle for teleports to south of Varrock", ItemID.CHRONICLE);
 	}
@@ -160,9 +170,9 @@ public class WhatLiesBelow extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		hasFullFolder = new ItemRequirementCondition(fullFolder);
-		inChaosAltar = new ZoneCondition(chaosAltar);
-		inBattle = new VarbitCondition(6719, 2);
+		hasFullFolder = new ItemRequirements(fullFolder);
+		inChaosAltar = new ZoneRequirement(chaosAltar);
+		inBattle = new VarbitRequirement(6719, 2);
 	}
 
 	public void setupSteps()
@@ -196,14 +206,14 @@ public class WhatLiesBelow extends BasicQuestHelper
 
 		talkToZaff = new NpcStep(this, NpcID.ZAFF, new WorldPoint(3202, 3434, 0), "Talk to Zaff in the Varrock staff shop.");
 		talkToZaff.addDialogStep("Rat Burgiss sent me!");
-		talkToSurokToFight =  new NpcStep(this, NpcID.SUROK_MAGIS_4160, new WorldPoint(3211, 3493, 0), "Prepare to fight King Roald (level 47), then go talk to Surok Magis in the Varrock Library.", beaconRing);
+		talkToSurokToFight = new NpcStep(this, NpcID.SUROK_MAGIS_4160, new WorldPoint(3211, 3493, 0), "Prepare to fight King Roald (level 47), then go talk to Surok Magis in the Varrock Library.", beaconRing);
 		talkToSurokToFight.addDialogStep("Bring it on!");
 		fightRoald = new NpcStep(this, NpcID.KING_ROALD_4163, new WorldPoint(3211, 3493, 0), "Fight King Roald. When he's at 1hp, right-click operate the beacon ring.", beaconRing);
 		talkToRatToFinish = new NpcStep(this, NpcID.RAT_BURGISS, new WorldPoint(3266, 3333, 0), "Return to Rat Burgiss south of Varrock to finish the quest.");
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(bowl);
@@ -213,7 +223,7 @@ public class WhatLiesBelow extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(chronicle);
@@ -221,7 +231,7 @@ public class WhatLiesBelow extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("5 outlaws (level 32)");
@@ -230,13 +240,30 @@ public class WhatLiesBelow extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Collections.singletonList(talkToRat))));
-		allSteps.add(new PanelDetails("Help Rat", new ArrayList<>(Arrays.asList(killOutlaws, bringFolderToRat))));
-		allSteps.add(new PanelDetails("Help Surok", new ArrayList<>(Arrays.asList(talkToSurok, enterChaosAltar, useWandOnAltar, bringWandToSurok)), chaosRunes15, chaosTalismanOrAbyss, bowl));
-		allSteps.add(new PanelDetails("Defeat Surok", new ArrayList<>(Arrays.asList(talkToRatAfterSurok, talkToZaff, talkToSurokToFight, fightRoald, talkToRatToFinish))));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.RUNE_MYSTERIES, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.RUNECRAFT, 35));
+		return req;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRecommended()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new SkillRequirement(Skill.MINING, 42, false, "42 Mining to unlock a shortcut to the Chaos altar"));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Collections.singletonList(talkToRat)));
+		allSteps.add(new PanelDetails("Help Rat", Arrays.asList(killOutlaws, bringFolderToRat)));
+		allSteps.add(new PanelDetails("Help Surok", Arrays.asList(talkToSurok, enterChaosAltar, useWandOnAltar, bringWandToSurok), chaosRunes15, chaosTalismanOrAbyss, bowl));
+		allSteps.add(new PanelDetails("Defeat Surok", Arrays.asList(talkToRatAfterSurok, talkToZaff, talkToSurokToFight, fightRoald, talkToRatToFinish)));
 		return allSteps;
 	}
 }

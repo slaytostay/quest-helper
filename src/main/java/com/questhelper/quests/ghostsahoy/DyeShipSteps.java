@@ -25,19 +25,19 @@
 package com.questhelper.quests.ghostsahoy;
 
 import com.questhelper.Zone;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.questhelpers.QuestHelper;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.DetailedOwnerStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.ZoneCondition;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
@@ -56,7 +56,7 @@ public class DyeShipSteps extends DetailedOwnerStep
 
 	DetailedQuestStep searchMast, dyeTop, dyeSkull, dyeBottom, goDownToMan, talkToMan, goUpToMan, goUpToDeckForMast, goUpToMast;
 
-	ConditionForStep onTopOfShip, onDeck;
+	Requirement onTopOfShip, onDeck;
 
 	Zone topOfShip, deck;
 
@@ -68,8 +68,8 @@ public class DyeShipSteps extends DetailedOwnerStep
 
 		topOfShip = new Zone(new WorldPoint(3616, 3541, 2), new WorldPoint(3622, 3545, 2));
 		deck = new Zone(new WorldPoint(3600, 3541, 1), new WorldPoint(3623, 3545, 1));
-		onTopOfShip = new ZoneCondition(topOfShip);
-		onDeck = new ZoneCondition(deck);
+		onTopOfShip = new ZoneRequirement(topOfShip);
+		onDeck = new ZoneRequirement(deck);
 
 		shapeColours.put("skull", FlagColour.WHITE);
 		shapeColours.put("top", FlagColour.WHITE);
@@ -147,23 +147,23 @@ public class DyeShipSteps extends DetailedOwnerStep
 			bottomColour != FlagColour.WHITE)
 		{
 			coloursKnown = true;
-			dyeTop.setRequirements(new ArrayList<>(Arrays.asList(topColour.getItem(), modelShip)));
+			dyeTop.setRequirements(Arrays.asList(topColour.getItem(), modelShip));
 			dyeTop.setText("Dye the top of the model ship's flag " + topColour.getColourText() + " If you already have, inspect the ship.");
 			dyeTop.addDialogStep("Top half");
-			dyeBottom.setRequirements(new ArrayList<>(Arrays.asList(bottomColour.getItem(), modelShip)));
+			dyeBottom.setRequirements(Arrays.asList(bottomColour.getItem(), modelShip));
 			dyeBottom.setText("Dye the bottom of the model ship's flag " + bottomColour.getColourText() + " If you already have, inspect the ship.");
 			dyeBottom.addDialogStep("Bottom half");
-			dyeSkull.setRequirements(new ArrayList<>(Arrays.asList(skullColour.getItem(), modelShip)));
+			dyeSkull.setRequirements(Arrays.asList(skullColour.getItem(), modelShip));
 			dyeSkull.addDialogStep("Skull emblem");
 			dyeSkull.setText("Dye the skull on the model ship's flag " + skullColour.getColourText() + " If you already have, inspect the ship.");
 		}
 		if (!coloursKnown)
 		{
-			if (onDeck.checkCondition(client))
+			if (onDeck.check(client))
 			{
 				startUpStep(goUpToMast);
 			}
-			else if (onTopOfShip.checkCondition(client))
+			else if (onTopOfShip.check(client))
 			{
 				startUpStep(searchMast);
 			}
@@ -186,11 +186,11 @@ public class DyeShipSteps extends DetailedOwnerStep
 		{
 			startUpStep(dyeSkull);
 		}
-		else if (onTopOfShip.checkCondition(client))
+		else if (onTopOfShip.check(client))
 		{
 			startUpStep(goDownToMan);
 		}
-		else if (onDeck.checkCondition(client))
+		else if (onDeck.check(client))
 		{
 			startUpStep(talkToMan);
 		}
@@ -260,9 +260,10 @@ public class DyeShipSteps extends DetailedOwnerStep
 		return Arrays.asList(searchMast, dyeTop, dyeBottom, dyeSkull, talkToMan, goDownToMan, goUpToMan, goUpToDeckForMast, goUpToMast);
 	}
 
-	public Collection<QuestStep> getDisplaySteps()
+	public List<QuestStep> getDisplaySteps()
 	{
-		return Arrays.asList(goUpToDeckForMast, goUpToMast, searchMast, dyeTop, dyeBottom, dyeSkull, goDownToMan, talkToMan);
+		return Arrays.asList(goUpToDeckForMast, goUpToMast, searchMast, dyeTop, dyeBottom, dyeSkull, goDownToMan,
+			talkToMan);
 	}
 
 	private enum FlagColour

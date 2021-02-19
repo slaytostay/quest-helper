@@ -25,33 +25,36 @@
 package com.questhelper.quests.throneofmiscellania;
 
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.var.VarplayerRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.VarplayerCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.Player;
+import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
@@ -60,10 +63,14 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class ThroneOfMiscellania extends BasicQuestHelper
 {
-	ItemRequirement ironBar, logs, pickaxe, rake, axe, harpoon, lobsterPot, reputationItems, ring, flowerOr15Coins, flowers, cake, bow, dramenStaff,
+	//Items Required
+	ItemRequirement ironBar, logs, pickaxe, rake, axe, harpoon, lobsterPot, reputationItems, ring, flowers, cake, bow,
 		giantNib, giantPen, goodAnthem, awfulAnthem, treaty;
 
-	ConditionForStep inIslands, inMiscCastleFirstFloor, inEtcCastleFirstFloor, inAstridRoom, inBrandRoom, hasFlowers,
+	//Items Recommended
+	ItemRequirement dramenStaff;
+
+	Requirement inIslands, inMiscCastleFirstFloor, inEtcCastleFirstFloor, inAstridRoom, inBrandRoom, hasFlowers,
 		talked1P1, talked1P2, talked1P3, givenFlowers, doneEmote, talked1P4, talked2P1, talked2P2, talked2P3, givenBowOrCake,
 		talked2P4, talked3P1, talked3P2, talked3P3, blownKiss, hasAwfulAnthem, hasGoodAnthem, hasGiantNib, hasGiantPen,
 		diplomacyStep1, diplomacyStep2, diplomacyStep3, diplomacyStep4, diplomacyStep5, diplomacyStep6, hasCourted, hasTreaty, has75Support;
@@ -78,6 +85,7 @@ public class ThroneOfMiscellania extends BasicQuestHelper
 
 	ConditionalStep courtBrand, courtAstrid;
 
+	//Zones
 	Zone islands, miscCastleFirstFloor, etcCastleFirstFloor, brandRoom1, brandRoom2, astridRoom1, astridRoom2;
 
 	@Override
@@ -108,7 +116,7 @@ public class ThroneOfMiscellania extends BasicQuestHelper
 		courtAstrid.addStep(inIslands, goUpstairsToAstrid);
 
 		courtBrand = new ConditionalStep(this, travelToMisc);
-		courtBrand.addStep(new Conditions(inMiscCastleFirstFloor, talked3P1, talked3P2, talked3P3, blownKiss), useRingOnAstrid);
+		courtBrand.addStep(new Conditions(inMiscCastleFirstFloor, talked3P1, talked3P2, talked3P3, blownKiss), useRingOnBrand);
 		courtBrand.addStep(new Conditions(inMiscCastleFirstFloor, talked3P1, talked3P2, talked3P3), blowKissToBrand);
 		courtBrand.addStep(new Conditions(inMiscCastleFirstFloor, talked2P4), talkBrand3);
 		courtBrand.addStep(new Conditions(inMiscCastleFirstFloor, talked2P1, talked2P2, talked2P3), giveCakeToBrand);
@@ -217,14 +225,15 @@ public class ThroneOfMiscellania extends BasicQuestHelper
 		axe = new ItemRequirement("Any axe", ItemCollections.getAxes());
 		harpoon = new ItemRequirement("Harpoon", ItemCollections.getHarpoons());
 		lobsterPot = new ItemRequirement("Lobster pot", ItemID.LOBSTER_POT);
-		ring = new ItemRequirement("Any non-silver ring you are willing to lose", ItemID.GOLD_RING, -1);
+		ring = new ItemRequirement("Any non-silver ring you are willing to lose", ItemID.GOLD_RING);
 		ring.addAlternates(ItemID.SAPPHIRE_RING, ItemID.EMERALD_RING, ItemID.RUBY_RING, ItemID.DIAMOND_RING);
-		flowerOr15Coins = new ItemRequirement("A flower or 15 coins to buy some during the quest", ItemID.BLACK_FLOWERS, -1);
-		flowers = getAllFlowers();
+
+		flowers = new ItemRequirement("Flowers", ItemCollections.getFlowers());
+		flowers.setTooltip("You can buy some from the Flower Girl on Miscellania for 15 coins");
 		flowers.setHighlightInInventory(true);
 		cake = new ItemRequirement("Cake", ItemID.CAKE);
 		cake.addAlternates(ItemID.CHOCOLATE_CAKE);
-		bow = new ItemRequirement("Any normal/willow/maple/yew shortbow or longbow", -1, -1);
+		bow = new ItemRequirement("Any normal/willow/maple/yew shortbow or longbow", ItemCollections.getBows());
 		bow.setHighlightInInventory(true);
 		dramenStaff = new ItemRequirement("Dramen staff if travelling via Fairy Ring CIP", ItemID.DRAMEN_STAFF);
 		giantNib = new ItemRequirement("Giant nib", ItemID.GIANT_NIB);
@@ -264,53 +273,46 @@ public class ThroneOfMiscellania extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inIslands = new ZoneCondition(islands);
-		inMiscCastleFirstFloor = new ZoneCondition(miscCastleFirstFloor);
-		inEtcCastleFirstFloor = new ZoneCondition(etcCastleFirstFloor);
-		inBrandRoom = new ZoneCondition(brandRoom1, brandRoom2);
-		inAstridRoom = new ZoneCondition(astridRoom1, astridRoom2);
-		hasFlowers = new ItemRequirementCondition(LogicType.OR, getAllFlowers());
+		inIslands = new ZoneRequirement(islands);
+		inMiscCastleFirstFloor = new ZoneRequirement(miscCastleFirstFloor);
+		inEtcCastleFirstFloor = new ZoneRequirement(etcCastleFirstFloor);
+		inBrandRoom = new ZoneRequirement(brandRoom1, brandRoom2);
+		inAstridRoom = new ZoneRequirement(astridRoom1, astridRoom2);
+		hasFlowers = new ItemRequirements(flowers);
 
-		talked1P1 = new VarbitCondition(85, 1);
-		talked1P2 = new VarbitCondition(86, 1);
-		talked1P3 = new VarbitCondition(87, 1);
-		givenFlowers = new VarbitCondition(94, 1);
-		doneEmote = new VarbitCondition(96, 1);
-		talked1P4 = new VarbitCondition(73, 15, Operation.GREATER_EQUAL);
+		talked1P1 = new VarbitRequirement(85, 1);
+		talked1P2 = new VarbitRequirement(86, 1);
+		talked1P3 = new VarbitRequirement(87, 1);
+		givenFlowers = new VarbitRequirement(94, 1);
+		doneEmote = new VarbitRequirement(96, 1);
+		talked1P4 = new VarbitRequirement(73, 15, Operation.GREATER_EQUAL);
 
-		talked2P1 = new VarbitCondition(88, 1);
-		talked2P2 = new VarbitCondition(89, 1);
-		talked2P3 = new VarbitCondition(90, 1);
-		givenBowOrCake = new VarbitCondition(95, 1);
-		talked2P4 = new VarbitCondition(73, 24, Operation.GREATER_EQUAL);
+		talked2P1 = new VarbitRequirement(88, 1);
+		talked2P2 = new VarbitRequirement(89, 1);
+		talked2P3 = new VarbitRequirement(90, 1);
+		givenBowOrCake = new VarbitRequirement(95, 1);
+		talked2P4 = new VarbitRequirement(73, 24, Operation.GREATER_EQUAL);
 
-		talked3P1 = new VarbitCondition(91, 1);
-		talked3P2 = new VarbitCondition(92, 1);
-		talked3P3 = new VarbitCondition(93, 1);
-		blownKiss = new VarbitCondition(97, 1);
+		talked3P1 = new VarbitRequirement(91, 1);
+		talked3P2 = new VarbitRequirement(92, 1);
+		talked3P3 = new VarbitRequirement(93, 1);
+		blownKiss = new VarbitRequirement(97, 1);
 
-		hasCourted = new VarbitCondition(75, 1);
+		hasCourted = new VarbitRequirement(75, 1);
 
-		diplomacyStep1 = new VarplayerCondition(359, 20);
-		diplomacyStep2 = new VarplayerCondition(359, 30);
-		diplomacyStep3 = new VarplayerCondition(359, 40);
-		diplomacyStep4 = new VarplayerCondition(359, 50);
-		diplomacyStep5 = new VarplayerCondition(359, 60);
-		diplomacyStep6 = new VarplayerCondition(359, 70);
+		diplomacyStep1 = new VarplayerRequirement(359, 20);
+		diplomacyStep2 = new VarplayerRequirement(359, 30);
+		diplomacyStep3 = new VarplayerRequirement(359, 40);
+		diplomacyStep4 = new VarplayerRequirement(359, 50);
+		diplomacyStep5 = new VarplayerRequirement(359, 60);
+		diplomacyStep6 = new VarplayerRequirement(359, 70);
 
-		hasAwfulAnthem = new ItemRequirementCondition(awfulAnthem);
-		hasGoodAnthem = new ItemRequirementCondition(goodAnthem);
-		hasGiantNib = new ItemRequirementCondition(giantNib);
-		hasGiantPen = new ItemRequirementCondition(giantPen);
-		hasTreaty = new ItemRequirementCondition(treaty);
-		has75Support = new VarbitCondition(72, 96, Operation.GREATER_EQUAL);
-	}
-
-	public ItemRequirement getAllFlowers()
-	{
-		return new ItemRequirement("Flowers",
-			new ArrayList<>(Arrays.asList(ItemID.RED_FLOWERS, ItemID.YELLOW_FLOWERS, ItemID.PURPLE_FLOWERS, ItemID.ORANGE_FLOWERS,
-				ItemID.MIXED_FLOWERS, ItemID.ASSORTED_FLOWERS, ItemID.BLACK_FLOWERS, ItemID.WHITE_FLOWERS)));
+		hasAwfulAnthem = new ItemRequirements(awfulAnthem);
+		hasGoodAnthem = new ItemRequirements(goodAnthem);
+		hasGiantNib = new ItemRequirements(giantNib);
+		hasGiantPen = new ItemRequirements(giantPen);
+		hasTreaty = new ItemRequirements(treaty);
+		has75Support = new VarbitRequirement(72, 96, Operation.GREATER_EQUAL);
 	}
 
 	public void setupSteps()
@@ -452,13 +454,13 @@ public class ThroneOfMiscellania extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(ironBar);
 		reqs.add(logs);
 		reqs.add(ring);
-		reqs.add(flowerOr15Coins);
+		reqs.add(flowers);
 
 		Player player = client.getLocalPlayer();
 
@@ -475,7 +477,7 @@ public class ThroneOfMiscellania extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getNotes()
+	public List<String> getNotes()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Whether you marry Brand or Astrid depends on whether you're female or male respectively. If you have a preference on who you'd like to marry, you can change to male or female prior to the quest.");
@@ -483,7 +485,7 @@ public class ThroneOfMiscellania extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(dramenStaff);
@@ -491,9 +493,22 @@ public class ThroneOfMiscellania extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.HEROES_QUEST, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.THE_FREMENNIK_TRIALS, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.WOODCUTTING, 45, false, "45 Woodcutting (or any of the other skill requirements)"));
+		req.add(new SkillRequirement(Skill.FARMING, 10, false, "10 Farming (or any of the other skill requirements)"));
+		req.add(new SkillRequirement(Skill.MINING, 30, false, "30 Mining (or any of the other skill requirements)"));
+		req.add(new SkillRequirement(Skill.SMITHING, 35, false, "35 Smithing (or any of the other skill requirements)"));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
 		ItemRequirement giftItem;
 		Player player = client.getLocalPlayer();
 		if (player != null && player.getPlayerComposition() != null && !player.getPlayerComposition().isFemale())
@@ -505,15 +520,16 @@ public class ThroneOfMiscellania extends BasicQuestHelper
 			giftItem = cake;
 		}
 
-		allSteps.add(new PanelDetails("Talk to King Vargas", new ArrayList<>(Arrays.asList(travelToMisc, getFlowers, talkToVargas)), flowerOr15Coins, giftItem, ring, ironBar, logs, reputationItems));
+		allSteps.add(new PanelDetails("Talk to King Vargas", Arrays.asList(travelToMisc, getFlowers,
+			talkToVargas), flowers, giftItem, ring, ironBar, logs, reputationItems));
 
 		PanelDetails astridPanel = new PanelDetails("Win over Astrid",
-			new ArrayList<>(Arrays.asList(goUpstairsToAstrid, talkAstrid1, giveFlowersToAstrid, danceForAstrid, talkAstrid2,
-				giveBowToAstrid, talkAstrid3, blowKissToAstrid, useRingOnAstrid)));
+			Arrays.asList(goUpstairsToAstrid, talkAstrid1, giveFlowersToAstrid, danceForAstrid, talkAstrid2,
+				giveBowToAstrid, talkAstrid3, blowKissToAstrid, useRingOnAstrid));
 
 		PanelDetails brandPanel = new PanelDetails("Win over Brand",
-			new ArrayList<>(Arrays.asList(goUpstairsToBrand, talkBrand1, giveFlowersToBrand, clapForBrand, talkBrand2,
-				giveCakeToBrand, talkBrand3, blowKissToBrand, useRingOnBrand)));
+			Arrays.asList(goUpstairsToBrand, talkBrand1, giveFlowersToBrand, clapForBrand, talkBrand2,
+				giveCakeToBrand, talkBrand3, blowKissToBrand, useRingOnBrand));
 
 		if (player != null && player.getPlayerComposition() != null && !player.getPlayerComposition().isFemale())
 		{
@@ -525,10 +541,10 @@ public class ThroneOfMiscellania extends BasicQuestHelper
 		}
 
 		allSteps.add(new PanelDetails("Establish peace",
-			new ArrayList<>(Arrays.asList(talkToSigridDip1, talkToVargasDip1, talkToSigridDip2, talkToBrandDip, talkToGhrimDip, talkToSigridDip3, talkToVargasDip2,
-				talkToDerrik, makePen, giveVargasPen))));
+			Arrays.asList(talkToSigridDip1, talkToVargasDip1, talkToSigridDip2, talkToBrandDip, talkToGhrimDip, talkToSigridDip3, talkToVargasDip2,
+				talkToDerrik, makePen, giveVargasPen)));
 
-		allSteps.add(new PanelDetails("Get support", new ArrayList<>(Arrays.asList(get75Support, finishQuest))));
+		allSteps.add(new PanelDetails("Get support", Arrays.asList(get75Support, finishQuest)));
 		return allSteps;
 	}
 }

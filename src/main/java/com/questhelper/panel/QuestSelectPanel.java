@@ -24,12 +24,12 @@
  */
 package com.questhelper.panel;
 
+import com.questhelper.Icon;
 import com.questhelper.QuestHelperPlugin;
 import com.questhelper.questhelpers.QuestHelper;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,8 +38,8 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import lombok.Getter;
+import net.runelite.api.QuestState;
 import net.runelite.client.ui.PluginPanel;
-import net.runelite.client.util.ImageUtil;
 
 public class QuestSelectPanel extends JPanel
 {
@@ -49,34 +49,32 @@ public class QuestSelectPanel extends JPanel
 	@Getter
 	private final QuestHelper questHelper;
 
-	private static final ImageIcon START_ICON;
+	private static final ImageIcon START_ICON = Icon.START.getIcon();
 
-	static
-	{
-		final BufferedImage startImg = ImageUtil.getResourceStreamFromClass(QuestHelperPlugin.class, "/start.png");
-
-		START_ICON = new ImageIcon(startImg);
-	}
-	public QuestSelectPanel(QuestHelperPlugin questHelperPlugin, QuestHelperPanel questHelperPanel, QuestHelper questHelper)
+	public QuestSelectPanel(QuestHelperPlugin questHelperPlugin, QuestHelperPanel questHelperPanel, QuestHelper questHelper, QuestState questState)
 	{
 		this.questHelper = questHelper;
 
-		Collections.addAll(keywords, questHelper.getQuest().getName().toLowerCase().split(" "));
+		keywords.addAll(questHelper.getQuest().getKeywords());
 
 		setLayout(new BorderLayout(3, 0));
 		setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH, 20));
 
 		JLabel nameLabel = new JLabel(questHelper.getQuest().getName());
-		nameLabel.setForeground(Color.WHITE);
+		Color color = questState == QuestState.FINISHED ? Color.GREEN : (questState == QuestState.IN_PROGRESS ? new Color(240, 207, 123) : Color.WHITE);
+		nameLabel.setForeground(color);
 		add(nameLabel, BorderLayout.CENTER);
 
-		JButton startButton = new JButton();
-		startButton.setIcon(START_ICON);
-		startButton.addActionListener(e ->
+		if (questState != QuestState.FINISHED)
 		{
-			questHelperPlugin.setSidebarSelectedQuest(questHelper);
-			questHelperPanel.emptyBar();
-		});
-		add(startButton, BorderLayout.LINE_END);
+			JButton startButton = new JButton();
+			startButton.setIcon(START_ICON);
+			startButton.addActionListener(e ->
+			{
+				questHelperPlugin.setSidebarSelectedQuest(questHelper);
+				questHelperPanel.emptyBar();
+			});
+			add(startButton, BorderLayout.LINE_END);
+		}
 	}
 }

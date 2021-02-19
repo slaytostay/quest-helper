@@ -25,48 +25,59 @@
 package com.questhelper.quests.deserttreasure;
 
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.ComplexRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullItemID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.DESERT_TREASURE
 )
 public class DesertTreasure extends BasicQuestHelper
 {
+	//Items Recommended
+	ItemRequirement combatGear, food, prayerPotions, restorePotions, energyOrStaminas;
+
+	//Items Required
 	ItemRequirement coins650, magicLogs12, steelBars6, moltenGlass6, ashes, charcoal, bloodRune, bones, silverBar, garlicPowder, spice, cake, spikedBoots,
 		climbingBoots, faceMask, tinderbox, manyLockpicks, etchings, translation, warmKey, smokeDiamond, shadowDiamond, iceDiamond, bloodDiamond, iceGloves,
 		waterSpellOrMelee, cross, ringOfVisibility, antipoison, silverPot, silverPot2, potOfBlood, potWithGarlic, potWithSpice, potComplete, fireSpells,
-		spikedBootsEquipped, combatGear, food, prayerPotions, restorePotions, energyOrStaminas, iceDiamondHighlighted, bloodDiamondHighlighted, smokeDiamondHighlighted,
+		spikedBootsEquipped, iceDiamondHighlighted, bloodDiamondHighlighted, smokeDiamondHighlighted,
 		shadowDiamondHighlighted;
 
-	ConditionForStep hasWarmKey, gotBloodDiamond, hadSmokeDiamond, gotIceDiamond, killedDamis, inSmokeDungeon, inFareedRoom, litTorch1, litTorch2, litTorch3,
+	Requirement hasWarmKey, gotBloodDiamond, hadSmokeDiamond, gotIceDiamond, killedDamis, inSmokeDungeon, inFareedRoom, litTorch1, litTorch2, litTorch3,
 		litTorch4, unlockedFareedDoor, killedFareed, talkedToRasolo, unlockedCrossChest, gotRing, inShadowDungeon, damis1Nearby, damis2Nearby, talkedToMalak,
 		askedAboutKillingDessous, hasSilverPot, hasSilverPot2, inDraynorSewer, hasSilverPotBlood, hasSilverPotGarlic, hasSilverPotComplete, hasSilverPotSpice,
 		dessousNearby, killedDessous, gaveCake, talkedToTrollChild, killedTrolls, inTrollArea, inPath, killedKamil, onIcePath, onIceBridge, smashedIce1,
@@ -86,6 +97,7 @@ public class DesertTreasure extends BasicQuestHelper
 
 	ConditionalStep getSmokeDiamond, getBloodDiamond, getIceDiamond, getShadowDiamond, getDiamonds;
 
+	//Zones
 	Zone smokeDungeon, fareedRoom, shadowDungeon, draynorSewer, trollArea, path1, path2, icePath, iceBridge, floor1, floor2, floor3, floor4, azzRoom;
 
 	@Override
@@ -190,7 +202,7 @@ public class DesertTreasure extends BasicQuestHelper
 		coins650 = new ItemRequirement("Coins", ItemID.COINS_995, 650);
 		magicLogs12 = new ItemRequirement("Magic logs", ItemID.MAGIC_LOGS, 12);
 		magicLogs12.addAlternates(NullItemID.NULL_1514);
-		steelBars6 = new ItemRequirement("Steel bar", ItemID.STEEL_BAR,  6);
+		steelBars6 = new ItemRequirement("Steel bar", ItemID.STEEL_BAR, 6);
 		steelBars6.addAlternates(NullItemID.NULL_2354);
 		moltenGlass6 = new ItemRequirement("Molten glass", ItemID.MOLTEN_GLASS, 6);
 		moltenGlass6.addAlternates(NullItemID.NULL_1776);
@@ -201,62 +213,68 @@ public class DesertTreasure extends BasicQuestHelper
 		silverBar = new ItemRequirement("Silver bar", ItemID.SILVER_BAR);
 		garlicPowder = new ItemRequirement("Garlic powder", ItemID.GARLIC_POWDER);
 		garlicPowder.setHighlightInInventory(true);
-		garlicPowder.setTip("Use a pestle and mortar on a garlic to make powder");
+		garlicPowder.setTooltip("Use a pestle and mortar on a garlic to make powder");
 		spice = new ItemRequirement("Spice", ItemID.SPICE);
 		spice.setHighlightInInventory(true);
 
 		cake = new ItemRequirement("Cake", ItemID.CAKE);
-		cake.setHighlightInInventory(true);
 		cake.addAlternates(ItemID.CHOCOLATE_CAKE);
+		cake.setDisplayMatchedItemName(true);
+		cake.setHighlightInInventory(true);
+
 		spikedBoots = new ItemRequirement("Spiked boots", ItemID.SPIKED_BOOTS);
-		spikedBoots.setTip("Bring Dunstan in Burthorpe climbing boots and an iron bar to make these");
+		spikedBoots.setTooltip("Bring Dunstan in Burthorpe climbing boots and an iron bar to make these");
 
 		spikedBootsEquipped = new ItemRequirement("Spiked boots", ItemID.SPIKED_BOOTS, 1, true);
-		spikedBootsEquipped.setTip("Bring Dunstan in Burthorpe climbing boots and an iron bar to make these");
+		spikedBootsEquipped.setTooltip("Bring Dunstan in Burthorpe climbing boots and an iron bar to make these");
 
 		climbingBoots = new ItemRequirement("Climbing boots", ItemID.CLIMBING_BOOTS);
-		faceMask = new ItemRequirement("Facemask, slayer helmet or gas mask", ItemID.FACEMASK, 1, true);
-		faceMask.addAlternates(ItemID.SLAYER_HELMET, ItemID.GAS_MASK);
+		faceMask = new ItemRequirement("Facemask (or other face covering)", ItemID.FACEMASK, 1, true);
+		faceMask.setTooltip("Slayer mask and gas mask can also be used.");
+		faceMask.addAlternates(ItemID.FACEMASK, ItemID.SLAYER_HELMET, ItemID.SLAYER_HELMET_I, ItemID.SLAYER_HELMET_I_25177, ItemID.GAS_MASK);
+		faceMask.setDisplayMatchedItemName(true);
+
 		tinderbox = new ItemRequirement("Tinderbox", ItemID.TINDERBOX);
 		manyLockpicks = new ItemRequirement("Many lockpicks", ItemID.LOCKPICK, -1);
 		etchings = new ItemRequirement("Etchings", ItemID.ETCHINGS);
-		etchings.setTip("You can get another from the Archaeologist in the Bedabin Camp");
+		etchings.setTooltip("You can get another from the Archaeologist in the Bedabin Camp");
 		translation = new ItemRequirement("Translation", ItemID.TRANSLATION);
-		translation.setTip("You can get another from the Archaeological expert in the Exam Centre");
+		translation.setTooltip("You can get another from the Archaeological expert in the Exam Centre");
 
 		warmKey = new ItemRequirement("Warm key", ItemID.WARM_KEY);
 		warmKey.setHighlightInInventory(true);
 
 		smokeDiamond = new ItemRequirement("Smoke diamond", ItemID.SMOKE_DIAMOND);
-		smokeDiamond.setTip("You can get another from the room you killed Fareed in inside the Smoke Dungeon");
+		smokeDiamond.setTooltip("You can get another from the room you killed Fareed in inside the Smoke Dungeon");
 		shadowDiamond = new ItemRequirement("Shadow diamond", ItemID.SHADOW_DIAMOND);
-		shadowDiamond.setTip("You can get another from the east room of the Shadow Dungeon");
+		shadowDiamond.setTooltip("You can get another from the east room of the Shadow Dungeon");
 
 		iceDiamond = new ItemRequirement("Ice diamond", ItemID.ICE_DIAMOND);
-		iceDiamond.setTip("You can get another from the Troll Child north of Trollheim");
+		iceDiamond.setTooltip("You can get another from the Troll Child north of Trollheim");
 		bloodDiamond = new ItemRequirement("Blood diamond", ItemID.BLOOD_DIAMOND);
-		bloodDiamond.setTip("You can get another from Malak in Canifis");
+		bloodDiamond.setTooltip("You can get another from Malak in Canifis");
 
 		smokeDiamondHighlighted = new ItemRequirement("Smoke diamond", ItemID.SMOKE_DIAMOND);
-		smokeDiamondHighlighted.setTip("You can get another from the room you killed Fareed in inside the Smoke Dungeon");
+		smokeDiamondHighlighted.setTooltip("You can get another from the room you killed Fareed in inside the Smoke Dungeon");
 		shadowDiamondHighlighted = new ItemRequirement("Shadow diamond", ItemID.SHADOW_DIAMOND);
-		shadowDiamondHighlighted.setTip("You can get another from the east room of the Shadow Dungeon");
+		shadowDiamondHighlighted.setTooltip("You can get another from the east room of the Shadow Dungeon");
 
 		iceDiamondHighlighted = new ItemRequirement("Ice diamond", ItemID.ICE_DIAMOND);
-		iceDiamondHighlighted.setTip("You can get another from the Troll Child north of Trollheim");
+		iceDiamondHighlighted.setTooltip("You can get another from the Troll Child north of Trollheim");
 		bloodDiamondHighlighted = new ItemRequirement("Blood diamond", ItemID.BLOOD_DIAMOND);
-		bloodDiamondHighlighted.setTip("You can get another from Malak in Canifis");
+		bloodDiamondHighlighted.setTooltip("You can get another from Malak in Canifis");
 
 		iceGloves = new ItemRequirement("Ice gloves", ItemID.ICE_GLOVES, 1, true);
-		iceGloves.setTip("You can kill the Ice Queen under White Wolf Mountain for these");
+		iceGloves.setTooltip("You can kill the Ice Queen under White Wolf Mountain for these");
 
 		waterSpellOrMelee = new ItemRequirement("Water spells or melee gear", -1, -1);
+		waterSpellOrMelee.setDisplayItemId(ItemID.WATER_RUNE);
 
 		cross = new ItemRequirement("Gilded cross", ItemID.GILDED_CROSS);
-		cross.setTip("You can get another from the chest in the south of the Bandit Camp");
+		cross.setTooltip("You can get another from the chest in the south of the Bandit Camp");
 
 		ringOfVisibility = new ItemRequirement("Ring of visibility", ItemID.RING_OF_VISIBILITY, 1, true);
-		ringOfVisibility.setTip("You can get another from Rasolo south of Baxtorian Falls");
+		ringOfVisibility.setTooltip("You can get another from Rasolo south of Baxtorian Falls");
 
 		antipoison = new ItemRequirement("Antipoisons", ItemCollections.getAntipoisons());
 
@@ -273,12 +291,14 @@ public class DesertTreasure extends BasicQuestHelper
 		potComplete.setHighlightInInventory(true);
 
 		fireSpells = new ItemRequirement("Fire spells", -1, -1);
+		fireSpells.setDisplayItemId(ItemID.FIRE_RUNE);
 
-		combatGear = new ItemRequirement("Decent combat gear",-1, -1);
-		food = new ItemRequirement("Food",-1, -1);
-		prayerPotions = new ItemRequirement("Prayer potions",-1, -1);
-		restorePotions = new ItemRequirement("Restore potions",-1, -1);
-		energyOrStaminas = new ItemRequirement("Energy/Stamina potions",-1, -1);
+		combatGear = new ItemRequirement("Decent combat gear", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
+		food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
+		prayerPotions = new ItemRequirement("Prayer potions", ItemCollections.getPrayerPotions());
+		restorePotions = new ItemRequirement("Restore potions", ItemCollections.getRestorePotions());
+		energyOrStaminas = new ItemRequirement("Energy/Stamina potions", ItemCollections.getStaminaPotions());
 	}
 
 	public void loadZones()
@@ -289,7 +309,7 @@ public class DesertTreasure extends BasicQuestHelper
 		draynorSewer = new Zone(new WorldPoint(3078, 9641, 0), new WorldPoint(3129, 9699, 0));
 		trollArea = new Zone(new WorldPoint(2839, 3716, 0), new WorldPoint(2868, 3741, 0));
 		path1 = new Zone(new WorldPoint(2872, 3714, 0), new WorldPoint(2903, 3771, 0));
-		path2 = new Zone(new WorldPoint(2817, 3748, 0), new WorldPoint( 2892, 3869, 0));
+		path2 = new Zone(new WorldPoint(2817, 3748, 0), new WorldPoint(2892, 3869, 0));
 		icePath = new Zone(new WorldPoint(2830, 3785, 1), new WorldPoint(2870, 3825, 1));
 		iceBridge = new Zone(new WorldPoint(2823, 3807, 2), new WorldPoint(2855, 3812, 2));
 		floor1 = new Zone(new WorldPoint(2893, 4944, 3), new WorldPoint(2931, 4973, 3));
@@ -303,72 +323,72 @@ public class DesertTreasure extends BasicQuestHelper
 	public void setupConditions()
 	{
 		// Given all items, 392 = 1;
-		hasWarmKey = new ItemRequirementCondition(warmKey);
-		killedDamis = new VarbitCondition(383, 5);
-		hadSmokeDiamond = new Conditions(true, LogicType.OR, new ItemRequirementCondition(smokeDiamond));
-		gotIceDiamond = new Conditions(true, LogicType.OR, new ItemRequirementCondition(iceDiamond));
-		gotBloodDiamond = new VarbitCondition(373, 4);
-		inSmokeDungeon = new ZoneCondition(smokeDungeon);
-		inFareedRoom = new ZoneCondition(fareedRoom);
-		litTorch1 = new VarbitCondition(360, 1);
-		litTorch2 = new VarbitCondition(361, 1);
-		litTorch3 = new VarbitCondition(363, 1);
-		litTorch4 = new VarbitCondition(362, 1);
-		unlockedFareedDoor = new VarbitCondition(386, 1);
-		killedFareed = new VarbitCondition(376, 1);
-		talkedToRasolo = new VarbitCondition(383, 2);
-		gotRing = new VarbitCondition(383, 3, Operation.GREATER_EQUAL);
+		hasWarmKey = new ItemRequirements(warmKey);
+		killedDamis = new VarbitRequirement(383, 5);
+		hadSmokeDiamond = new Conditions(true, new ItemRequirements(smokeDiamond));
+		gotIceDiamond = new Conditions(true, new ItemRequirements(iceDiamond));
+		gotBloodDiamond = new VarbitRequirement(373, 4);
+		inSmokeDungeon = new ZoneRequirement(smokeDungeon);
+		inFareedRoom = new ZoneRequirement(fareedRoom);
+		litTorch1 = new VarbitRequirement(360, 1);
+		litTorch2 = new VarbitRequirement(361, 1);
+		litTorch3 = new VarbitRequirement(363, 1);
+		litTorch4 = new VarbitRequirement(362, 1);
+		unlockedFareedDoor = new VarbitRequirement(386, 1);
+		killedFareed = new VarbitRequirement(376, 1);
+		talkedToRasolo = new VarbitRequirement(383, 2);
+		gotRing = new VarbitRequirement(383, 3, Operation.GREATER_EQUAL);
 
-		unlockedCrossChest = new VarbitCondition(384, 1);
+		unlockedCrossChest = new VarbitRequirement(384, 1);
 
-		inShadowDungeon = new ZoneCondition(shadowDungeon);
+		inShadowDungeon = new ZoneRequirement(shadowDungeon);
 
 		damis1Nearby = new NpcCondition(NpcID.DAMIS);
 		damis2Nearby = new NpcCondition(NpcID.DAMIS_683);
 
-		talkedToMalak = new VarbitCondition(373, 1);
-		askedAboutKillingDessous = new VarbitCondition(373, 2);
+		talkedToMalak = new VarbitRequirement(373, 1);
+		askedAboutKillingDessous = new VarbitRequirement(373, 2);
 
-		hasSilverPot = new ItemRequirementCondition(silverPot);
-		hasSilverPot2 = new ItemRequirementCondition(silverPot2);
+		hasSilverPot = new ItemRequirements(silverPot);
+		hasSilverPot2 = new ItemRequirements(silverPot2);
 
-		hasSilverPotBlood = new ItemRequirementCondition(potOfBlood);
-		hasSilverPotGarlic = new ItemRequirementCondition(potWithGarlic);
-		hasSilverPotSpice = new ItemRequirementCondition(potWithSpice);
-		hasSilverPotComplete = new ItemRequirementCondition(potComplete);
+		hasSilverPotBlood = new ItemRequirements(potOfBlood);
+		hasSilverPotGarlic = new ItemRequirements(potWithGarlic);
+		hasSilverPotSpice = new ItemRequirements(potWithSpice);
+		hasSilverPotComplete = new ItemRequirements(potComplete);
 
-		inDraynorSewer = new ZoneCondition(draynorSewer);
+		inDraynorSewer = new ZoneRequirement(draynorSewer);
 
 		dessousNearby = new NpcCondition(NpcID.DESSOUS);
 
-		killedDessous = new VarbitCondition(373, 3);
+		killedDessous = new VarbitRequirement(373, 3);
 
-		gaveCake = new VarbitCondition(382, 1);
-		talkedToTrollChild = new VarbitCondition(382, 2, Operation.GREATER_EQUAL);
+		gaveCake = new VarbitRequirement(382, 1);
+		talkedToTrollChild = new VarbitRequirement(382, 2, Operation.GREATER_EQUAL);
 		// Killed kamil also results in 377 0->1
-		killedKamil = new VarbitCondition(382, 3, Operation.GREATER_EQUAL);
-		freedTrolls = new VarbitCondition(382, 4);
-		gotIceDiamond = new VarbitCondition(382, 5);
+		killedKamil = new VarbitRequirement(382, 3, Operation.GREATER_EQUAL);
+		freedTrolls = new VarbitRequirement(382, 4);
+		gotIceDiamond = new VarbitRequirement(382, 5);
 
-		killedTrolls = new VarbitCondition(378, 5);
+		killedTrolls = new VarbitRequirement(378, 5);
 
-		inTrollArea = new ZoneCondition(trollArea);
-		inPath = new ZoneCondition(path1, path2);
-		onIcePath = new ZoneCondition(icePath);
-		onIceBridge = new ZoneCondition(iceBridge);
+		inTrollArea = new ZoneRequirement(trollArea);
+		inPath = new ZoneRequirement(path1, path2);
+		onIcePath = new ZoneRequirement(icePath);
+		onIceBridge = new ZoneRequirement(iceBridge);
 
-		smashedIce1 = new VarbitCondition(380, 1);
+		smashedIce1 = new VarbitRequirement(380, 1);
 
-		placedSmoke = new VarbitCondition(387, 1);
-		placedShadow = new VarbitCondition(388, 1);
-		placedIce = new VarbitCondition(389, 1);
-		placedBlood = new VarbitCondition(390, 1);
+		placedSmoke = new VarbitRequirement(387, 1);
+		placedShadow = new VarbitRequirement(388, 1);
+		placedIce = new VarbitRequirement(389, 1);
+		placedBlood = new VarbitRequirement(390, 1);
 
-		inFloor1 = new ZoneCondition(floor1);
-		inFloor2 = new ZoneCondition(floor2);
-		inFloor3 = new ZoneCondition(floor3);
-		inFloor4 = new ZoneCondition(floor4);
-		inAzzRoom = new ZoneCondition(azzRoom);
+		inFloor1 = new ZoneRequirement(floor1);
+		inFloor2 = new ZoneRequirement(floor2);
+		inFloor3 = new ZoneRequirement(floor3);
+		inFloor4 = new ZoneRequirement(floor4);
+		inAzzRoom = new ZoneRequirement(azzRoom);
 	}
 
 	public void setupSteps()
@@ -486,23 +506,41 @@ public class DesertTreasure extends BasicQuestHelper
 
 		killKamil = new NpcStep(this, NpcID.KAMIL, new WorldPoint(2863, 3757, 0),
 			"Continue along the path until you find Kamil. Kill him, preferably with fire spells. Get into melee distance and protect from melee.", fireSpells);
-		climbOnToLedge = new ObjectStep(this, ObjectID.ICE_LEDGE, new WorldPoint(2837, 3804, 0), "Equip the spiked boots, then continue along the path until you reach an ice ledge. Climb up it.", spikedBootsEquipped);
-		goThroughPathGate = new ObjectStep(this, ObjectID.ICE_GATE_6462, new WorldPoint(2854, 3811, 1), "Follow the Ice Path up to the top and enter the gate there.");
-		breakIce1 = new NpcStep(this, NpcID.ICE_BLOCK, new WorldPoint(2826, 3808, 2), "Break the ice surrounding the trolls at the end of the path. Fire spells are effective for this.", fireSpells);
-		breakIce2 = new NpcStep(this, NpcID.ICE_BLOCK_707, new WorldPoint(2826, 3812, 2), "Break the ice surrounding the trolls at the end of the path. Fire spells are effective for this.", fireSpells);
-		talkToTrolls = new NpcStep(this, NpcID.TROLL_MOTHER, new WorldPoint(2826, 3812, 2), "Talk to the troll parents at the end of the Ice Path.");
-		talkToChildTrollAfterFreeing = new NpcStep(this, NpcID.TROLL_CHILD, new WorldPoint(2835, 3740, 0), "Talk to the Troll Child north of Trollheim to get the ice diamond.");
+		climbOnToLedge = new ObjectStep(this, ObjectID.ICE_LEDGE, new WorldPoint(2837, 3804, 0),
+			"Equip the spiked boots, then continue along the path until you reach an ice ledge. Climb up it.", spikedBootsEquipped);
+		goThroughPathGate = new ObjectStep(this, ObjectID.ICE_GATE_6462, new WorldPoint(2854, 3811, 1),
+			"Follow the Ice Path up to the top and enter the gate there.");
+		breakIce1 = new NpcStep(this, NpcID.ICE_BLOCK, new WorldPoint(2826, 3808, 2),
+			"Break the ice surrounding the trolls at the end of the path. Fire spells are effective for this.", fireSpells);
+		breakIce2 = new NpcStep(this, NpcID.ICE_BLOCK_707, new WorldPoint(2826, 3812, 2),
+			"Break the ice surrounding the trolls at the end of the path. Fire spells are effective for this.", fireSpells);
+		talkToTrolls = new NpcStep(this, NpcID.TROLL_MOTHER, new WorldPoint(2826, 3812, 2),
+			"Talk to the troll parents at the end of the Ice Path.");
+		talkToChildTrollAfterFreeing = new NpcStep(this, NpcID.TROLL_CHILD, new WorldPoint(2835, 3740, 0),
+			"Talk to the Troll Child north of Trollheim to get the ice diamond.");
 
-		placeBlood = new ObjectStep(this, NullObjectID.NULL_6482, new WorldPoint(3221, 2910, 0), "Place all the diamonds in the obelisks around the pyrimid south east of the Bandit Camp.", bloodDiamondHighlighted, smokeDiamond, iceDiamond, shadowDiamond);
+		placeBlood = new ObjectStep(this, NullObjectID.NULL_6482, new WorldPoint(3221, 2910, 0),
+			"Place all the diamonds in the obelisks around the pyrimid south east of the Bandit Camp. Note a " +
+				"mysterious stranger can appear and attack you whilst you're holding the diamonds.",
+			bloodDiamondHighlighted,	smokeDiamond,
+			iceDiamond,	shadowDiamond);
 		placeBlood.addIcon(ItemID.BLOOD_DIAMOND);
 
-		placeSmoke = new ObjectStep(this, NullObjectID.NULL_6485, new WorldPoint(3245, 2910, 0), "Place all the diamonds in the obelisks around the pyrimid south east of the Bandit Camp.", smokeDiamondHighlighted, iceDiamond, shadowDiamond);
+		placeSmoke = new ObjectStep(this, NullObjectID.NULL_6485, new WorldPoint(3245, 2910, 0),
+			"Place all the diamonds in the obelisks around the pyrimid south east of the Bandit Camp. Note a " +
+				"mysterious stranger can appear and attack you whilst you're holding the diamonds.",
+			smokeDiamondHighlighted, iceDiamond, shadowDiamond);
 		placeSmoke.addIcon(ItemID.SMOKE_DIAMOND);
 
-		placeIce = new ObjectStep(this, NullObjectID.NULL_6488, new WorldPoint(3245, 2886, 0), "Place all the diamonds in the obelisks around the pyrimid south east of the Bandit Camp.", iceDiamondHighlighted, shadowDiamond);
+		placeIce = new ObjectStep(this, NullObjectID.NULL_6488, new WorldPoint(3245, 2886, 0),
+			"Place all the diamonds in the obelisks around the pyrimid south east of the Bandit Camp. Note a " +
+				"mysterious stranger can appear and attack you whilst you're holding the diamonds.", iceDiamondHighlighted, shadowDiamond);
 		placeIce.addIcon(ItemID.ICE_DIAMOND);
 
-		placeShadow = new ObjectStep(this, NullObjectID.NULL_6491, new WorldPoint(3221, 2886, 0), "Place all the diamonds in the obelisks around the pyrimid south east of the Bandit Camp.", shadowDiamondHighlighted);
+		placeShadow = new ObjectStep(this, NullObjectID.NULL_6491, new WorldPoint(3221, 2886, 0),
+			"Place all the diamonds in the obelisks around the pyrimid south east of the Bandit Camp. Note a " +
+				"mysterious stranger can appear and attack you whilst you're holding the diamonds.",
+			shadowDiamondHighlighted);
 		placeShadow.addIcon(ItemID.SHADOW_DIAMOND);
 
 		placeBlood.addSubSteps(placeSmoke, placeShadow, placeIce);
@@ -521,21 +559,21 @@ public class DesertTreasure extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(coins650, magicLogs12, steelBars6, moltenGlass6, ashes, charcoal,
-			bloodRune, bones, silverBar, garlicPowder, spice, cake, spikedBoots, climbingBoots, faceMask, tinderbox, manyLockpicks));
+		return Arrays.asList(coins650, magicLogs12, steelBars6, moltenGlass6, ashes, charcoal,
+			bloodRune, bones, silverBar, garlicPowder, spice, cake, spikedBoots, climbingBoots, faceMask, tinderbox, manyLockpicks);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(combatGear, food, prayerPotions, energyOrStaminas, restorePotions));
+		return Arrays.asList(combatGear, food, prayerPotions, energyOrStaminas, restorePotions);
 	}
 
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Dessous (level 139)");
@@ -547,31 +585,34 @@ public class DesertTreasure extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 		allSteps.add(new PanelDetails("Starting off",
-			new ArrayList<>(Arrays.asList(talkToArchaeologist, talkToExpert, talkToExpertAgain,
-				bringTranslationToArchaeologist, talkToArchaeologistAgainAfterTranslation, buyDrink, talkToBartender, talkToEblis, bringItemsToEblis)), coins650, ashes, bloodRune, bones, charcoal, moltenGlass6, magicLogs12, steelBars6));
+			Arrays.asList(talkToArchaeologist, talkToExpert, talkToExpertAgain,
+				bringTranslationToArchaeologist, talkToArchaeologistAgainAfterTranslation, buyDrink, talkToBartender, talkToEblis, bringItemsToEblis), coins650, ashes, bloodRune, bones, charcoal, moltenGlass6,
+				magicLogs12, steelBars6));
 
 		PanelDetails smokeDiamondPanel = new PanelDetails("Smoke diamond",
-			new ArrayList<>(Arrays.asList(enterSmokeDungeon, lightTorch1, openChest, useWarmKey, killFareed)), faceMask, tinderbox, iceGloves, waterSpellOrMelee, energyOrStaminas);
+			Arrays.asList(enterSmokeDungeon, lightTorch1, openChest, useWarmKey, killFareed), faceMask, tinderbox, iceGloves, waterSpellOrMelee, energyOrStaminas);
 		smokeDiamondPanel.setLockingStep(getSmokeDiamond);
 
 		PanelDetails shadowDiamondPanel = new PanelDetails("Shadow diamond",
-			new ArrayList<>(Arrays.asList(talkToRasolo, getCross, returnCross, enterShadowDungeon, waitForDamis, killDamis1)), manyLockpicks, antipoison, combatGear, food);
+			Arrays.asList(talkToRasolo, getCross, returnCross, enterShadowDungeon, waitForDamis, killDamis1), manyLockpicks, antipoison, combatGear, food);
 		shadowDiamondPanel.setLockingStep(getShadowDiamond);
 
 		PanelDetails bloodDiamondPanel = new PanelDetails("Blood diamond",
-			new ArrayList<>(Arrays.asList(talkToMalak, askAboutKillingDessous, talkToRuantun, blessPot, talkToMalakWithPot, addPowder, addSpice, usePotOnGrave, killDessous, talkToMalakForDiamond)), silverBar, spice, garlicPowder, combatGear, food);
+			Arrays.asList(talkToMalak, askAboutKillingDessous, talkToRuantun, blessPot, talkToMalakWithPot, addPowder, addSpice, usePotOnGrave, killDessous, talkToMalakForDiamond), silverBar, spice, garlicPowder, combatGear, food);
 		bloodDiamondPanel.setLockingStep(getBloodDiamond);
 
 		PanelDetails iceDiamondPanel = new PanelDetails("Ice diamond",
-			new ArrayList<>(Arrays.asList(giveCakeToTroll, enterIceGate, killIceTrolls, enterTrollCave, killKamil, climbOnToLedge, goThroughPathGate, breakIce1, breakIce2, talkToTrolls, talkToChildTrollAfterFreeing)), cake, spikedBoots, combatGear, food, restorePotions, prayerPotions, energyOrStaminas);
+			Arrays.asList(giveCakeToTroll, enterIceGate, killIceTrolls, enterTrollCave, killKamil, climbOnToLedge, goThroughPathGate, breakIce1,
+				breakIce2, talkToTrolls, talkToChildTrollAfterFreeing),
+			cake, spikedBoots, combatGear, food, restorePotions, prayerPotions, energyOrStaminas, fireSpells);
 		iceDiamondPanel.setLockingStep(getIceDiamond);
 
 		PanelDetails finishingPanel = new PanelDetails("Freeing Azzanadra",
-			new ArrayList<>(Arrays.asList(placeBlood, enterPyramid, goDownFromFirstFloor, enterMiddleOfPyramid, talkToAzz)), energyOrStaminas, food, prayerPotions);
+			Arrays.asList(placeBlood, enterPyramid, goDownFromFirstFloor, enterMiddleOfPyramid, talkToAzz), energyOrStaminas, food, prayerPotions);
 
 		allSteps.add(smokeDiamondPanel);
 		allSteps.add(shadowDiamondPanel);
@@ -579,5 +620,25 @@ public class DesertTreasure extends BasicQuestHelper
 		allSteps.add(iceDiamondPanel);
 		allSteps.add(finishingPanel);
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.THE_DIG_SITE, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.TEMPLE_OF_IKOV, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.THE_TOURIST_TRAP, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.TROLL_STRONGHOLD, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.PRIEST_IN_PERIL, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.WATERFALL_QUEST, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.NATURE_SPIRIT, QuestState.IN_PROGRESS));
+		req.add(new SkillRequirement(Skill.THIEVING, 53));
+		req.add(new SkillRequirement(Skill.MAGIC, 50));
+		req.add(new SkillRequirement(Skill.FIREMAKING, 50, true));
+		req.add(new ComplexRequirement(LogicType.OR, "10 Slayer for face mask, or started Plague City for" +
+			" Gas mask", new SkillRequirement(Skill.SLAYER, 10, false),
+			new QuestRequirement(QuestHelperQuest.PLAGUE_CITY, QuestState.IN_PROGRESS)));
+		return req;
 	}
 }

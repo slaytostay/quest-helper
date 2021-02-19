@@ -27,31 +27,36 @@ package com.questhelper.quests.insearchofthemyreque;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.requirements.ItemRequirements;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.WidgetTextRequirement;
+import com.questhelper.requirements.util.LogicType;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.WidgetTextCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -59,10 +64,14 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class InSearchOfTheMyreque extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement combatGear, steelLong, steelSword2, steelMace, steelWarhammer, steeldagger, steelNails225, druidPouch5, hammer, plank6,
-		coins10OrCharos, plank3, plank2, plank1, steelNails75, steelNails150, morttonTeleport;
+		coins10OrCharos, plank3, plank2, plank1, steelNails75, steelNails150;
 
-	ConditionForStep hasEnoughPouch, repairedBridge1, repairedBridge2, repairedBridge3, onBridge, onEntranceIsland, onQuestion1, onQuestion2,
+	//Items Recommended
+	ItemRequirement morttonTeleport;
+
+	Requirement hasEnoughPouch, repairedBridge1, repairedBridge2, repairedBridge3, onBridge, onEntranceIsland, onQuestion1, onQuestion2,
 		onQuestion3, onQuestion4, onQuestion5, onQuestion6, inCaves, inMyrequeCave, talkedToHarold, talkedToRadigad, talkedToSani, talkedToPolmafi,
 		talkedToIvan;
 
@@ -71,6 +80,7 @@ public class InSearchOfTheMyreque extends BasicQuestHelper
 		talkToVeliaf, talkToHarold, talkToRadigad, talkToSani, talkToPolmafi, talkToIvan, talkToVeliafAgain, talkToVeliafForCutscene, killHellhound, talkToVeliafToLeave, leaveCave, goUpToCanifis,
 		talkToStranger, climbTreeHellhound, enterCaveHellhound, enterDoorsHellhound, climbTreeLeave, enterCaveLeave, enterDoorsLeave;
 
+	//Zones
 	Zone entranceIsland, bridge, caves, myrequeCave;
 
 	@Override
@@ -191,7 +201,9 @@ public class InSearchOfTheMyreque extends BasicQuestHelper
 			new ItemRequirement("Ring of Charos (a)", ItemID.RING_OF_CHAROSA),
 			new ItemRequirement("Coins", ItemID.COINS_995, 10));
 		combatGear = new ItemRequirement("Combat gear", -1, -1);
-		morttonTeleport = new ItemRequirement("Teleport to Mort'ton, such as minigame teleport or Barrows Teleport", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
+		morttonTeleport = new ItemRequirement("Teleport to Mort'ton, such as minigame teleport or Barrows Teleport", ItemID.MORTTON_TELEPORT);
+		morttonTeleport.addAlternates(ItemID.BARROWS_TELEPORT);
 	}
 
 	public void loadZones()
@@ -204,28 +216,28 @@ public class InSearchOfTheMyreque extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		hasEnoughPouch = new ItemRequirementCondition(druidPouch5);
-		repairedBridge1 = new VarbitCondition(176, 1);
-		repairedBridge2 = new VarbitCondition(177, 1);
-		repairedBridge3 = new VarbitCondition(178, 1);
+		hasEnoughPouch = new ItemRequirements(druidPouch5);
+		repairedBridge1 = new VarbitRequirement(176, 1);
+		repairedBridge2 = new VarbitRequirement(177, 1);
+		repairedBridge3 = new VarbitRequirement(178, 1);
 
-		onBridge = new ZoneCondition(bridge);
-		onEntranceIsland = new ZoneCondition(entranceIsland);
-		inCaves = new ZoneCondition(caves);
-		inMyrequeCave = new ZoneCondition(myrequeCave);
+		onBridge = new ZoneRequirement(bridge);
+		onEntranceIsland = new ZoneRequirement(entranceIsland);
+		inCaves = new ZoneRequirement(caves);
+		inMyrequeCave = new ZoneRequirement(myrequeCave);
 
-		onQuestion1 = new WidgetTextCondition(219, 1, 0, "female");
-		onQuestion2 = new WidgetTextCondition(219, 1, 0, "youngest");
-		onQuestion3 = new WidgetTextCondition(219, 1, 0, "leader");
-		onQuestion4 = new WidgetTextCondition(219, 1, 0, "boatman");
-		onQuestion5 = new WidgetTextCondition(219, 1, 0, "vampyre");
-		onQuestion6 = new WidgetTextCondition(219, 1, 0, "scholar");
+		onQuestion1 = new WidgetTextRequirement(219, 1, 0, "female");
+		onQuestion2 = new WidgetTextRequirement(219, 1, 0, "youngest");
+		onQuestion3 = new WidgetTextRequirement(219, 1, 0, "leader");
+		onQuestion4 = new WidgetTextRequirement(219, 1, 0, "boatman");
+		onQuestion5 = new WidgetTextRequirement(219, 1, 0, "vampyre");
+		onQuestion6 = new WidgetTextRequirement(219, 1, 0, "scholar");
 
-		talkedToSani    = new VarbitCondition(2496, true, 0);
-		talkedToHarold  = new VarbitCondition(2496, true, 1);
-		talkedToRadigad = new VarbitCondition(2496, true, 2);
-		talkedToPolmafi = new VarbitCondition(2496, true, 3);
-		talkedToIvan    = new VarbitCondition(2496, true, 4);
+		talkedToSani = new VarbitRequirement(2496, true, 0);
+		talkedToHarold = new VarbitRequirement(2496, true, 1);
+		talkedToRadigad = new VarbitRequirement(2496, true, 2);
+		talkedToPolmafi = new VarbitRequirement(2496, true, 3);
+		talkedToIvan = new VarbitRequirement(2496, true, 4);
 	}
 
 	public void setupSteps()
@@ -260,17 +272,17 @@ public class InSearchOfTheMyreque extends BasicQuestHelper
 		repairBridge1.addSubSteps(repairBridge2, repairBridge3);
 		talkToCurpile = new NpcStep(this, NpcID.CURPILE_FYOD, new WorldPoint(3508, 3440, 0), "Talk to Curpile Fyod.");
 		talkToCurpile.addDialogStep("I've come to help the Myreque. I've brought weapons.");
-		talkToCurpile1 = new NpcStep(this, NpcID.CURPILE_FYOD, new WorldPoint(3508, 3440, 0), "Talk to Curpile Fyod 1.");
+		talkToCurpile1 = new NpcStep(this, NpcID.CURPILE_FYOD, new WorldPoint(3508, 3440, 0), "Talk to Curpile Fyod.");
 		talkToCurpile1.addDialogStep("Sani Piliu.");
-		talkToCurpile2 = new NpcStep(this, NpcID.CURPILE_FYOD, new WorldPoint(3508, 3440, 0), "Talk to Curpile Fyod 2.");
+		talkToCurpile2 = new NpcStep(this, NpcID.CURPILE_FYOD, new WorldPoint(3508, 3440, 0), "Talk to Curpile Fyod.");
 		talkToCurpile2.addDialogStep("Ivan Strom.");
-		talkToCurpile3 = new NpcStep(this, NpcID.CURPILE_FYOD, new WorldPoint(3508, 3440, 0), "Talk to Curpile Fyod 3.");
+		talkToCurpile3 = new NpcStep(this, NpcID.CURPILE_FYOD, new WorldPoint(3508, 3440, 0), "Talk to Curpile Fyod.");
 		talkToCurpile3.addDialogStep("Veliaf Hurtz.");
-		talkToCurpile4 = new NpcStep(this, NpcID.CURPILE_FYOD, new WorldPoint(3508, 3440, 0), "Talk to Curpile Fyod 4.");
+		talkToCurpile4 = new NpcStep(this, NpcID.CURPILE_FYOD, new WorldPoint(3508, 3440, 0), "Talk to Curpile Fyod.");
 		talkToCurpile4.addDialogStep("Cyreg Paddlehorn.");
-		talkToCurpile5 = new NpcStep(this, NpcID.CURPILE_FYOD, new WorldPoint(3508, 3440, 0), "Talk to Curpile Fyod 5.");
+		talkToCurpile5 = new NpcStep(this, NpcID.CURPILE_FYOD, new WorldPoint(3508, 3440, 0), "Talk to Curpile Fyod.");
 		talkToCurpile5.addDialogStep("Drakan.");
-		talkToCurpile6 = new NpcStep(this, NpcID.CURPILE_FYOD, new WorldPoint(3508, 3440, 0), "Talk to Curpile Fyod 6.");
+		talkToCurpile6 = new NpcStep(this, NpcID.CURPILE_FYOD, new WorldPoint(3508, 3440, 0), "Talk to Curpile Fyod.");
 		talkToCurpile6.addDialogStep("Polmafi Ferdygris.");
 		talkToCurpile.addSubSteps(talkToCurpile1, talkToCurpile3, talkToCurpile4, talkToCurpile5, talkToCurpile6);
 		enterDoors = new ObjectStep(this, ObjectID.WOODEN_DOORS_5061, new WorldPoint(3509, 3448, 0), "Enter the wooden doors north of Curpile.",
@@ -312,38 +324,47 @@ public class InSearchOfTheMyreque extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(steelLong, steelSword2, steelMace, steelWarhammer, steeldagger, steelNails225, coins10OrCharos, druidPouch5, hammer, plank6));
+		return Arrays.asList(steelLong, steelSword2, steelMace, steelWarhammer, steeldagger, steelNails225, coins10OrCharos, druidPouch5, hammer, plank6);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(combatGear, morttonTeleport));
+		return Arrays.asList(combatGear, morttonTeleport);
 	}
 
 	@Override
-	public ArrayList<String> getNotes()
+	public List<String> getNotes()
 	{
-		return new ArrayList<>(Collections.singletonList("Whilst in Mort Myre, the Ghasts will occasionally rot the food in your inventory and steal charges from your Druid Pouch."));
+		return Collections.singletonList("Whilst in Mort Myre, the Ghasts will occasionally rot the food in your inventory and steal charges from your Druid Pouch.");
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Collections.singletonList("Skeleton hellhound (level 97)"));
+		return Collections.singletonList("Skeleton hellhound (level 97)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 		allSteps.add(new PanelDetails("Helping the Myreque",
-			new ArrayList<>(Arrays.asList(talkToVanstrom, fillDruidPouch, talkToCyreg, boardBoat, climbTree, repairBridge1, talkToCurpile, enterDoors,
-				enterCave, talkToVeliaf, talkToMembers, talkToVeliafAgain, killHellhound, talkToVeliafToLeave, leaveCave, goUpToCanifis, talkToStranger)),
+			Arrays.asList(talkToVanstrom, fillDruidPouch, talkToCyreg, boardBoat, climbTree, repairBridge1, talkToCurpile, enterDoors,
+				enterCave, talkToVeliaf, talkToMembers, talkToVeliafAgain, killHellhound, talkToVeliafToLeave, leaveCave, goUpToCanifis, talkToStranger),
 			steelLong, steelSword2, steelMace, steelWarhammer, steeldagger, steelNails225, coins10OrCharos, druidPouch5, hammer, plank6));
 
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		return Arrays.asList(
+			new QuestRequirement(QuestHelperQuest.NATURE_SPIRIT, QuestState.FINISHED),
+			new SkillRequirement(Skill.AGILITY, 25, true)
+		);
 	}
 }

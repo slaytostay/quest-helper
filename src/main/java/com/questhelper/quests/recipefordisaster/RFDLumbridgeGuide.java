@@ -30,21 +30,27 @@ import com.questhelper.QuestVarbits;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.requirements.conditional.Conditions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import net.runelite.api.Client;
 import net.runelite.api.ItemID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -55,11 +61,12 @@ public class RFDLumbridgeGuide extends BasicQuestHelper
 	ItemRequirement milk, egg, flour, tin, rawGuidanceCake, guidanceCake, guidanceCakeHighlighted, enchantedEgg, enchantedMilk,
 		enchantedFlour, tinHighlighted;
 
-	ConditionForStep inDiningRoom, inUpstairsTrailborn, hasCake, hasRawCake;
+	Requirement inDiningRoom, inUpstairsTrailborn, hasCake, hasRawCake;
 
 	QuestStep enterDiningRoom, inspectLumbridgeGuide, goUpToTraiborn, talkToTraiborn, cookCake, enterDiningRoomAgain,
 		useCakeOnLumbridgeGuide, mixIngredients;
 
+	//Zones
 	Zone diningRoom, upstairsTrailborn, quizSpot;
 
 	@Override
@@ -98,13 +105,13 @@ public class RFDLumbridgeGuide extends BasicQuestHelper
 		tinHighlighted = new ItemRequirement("Cake tin", ItemID.CAKE_TIN);
 		tinHighlighted.setHighlightInInventory(true);
 		enchantedEgg = new ItemRequirement("Enchanted egg", ItemID.ENCHANTED_EGG);
-		enchantedEgg.setTip("You can get another from Traiborn if you've lost it");
+		enchantedEgg.setTooltip("You can get another from Traiborn if you've lost it");
 
 		enchantedFlour = new ItemRequirement("Enchanted flour", ItemID.ENCHANTED_FLOUR);
-		enchantedFlour.setTip("You can get another from Traiborn if you've lost it");
+		enchantedFlour.setTooltip("You can get another from Traiborn if you've lost it");
 
 		enchantedMilk = new ItemRequirement("Enchanted milk", ItemID.ENCHANTED_MILK);
-		enchantedMilk.setTip("You can get another from Traiborn if you've lost it");
+		enchantedMilk.setTooltip("You can get another from Traiborn if you've lost it");
 		enchantedMilk.setHighlightInInventory(true);
 
 		rawGuidanceCake = new ItemRequirement("Raw guide cake", ItemID.RAW_GUIDE_CAKE);
@@ -122,11 +129,11 @@ public class RFDLumbridgeGuide extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inDiningRoom = new ZoneCondition(diningRoom);
-		inUpstairsTrailborn = new ZoneCondition(upstairsTrailborn, quizSpot);
+		inDiningRoom = new ZoneRequirement(diningRoom);
+		inUpstairsTrailborn = new ZoneRequirement(upstairsTrailborn, quizSpot);
 
-		hasCake = new ItemRequirementCondition(guidanceCake);
-		hasRawCake = new ItemRequirementCondition(rawGuidanceCake);
+		hasCake = new ItemRequirements(guidanceCake);
+		hasRawCake = new ItemRequirements(rawGuidanceCake);
 	}
 
 	public void setupSteps()
@@ -149,17 +156,48 @@ public class RFDLumbridgeGuide extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(milk, egg, flour, tin));
+		return Arrays.asList(milk, egg, flour, tin);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Saving the Guide", new ArrayList<>(Arrays.asList(inspectLumbridgeGuide, goUpToTraiborn, talkToTraiborn, mixIngredients, cookCake, useCakeOnLumbridgeGuide)), milk, egg, flour, tin));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new SkillRequirement(Skill.COOKING, 40, true));
+		req.add(new QuestRequirement(QuestHelperQuest.BIG_CHOMPY_BIRD_HUNTING, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.BIOHAZARD, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.DEMON_SLAYER, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.MURDER_MYSTERY, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.NATURE_SPIRIT, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.WITCHS_HOUSE, QuestState.FINISHED));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Saving the Guide", Arrays.asList(inspectLumbridgeGuide, goUpToTraiborn, talkToTraiborn, mixIngredients, cookCake, useCakeOnLumbridgeGuide), milk, egg, flour, tin));
 		return allSteps;
+	}
+
+	@Override
+	public QuestState getState(Client client)
+	{
+		int questState = client.getVarbitValue(QuestVarbits.QUEST_RECIPE_FOR_DISASTER_LUMBRIDGE_GUIDE.getId());
+		if (questState == 0)
+		{
+			return QuestState.NOT_STARTED;
+		}
+
+		if (questState < 5)
+		{
+			return QuestState.IN_PROGRESS;
+		}
+
+		return QuestState.FINISHED;
 	}
 
 	@Override

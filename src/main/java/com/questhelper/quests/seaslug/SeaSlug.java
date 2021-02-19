@@ -24,46 +24,51 @@
  */
 package com.questhelper.quests.seaslug;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.ConditionalStep;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.ZoneCondition;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.SEA_SLUG
 )
 public class SeaSlug extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement swampPaste, glass, dampSticks, torch, litTorch, drySticks;
 
-	ConditionForStep onPlatformGroundFloor, onPlatformFirstFloor, onPlatform, onIsland, hasGlass, hasDampSticks, hasTorch, hasLitTorch, hasDrySticks;
+	Requirement onPlatformGroundFloor, onPlatformFirstFloor, onPlatform, onIsland, hasGlass, hasDampSticks, hasTorch, hasLitTorch, hasDrySticks;
 
 	QuestStep talkToCaroline, talkToHolgart, talkToHolgartWithSwampPaste, travelWithHolgart, pickupGlass, pickupDampSticks,
 		climbLadder, talkToKennith, goDownLadder, goToIsland, goToIslandFromMainland, talkToKent, returnFromIsland, talkToBaileyForTorch, useGlassOnDampSticks,
 		rubSticks, goBackUpLadder, talkToKennithAgain, kickWall, talkToKennithAfterKicking, activateCrane, goDownLadderAgain,
 		returnWithHolgart, finishQuest, travelWithHolgartFreeingKennith;
 
+	//Zones
 	Zone platformFirstFloor, platformGroundFloor, island;
 
 	@Override
@@ -163,35 +168,42 @@ public class SeaSlug extends BasicQuestHelper
 		return steps;
 	}
 
-	public void setupItemRequirements() {
+	public void setupItemRequirements()
+	{
 		swampPaste = new ItemRequirement("Swamp paste", ItemID.SWAMP_PASTE);
 		dampSticks = new ItemRequirement("Damp sticks", ItemID.DAMP_STICKS);
+		dampSticks.setHighlightInInventory(true);
 		drySticks = new ItemRequirement("Dry sticks", ItemID.DRY_STICKS);
+		drySticks.setHighlightInInventory(true);
 		torch = new ItemRequirement("Unlit torch", ItemID.UNLIT_TORCH);
 		litTorch = new ItemRequirement("Lit torch", ItemID.LIT_TORCH);
 		glass = new ItemRequirement("Broken glass", ItemID.BROKEN_GLASS_1469);
+		glass.setHighlightInInventory(true);
 
 	}
 
-	public void loadZones() {
+	public void loadZones()
+	{
 		platformGroundFloor = new Zone(new WorldPoint(2760, 3271, 0), new WorldPoint(2795, 3293, 0));
 		platformFirstFloor = new Zone(new WorldPoint(2760, 3271, 1), new WorldPoint(2795, 3293, 1));
 		island = new Zone(new WorldPoint(2787, 3312, 0), new WorldPoint(2802, 3327, 0));
 	}
 
-	public void setupConditions() {
-		hasDampSticks = new ItemRequirementCondition(dampSticks);
-		hasDrySticks = new ItemRequirementCondition(drySticks);
-		hasTorch = new ItemRequirementCondition(torch);
-		hasLitTorch = new ItemRequirementCondition(litTorch);
-		hasGlass = new ItemRequirementCondition(glass);
-		onPlatformFirstFloor = new ZoneCondition(platformFirstFloor);
-		onPlatformGroundFloor = new ZoneCondition(platformGroundFloor);
-		onPlatform = new ZoneCondition(platformFirstFloor, platformGroundFloor);
-		onIsland = new ZoneCondition(island);
+	public void setupConditions()
+	{
+		hasDampSticks = new ItemRequirements(dampSticks);
+		hasDrySticks = new ItemRequirements(drySticks);
+		hasTorch = new ItemRequirements(torch);
+		hasLitTorch = new ItemRequirements(litTorch);
+		hasGlass = new ItemRequirements(glass);
+		onPlatformFirstFloor = new ZoneRequirement(platformFirstFloor);
+		onPlatformGroundFloor = new ZoneRequirement(platformGroundFloor);
+		onPlatform = new ZoneRequirement(platformFirstFloor, platformGroundFloor);
+		onIsland = new ZoneRequirement(island);
 	}
 
-	public void setupSteps() {
+	public void setupSteps()
+	{
 		talkToCaroline = new NpcStep(this, NpcID.CAROLINE, new WorldPoint(2717, 3303, 0), "Talk to Caroline just north of Witchaven, east of East Ardougne.");
 		talkToCaroline.addDialogStep("I suppose so, how do I get there?");
 		talkToHolgart = new NpcStep(this, NpcID.HOLGART_7324, new WorldPoint(2717, 3303, 0), "Talk to Holgart nearby and give him some swamp paste.", swampPaste);
@@ -201,14 +213,15 @@ public class SeaSlug extends BasicQuestHelper
 		travelWithHolgart.addDialogStep("Will you take me there?");
 		climbLadder = new ObjectStep(this, ObjectID.LADDER_18324, new WorldPoint(2784, 3286, 0), "Climb the ladder in the north east corner of the platform.");
 		talkToKennith = new NpcStep(this, NpcID.KENNITH_5063, new WorldPoint(2765, 3289, 1), "Talk to Kennith from inside the cabin on the west side of the first floor.");
-		goDownLadder = new ObjectStep(this,  ObjectID.LADDER_18325, new WorldPoint(2784, 3286, 1), "Go back down the ladder.");
+		goDownLadder = new ObjectStep(this, ObjectID.LADDER_18325, new WorldPoint(2784, 3286, 1), "Go back down the ladder.");
 		goToIsland = new NpcStep(this, NpcID.HOLGART_5070, new WorldPoint(2781, 3274, 0), "Travel with Holgart to a nearby island.");
 		goToIslandFromMainland = new NpcStep(this, NpcID.HOLGART_7789, new WorldPoint(2717, 3303, 0), "Travel with Holgart north of Witchaven to find Kent.");
 		goToIsland.addSubSteps(goToIsland);
 
 		talkToKent = new NpcStep(this, NpcID.KENT, new WorldPoint(2794, 3322, 0), "Talk to Kent on the island.");
 		returnFromIsland = new NpcStep(this, NpcID.HOLGART_5072, new WorldPoint(2801, 3320, 0), "Return to the platform with Holgart.");
-		travelWithHolgartFreeingKennith = new NpcStep(this, NpcID.HOLGART_7789, new WorldPoint(2717, 3303, 0), "Travel with Holgart to the fishing platform.");
+		travelWithHolgartFreeingKennith = new NpcStep(this, NpcID.HOLGART_5069, new WorldPoint(2717, 3303, 0),
+			"Travel with Holgart to the fishing platform.");
 		returnFromIsland.addSubSteps(travelWithHolgartFreeingKennith);
 
 		talkToBaileyForTorch = new NpcStep(this, NpcID.BAILEY, new WorldPoint(2764, 3275, 0), "Talk to Bailey for an unlit torch.");
@@ -216,7 +229,7 @@ public class SeaSlug extends BasicQuestHelper
 		pickupDampSticks = new DetailedQuestStep(this, new WorldPoint(2784, 3289, 0), "Pick up the damp sticks in the north east corner of the platform.", dampSticks);
 		useGlassOnDampSticks = new DetailedQuestStep(this, "Use the broken glass on damp sticks to dry them.", glass, dampSticks);
 		rubSticks = new DetailedQuestStep(this, "Rub the dry sticks to light the unlit torch.");
-		goBackUpLadder = new ObjectStep(this,  ObjectID.LADDER_18324, new WorldPoint(2784, 3286, 0), "Go up the ladder in the north east corner of the platform.");
+		goBackUpLadder = new ObjectStep(this, ObjectID.LADDER_18324, new WorldPoint(2784, 3286, 0), "Go up the ladder in the north east corner of the platform.");
 		talkToKennithAgain = new NpcStep(this, NpcID.KENNITH_5063, new WorldPoint(2765, 3289, 1), "Talk to Kennith to the west.");
 		kickWall = new ObjectStep(this, NullObjectID.NULL_18251, new WorldPoint(2768, 3289, 1), "Kick in the badly repaired wall east of Kennith.");
 		talkToKennithAfterKicking = new NpcStep(this, NpcID.KENNITH_5063, new WorldPoint(2765, 3289, 1), "Talk to Kennith again.");
@@ -227,7 +240,7 @@ public class SeaSlug extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(swampPaste);
@@ -235,15 +248,24 @@ public class SeaSlug extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Collections.singletonList(talkToCaroline)), swampPaste));
-		allSteps.add(new PanelDetails("Investigation", new ArrayList<>(Arrays.asList(talkToHolgart, travelWithHolgart, climbLadder, talkToKennith, goDownLadder, goToIsland))));
-		allSteps.add(new PanelDetails("Talking with Kent", new ArrayList<>(Arrays.asList(talkToKent, returnFromIsland))));
-		allSteps.add(new PanelDetails("Saving Kennith", new ArrayList<>(
-			Arrays.asList(talkToBaileyForTorch, pickupGlass, pickupDampSticks, useGlassOnDampSticks, rubSticks, goBackUpLadder, talkToKennithAgain, kickWall,
-				talkToKennithAfterKicking, activateCrane, goDownLadderAgain, returnWithHolgart, finishQuest))));
+		return Collections.singletonList(new SkillRequirement(Skill.FIREMAKING, 30, true));
+	}
+	
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Collections.singletonList(talkToCaroline),
+			swampPaste));
+		allSteps.add(new PanelDetails("Investigation", Arrays.asList(talkToHolgart, travelWithHolgart,
+			climbLadder, talkToKennith, goDownLadder, goToIsland)));
+		allSteps.add(new PanelDetails("Talking with Kent", Arrays.asList(talkToKent, returnFromIsland)));
+		allSteps.add(new PanelDetails("Saving Kennith",
+			Arrays.asList(talkToBaileyForTorch, pickupGlass, pickupDampSticks, useGlassOnDampSticks, rubSticks, goBackUpLadder,
+				talkToKennithAgain, kickWall, talkToKennithAfterKicking, activateCrane, goDownLadderAgain, returnWithHolgart,
+				finishQuest)));
 
 		return allSteps;
 	}

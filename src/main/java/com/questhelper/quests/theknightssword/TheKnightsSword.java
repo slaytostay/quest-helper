@@ -25,27 +25,34 @@
 package com.questhelper.quests.theknightssword;
 
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.ComplexRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.npc.NpcRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.util.LogicType;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -53,14 +60,20 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class TheKnightsSword extends BasicQuestHelper
 {
-	ItemRequirement pickaxe, redberryPie, ironBars, bluriteOre, varrockTeleport, faladorTeleports, bluriteSword, portrait, homeTele;
+	//Items Required
+	ItemRequirement pickaxe, redberryPie, ironBars, bluriteOre, bluriteSword, portrait;
 
-	ConditionForStep hasPortrait, hasBluriteOre, hasBluriteSword, inDungeon, inFaladorCastle1, inFaladorCastle2;
+	//Items Recommended
+	ItemRequirement varrockTeleport, faladorTeleports, homeTele;
+	ComplexRequirement searchCupboardReq;
+
+	Requirement hasPortrait, hasBluriteOre, hasBluriteSword, inDungeon, inFaladorCastle1, inFaladorCastle2, inFaladorCastle2Bedroom, sirVyinNotInRoom;
 
 	QuestStep talkToSquire, talkToReldo, talkToThurgo, talkToThurgoAgain, talkToSquire2, goUpCastle1, goUpCastle2, searchCupboard, enterDungeon,
 		mineBlurite, givePortraitToThurgo, bringThurgoOre, finishQuest;
 
-	Zone dungeon, faladorCastle1, faladorCastle2;
+	//Zones
+	Zone dungeon, faladorCastle1, faladorCastle2, faladorCastle2Bedroom;
 
 	@Override
 	public Map<Integer, QuestStep> loadSteps()
@@ -103,18 +116,25 @@ public class TheKnightsSword extends BasicQuestHelper
 		pickaxe = new ItemRequirement("Any pickaxe", ItemCollections.getPickaxes());
 		varrockTeleport = new ItemRequirement("A teleport to Varrock", ItemID.VARROCK_TELEPORT);
 		faladorTeleports = new ItemRequirement("Teleports to Falador", ItemID.FALADOR_TELEPORT, 4);
-		homeTele = new ItemRequirement("A teleport near Mudskipper Point, such as POH teleport or Fairy Ring to AIQ", -1, -1);
+		homeTele = new ItemRequirement("A teleport near Mudskipper Point, such as POH teleport or Fairy Ring to AIQ",
+			ItemID.RIMMINGTON_TELEPORT, 2);
 		portrait = new ItemRequirement("Portrait", ItemID.PORTRAIT);
 	}
 
 	public void setupConditions()
 	{
-		hasBluriteOre = new ItemRequirementCondition(bluriteOre);
-		hasBluriteSword = new ItemRequirementCondition(bluriteSword);
-		hasPortrait = new ItemRequirementCondition(portrait);
-		inDungeon = new ZoneCondition(dungeon);
-		inFaladorCastle1 = new ZoneCondition(faladorCastle1);
-		inFaladorCastle2 = new ZoneCondition(faladorCastle2);
+		hasBluriteOre = new ItemRequirements(bluriteOre);
+		hasBluriteSword = new ItemRequirements(bluriteSword);
+		hasPortrait = new ItemRequirements(portrait);
+		inDungeon = new ZoneRequirement(dungeon);
+		inFaladorCastle1 = new ZoneRequirement(faladorCastle1);
+		inFaladorCastle2 = new ZoneRequirement(faladorCastle2);
+		inFaladorCastle2Bedroom = new ZoneRequirement(faladorCastle2Bedroom);
+		sirVyinNotInRoom = new NpcCondition(NpcID.SIR_VYVIN, faladorCastle2Bedroom);
+
+		NpcRequirement sirVyinNotInRoom = new NpcRequirement("Sir Vyin not in the bedroom.", NpcID.SIR_VYVIN, true, faladorCastle2Bedroom);
+		com.questhelper.requirements.ZoneRequirement playerIsUpstairs = new com.questhelper.requirements.ZoneRequirement("Upstairs", faladorCastle2);
+		searchCupboardReq = new ComplexRequirement(LogicType.AND, "Sir Vyin not in the bedroom.", playerIsUpstairs, sirVyinNotInRoom);
 	}
 
 	public void setupZones()
@@ -122,6 +142,7 @@ public class TheKnightsSword extends BasicQuestHelper
 		dungeon = new Zone(new WorldPoint(2979, 9538, 0), new WorldPoint(3069, 9602, 0));
 		faladorCastle1 = new Zone(new WorldPoint(2954, 3328, 1), new WorldPoint(2997, 3353, 1));
 		faladorCastle2 = new Zone(new WorldPoint(2980, 3331, 2), new WorldPoint(2986, 3346, 2));
+		faladorCastle2Bedroom = new Zone(new WorldPoint(2981, 3336, 2), new WorldPoint(2986, 3331, 2));
 	}
 
 	public void setupSteps()
@@ -140,18 +161,19 @@ public class TheKnightsSword extends BasicQuestHelper
 		talkToSquire2 = new NpcStep(this, NpcID.SQUIRE_4737, new WorldPoint(2978, 3341, 0), "Talk to the Squire in Falador Castle's courtyard.");
 		goUpCastle1 = new ObjectStep(this, ObjectID.LADDER_24070, new WorldPoint(2994, 3341, 0), "Climb up the east ladder in Falador Castle.");
 		goUpCastle2 = new ObjectStep(this, ObjectID.STAIRCASE_24077, new WorldPoint(2985, 3338, 1), "Go up the staircase west of the ladder on the 1st floor.");
-		searchCupboard = new ObjectStep(this, ObjectID.CUPBOARD_2272, new WorldPoint(2985, 3336, 2), "Search the cupboard in the room south of the staircase. You'll need Sir Vyvin to be in the other room.");
+		searchCupboard = new ObjectStep(this, ObjectID.CUPBOARD_2272, new WorldPoint(2985, 3336, 2), "Search the cupboard in the room south of the staircase. You'll need Sir Vyvin to be in the other room.", searchCupboardReq);
+		((ObjectStep)searchCupboard).addAlternateObjects(ObjectID.CUPBOARD_2271); // 2271 is the closed cupboard
 		givePortraitToThurgo = new NpcStep(this, NpcID.THURGO, new WorldPoint(3000, 3145, 0), "Bring Thurgo the portrait.", bluriteOre, ironBars, portrait);
 		givePortraitToThurgo.addDialogStep("About that sword...");
-		enterDungeon = new ObjectStep(this, ObjectID.TRAPDOOR_1738, new WorldPoint(3008, 3150, 0), "Go down the ladder south of Port Sarim. Be prepared for ice giants and ice warriors to attack you.", pickaxe, ironBars, portrait);
+		enterDungeon = new ObjectStep(this, ObjectID.TRAPDOOR_1738, new WorldPoint(3008, 3150, 0), "Go down the ladder south of Port Sarim. Be prepared for ice giants and ice warriors to attack you.", pickaxe, ironBars);
 		mineBlurite = new ObjectStep(this, ObjectID.ROCKS_11378, new WorldPoint(3049, 9566, 0), "Mine a blurite ore in the eastern cavern.", pickaxe);
-		bringThurgoOre =  new NpcStep(this, NpcID.THURGO, new WorldPoint(3000, 3145, 0), "Return to Thurgo with a blurite ore, two iron bars and the portrait.", bluriteOre, ironBars, portrait);
+		bringThurgoOre = new NpcStep(this, NpcID.THURGO, new WorldPoint(3000, 3145, 0), "Return to Thurgo with a blurite ore and two iron bars.", bluriteOre, ironBars);
 		bringThurgoOre.addDialogStep("Can you make that replacement sword now?");
 		finishQuest = new NpcStep(this, NpcID.SQUIRE_4737, new WorldPoint(2978, 3341, 0), "Return to the Squire with the sword to finish the quest.", bluriteSword);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(redberryPie);
@@ -161,7 +183,7 @@ public class TheKnightsSword extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(varrockTeleport);
@@ -171,7 +193,7 @@ public class TheKnightsSword extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Able to survive attacks from Ice Warriors (level 57) and Ice Giants (level 53)");
@@ -179,15 +201,21 @@ public class TheKnightsSword extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		return Collections.singletonList(new SkillRequirement(Skill.MINING, 10, true));
+	}
 
-    	allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(talkToSquire, talkToReldo))));
-    	allSteps.add(new PanelDetails("Finding an Imcando", new ArrayList<>(Arrays.asList(talkToThurgo, talkToThurgoAgain)), redberryPie));
-		allSteps.add(new PanelDetails("Find the portrait", new ArrayList<>(Arrays.asList(talkToSquire2, goUpCastle1, goUpCastle2, searchCupboard, givePortraitToThurgo))));
-		allSteps.add(new PanelDetails("Making the sword", new ArrayList<>(Arrays.asList(enterDungeon, mineBlurite, bringThurgoOre)), pickaxe, portrait, ironBars));
-		allSteps.add(new PanelDetails("Return the sword", new ArrayList<>(Collections.singletonList(finishQuest))));
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(talkToSquire, talkToReldo)));
+		allSteps.add(new PanelDetails("Finding an Imcando", Arrays.asList(talkToThurgo, talkToThurgoAgain), redberryPie));
+		allSteps.add(new PanelDetails("Find the portrait", Arrays.asList(talkToSquire2, goUpCastle1, goUpCastle2, searchCupboard, givePortraitToThurgo)));
+		allSteps.add(new PanelDetails("Making the sword", Arrays.asList(enterDungeon, mineBlurite, bringThurgoOre), pickaxe, portrait, ironBars));
+		allSteps.add(new PanelDetails("Return the sword", Collections.singletonList(finishQuest)));
 		return allSteps;
 	}
 }

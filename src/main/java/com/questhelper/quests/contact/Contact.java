@@ -27,29 +27,33 @@ package com.questhelper.quests.contact;
 import com.questhelper.ItemCollections;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ItemStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -57,13 +61,15 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class Contact extends BasicQuestHelper
 {
-	ItemRequirement lightSource, combatGear, parchment, keris;
+	//Items Required
+	ItemRequirement lightSource, combatGear, parchment, keris, food, prayerPotions;
 
-	ConditionForStep inBank, inDungeon, inChasm, hasParchment, hasReadParchment, kerisNearby;
+	Requirement inBank, inDungeon, inChasm, hasParchment, hasReadParchment, kerisNearby;
 
 	QuestStep talkToHighPriest, talkToJex, goDownToBank, goDownToDungeon, goDownToChasm, searchKaleef, readParchment, talkToMaisa, talkToOsman, talkToOsmanOutsideSoph, goDownToBankAgain, goDownToDungeonAgain, goDownToChasmAgain,
 		killGiantScarab, pickUpKeris, returnToHighPriest;
 
+	//Zones
 	Zone bank, dungeon, chasm;
 
 	@Override
@@ -119,7 +125,12 @@ public class Contact extends BasicQuestHelper
 		parchment = new ItemRequirement("Parchment", ItemID.PARCHMENT);
 		parchment.setHighlightInInventory(true);
 
-		combatGear = new ItemRequirement("Combat gear, food, prayer potions", -1, -1);
+		combatGear = new ItemRequirement("Combat gear", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
+
+		food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
+
+		prayerPotions = new ItemRequirement("Prayer potions", ItemCollections.getPrayerPotions(), -1);
 
 		keris = new ItemRequirement("Keris", ItemID.KERIS);
 	}
@@ -133,12 +144,12 @@ public class Contact extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inBank = new ZoneCondition(bank);
-		inDungeon = new ZoneCondition(dungeon);
-		inChasm = new ZoneCondition(chasm);
-		hasParchment = new ItemRequirementCondition(parchment);
-		hasReadParchment = new VarbitCondition(3274, 50);
-		kerisNearby = new ItemCondition(keris);
+		inBank = new ZoneRequirement(bank);
+		inDungeon = new ZoneRequirement(dungeon);
+		inChasm = new ZoneRequirement(chasm);
+		hasParchment = new ItemRequirements(parchment);
+		hasReadParchment = new VarbitRequirement(3274, 50);
+		kerisNearby = new ItemOnTileRequirement(keris);
 	}
 
 	public void setupSteps()
@@ -150,7 +161,67 @@ public class Contact extends BasicQuestHelper
 
 		goDownToBank = new ObjectStep(this, ObjectID.LADDER_20275, new WorldPoint(3315, 2797, 0), "Go down the ladder east of Jex.", lightSource);
 		goDownToDungeon = new ObjectStep(this, ObjectID.TRAPDOOR_20340, new WorldPoint(2766, 5130, 0), "Go down the trapdoor.", lightSource);
-		goDownToChasm = new ObjectStep(this, ObjectID.LADDER_20287, new WorldPoint(3268, 9229, 2), "Be careful of traps, and make your way the south west corner of the dungeon, and go down the ladder there.");
+		goDownToChasm = new ObjectStep(this, ObjectID.LADDER_20287, new WorldPoint(3268, 9229, 2),
+			"Be careful of traps, and follow the path to the south west ladder. Disarm traps where the path breaks, " +
+				"and use protection prayers against the monsters.");
+
+		List<WorldPoint> path = Arrays.asList(
+			new WorldPoint(3318, 9271, 2),
+			new WorldPoint(3318, 9265, 2),
+			new WorldPoint(3314, 9265, 2),
+			new WorldPoint(3314, 9272, 2),
+			new WorldPoint(3306, 9272, 2),
+			new WorldPoint(3306, 9274, 2),
+			new WorldPoint(3296, 9274, 2),
+			new WorldPoint(3296, 9268, 2),
+			new WorldPoint(3299, 9268, 2),
+			new WorldPoint(0, 0, 0),
+			new WorldPoint(3302, 9268, 2),
+			new WorldPoint(3304, 9264, 2),
+			new WorldPoint(3304, 9264, 2),
+			new WorldPoint(3307, 9264, 2),
+			new WorldPoint(3307, 9260, 2),
+			new WorldPoint(3310, 9260, 2),
+			new WorldPoint(3311, 9259, 2),
+			new WorldPoint(3312, 9259, 2),
+			new WorldPoint(3313, 9260, 2),
+			new WorldPoint(3314, 9260, 2),
+			new WorldPoint(3315, 9259, 2),
+			new WorldPoint(3316, 9259, 2),
+			new WorldPoint(3317, 9260, 2),
+			new WorldPoint(3321, 9260, 2),
+			new WorldPoint(3321, 9254, 2),
+			new WorldPoint(0, 0, 0),
+			new WorldPoint(3321, 9251, 2),
+			new WorldPoint(3321, 9246, 2),
+			new WorldPoint(3312, 9246, 2),
+			new WorldPoint(3312, 9252, 2),
+			new WorldPoint(3305, 9252, 2),
+			new WorldPoint(3305, 9255, 2),
+			new WorldPoint(3297, 9255, 2),
+			new WorldPoint(3297, 9251, 2),
+			new WorldPoint(3301, 9251, 2),
+			new WorldPoint(3301, 9238, 2),
+			new WorldPoint(3304, 9238, 2),
+			new WorldPoint(0, 0, 0),
+			new WorldPoint(3307, 9238, 2),
+			new WorldPoint(3309, 9238, 2),
+			new WorldPoint(3309, 9233, 2),
+			new WorldPoint(3297, 9233, 2),
+			new WorldPoint(3297, 9229, 2),
+			new WorldPoint(3296, 9228, 2),
+			new WorldPoint(3296, 9225, 2),
+			new WorldPoint(3283, 9225, 2),
+			new WorldPoint(3283, 9227, 2),
+			new WorldPoint(3279, 9227, 2),
+			new WorldPoint(3279, 9226, 2),
+			new WorldPoint(3276, 9226, 2),
+			new WorldPoint(3276, 9229, 2),
+			new WorldPoint(3269, 9229, 2)
+		);
+
+		((DetailedQuestStep) goDownToChasm).setLinePoints(path);
+
 		searchKaleef = new ObjectStep(this, ObjectID.KALEEFS_BODY, new WorldPoint(3239, 9244, 0), "Follow the path along, and search Kaleef's corpse there.");
 
 		readParchment = new DetailedQuestStep(this, "Read the parchment", parchment);
@@ -166,7 +237,8 @@ public class Contact extends BasicQuestHelper
 
 		goDownToBankAgain = new ObjectStep(this, ObjectID.LADDER_20275, new WorldPoint(3315, 2797, 0), "Prepare to fight a level 191 Giant Scarab. Go down the ladder east of Jex.", lightSource, combatGear);
 		goDownToDungeonAgain = new ObjectStep(this, ObjectID.TRAPDOOR_20340, new WorldPoint(2766, 5130, 0), "Go down the trapdoor.", lightSource);
-		goDownToChasmAgain = new ObjectStep(this, ObjectID.LADDER_20287, new WorldPoint(3268, 9229, 2), "Be careful of traps, and make your way the south west corner of the dungeon, and go down the ladder there.");
+		goDownToChasmAgain = new ObjectStep(this, ObjectID.LADDER_20287, new WorldPoint(3268, 9229, 2), "Be careful of traps, and make your way to the south west corner of the dungeon, and go down the ladder there.");
+		((DetailedQuestStep) goDownToChasmAgain).setLinePoints(path);
 
 		killGiantScarab = new NpcStep(this, NpcID.GIANT_SCARAB, new WorldPoint(3231, 9251, 0), "Kill the Giant Scarab near the chasm.");
 
@@ -176,15 +248,18 @@ public class Contact extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(lightSource);
+		reqs.add(combatGear);
+		reqs.add(food);
+		reqs.add(prayerPotions);
 		return reqs;
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Giant Scarab (level 191)");
@@ -192,16 +267,29 @@ public class Contact extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(talkToHighPriest, talkToJex)), lightSource));
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(talkToHighPriest, talkToJex), lightSource));
 
-		allSteps.add(new PanelDetails("Explore the dungeon", new ArrayList<>(Arrays.asList(goDownToBank, goDownToDungeon, goDownToChasm, searchKaleef, readParchment, talkToMaisa, talkToOsman)), lightSource));
+		allSteps.add(new PanelDetails("Explore the dungeon",
+			Arrays.asList(goDownToBank, goDownToDungeon, goDownToChasm, searchKaleef, readParchment,
+				talkToMaisa, talkToOsman), lightSource));
 
-		allSteps.add(new PanelDetails("Help Osman", new ArrayList<>(Arrays.asList(talkToOsmanOutsideSoph, goDownToBankAgain, goDownToDungeonAgain, goDownToChasmAgain, killGiantScarab, returnToHighPriest)), combatGear, lightSource));
+		allSteps.add(new PanelDetails("Help Osman",
+			Arrays.asList(talkToOsmanOutsideSoph, goDownToBankAgain, goDownToDungeonAgain,
+				goDownToChasmAgain, killGiantScarab, returnToHighPriest), combatGear, food, prayerPotions, lightSource));
 
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.PRINCE_ALI_RESCUE, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.ICTHLARINS_LITTLE_HELPER, QuestState.FINISHED));
+		return req;
 	}
 }

@@ -1,22 +1,52 @@
+/*
+ * Copyright (c) 2021, Zoinkwiz <https://github.com/Zoinkwiz>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.questhelper.quests.thegolem;
 
+import com.questhelper.ItemCollections;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.DetailedQuestStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.util.Operation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
@@ -25,27 +55,30 @@ import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.ZoneCondition;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.THE_GOLEM
 )
 public class TheGolem extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement strangeImplement, strangeImplementHighlight, programHighlight, pestleAndMortarHighlight, mushroomHighlight, vial, inkHighlight, pestleAndMortar,
 		papyrus, letter, clay4Highlight, notesHighlight, phoenixFeather, quill, clay3Highlight, clay2Highlight, clay1Highlight, key, statuette, statuetteHighlight,
-		papyrusHighlight, varrockTeleport, digsiteTeleport, waterskins;
+		papyrusHighlight;
 
-	ConditionForStep inRuin, turnedStatue1, turnedStatue2, turnedStatue3, turnedStatue4, hasLetter, hasReadLetter, added1Clay, added2Clay, added3Clay,
+	//Items Recommended
+	ItemRequirement varrockTeleport, digsiteTeleport, waterskins;
+
+	Requirement inRuin, turnedStatue1, turnedStatue2, turnedStatue3, turnedStatue4, hasLetter, hasReadLetter, added1Clay, added2Clay, added3Clay,
 		talkedToElissa, hasVarmenNotes, hasReadNotes, talkedToCurator, hasKey, inUpstairsMuseum, stolenStatuette, inThroneRoom, hasImplement, openedHead,
 		hasMushroom, hasInk, hasFeather, hasQuill, hasProgram, enteredRuins;
-
-	Zone ruin, upstairsMuseum, throneRoom;
 
 	QuestStep pickUpLetter, readLetter, talkToGolem, useClay, useClay2, useClay3, useClay4, talkToElissa, searchBookcase, readBook, talkToCurator, pickpocketCurator, goUpInMuseum, openCabinet,
 		stealFeather, enterRuin, useStatuette, turnStatue1, turnStatue2, turnStatue3, turnStatue4, enterThroneRoom, leaveThroneRoom, leaveRuin, pickBlackMushroom, grindMushroom,
 		useFeatherOnInk, talkToGolemAfterPortal, useQuillOnPapyrus, useImplementOnGolem, useProgramOnGolem, pickUpImplement, enterRuinWithoutStatuette, enterRuinForFirstTime;
+
+	//Zones
+	Zone ruin, upstairsMuseum, throneRoom;
 
 	@Override
 	public Map<Integer, QuestStep> loadSteps()
@@ -180,52 +213,53 @@ public class TheGolem extends BasicQuestHelper
 		key = new ItemRequirement("Display cabinet key", ItemID.DISPLAY_CABINET_KEY);
 
 		statuette = new ItemRequirement("Statuette", ItemID.STATUETTE);
-		statuette.setTip("If you've lost it, talk to the Curator in the Varrock museum again");
+		statuette.setTooltip("If you've lost it, talk to the Curator in the Varrock museum again");
 
 		statuetteHighlight = new ItemRequirement("Statuette", ItemID.STATUETTE);
 		statuetteHighlight.setHighlightInInventory(true);
-		statuetteHighlight.setTip("If you've lost it, talk to the Curator in the Varrock museum again");
+		statuetteHighlight.setTooltip("If you've lost it, talk to the Curator in the Varrock museum again");
 
 		varrockTeleport = new ItemRequirement("Varrock teleport", ItemID.VARROCK_TELEPORT);
-		digsiteTeleport = new ItemRequirement("Digsite teleport", -1, -1);
+		digsiteTeleport = new ItemRequirement("Digsite teleport", ItemCollections.getDigsitePendants());
+		digsiteTeleport.addAlternates(ItemID.DIGSITE_TELEPORT);
 		waterskins = new ItemRequirement("Waterskins", ItemID.WATERSKIN4, -1);
 	}
 
 	private void setupConditions()
 	{
-		inRuin = new ZoneCondition(ruin);
-		inUpstairsMuseum = new ZoneCondition(upstairsMuseum);
-		inThroneRoom = new ZoneCondition(throneRoom);
+		inRuin = new ZoneRequirement(ruin);
+		inUpstairsMuseum = new ZoneRequirement(upstairsMuseum);
+		inThroneRoom = new ZoneRequirement(throneRoom);
 
-		hasReadLetter = new VarbitCondition(347, 1, Operation.GREATER_EQUAL);
-		talkedToElissa = new VarbitCondition(347, 2, Operation.GREATER_EQUAL);
-		hasReadNotes = new VarbitCondition(347, 3, Operation.GREATER_EQUAL);
-		talkedToCurator = new VarbitCondition(347, 4, Operation.GREATER_EQUAL);
+		hasReadLetter = new VarbitRequirement(347, 1, Operation.GREATER_EQUAL);
+		talkedToElissa = new VarbitRequirement(347, 2, Operation.GREATER_EQUAL);
+		hasReadNotes = new VarbitRequirement(347, 3, Operation.GREATER_EQUAL);
+		talkedToCurator = new VarbitRequirement(347, 4, Operation.GREATER_EQUAL);
 
-		added1Clay = new VarbitCondition(348, 1);
-		added2Clay = new VarbitCondition(348, 2);
-		added3Clay = new VarbitCondition(348, 3);
+		added1Clay = new VarbitRequirement(348, 1);
+		added2Clay = new VarbitRequirement(348, 2);
+		added3Clay = new VarbitRequirement(348, 3);
 
-		turnedStatue1 = new VarbitCondition(349, 1);
-		turnedStatue2 = new VarbitCondition(350, 1);
-		turnedStatue3 = new VarbitCondition(351, 0);
-		turnedStatue4 = new VarbitCondition(352, 2);
+		turnedStatue1 = new VarbitRequirement(349, 1);
+		turnedStatue2 = new VarbitRequirement(350, 1);
+		turnedStatue3 = new VarbitRequirement(351, 0);
+		turnedStatue4 = new VarbitRequirement(352, 2);
 
-		openedHead = new VarbitCondition(353, 1);
+		openedHead = new VarbitRequirement(353, 1);
 
-		stolenStatuette = new Conditions(LogicType.OR, new VarbitCondition(355, 1), new ItemRequirementCondition(statuette));
+		stolenStatuette = new Conditions(LogicType.OR, new VarbitRequirement(355, 1), new ItemRequirements(statuette));
 
-		enteredRuins = new VarbitCondition(356, 1);
+		enteredRuins = new VarbitRequirement(356, 1);
 
-		hasLetter = new ItemRequirementCondition(letter);
-		hasVarmenNotes = new ItemRequirementCondition(notesHighlight);
-		hasKey = new ItemRequirementCondition(key);
-		hasImplement = new ItemRequirementCondition(strangeImplement);
-		hasMushroom = new ItemRequirementCondition(mushroomHighlight);
-		hasInk = new ItemRequirementCondition(inkHighlight);
-		hasFeather = new ItemRequirementCondition(phoenixFeather);
-		hasQuill = new ItemRequirementCondition(quill);
-		hasProgram = new ItemRequirementCondition(programHighlight);
+		hasLetter = new ItemRequirements(letter);
+		hasVarmenNotes = new ItemRequirements(notesHighlight);
+		hasKey = new ItemRequirements(key);
+		hasImplement = new ItemRequirements(strangeImplement);
+		hasMushroom = new ItemRequirements(mushroomHighlight);
+		hasInk = new ItemRequirements(inkHighlight);
+		hasFeather = new ItemRequirements(phoenixFeather);
+		hasQuill = new ItemRequirements(quill);
+		hasProgram = new ItemRequirements(programHighlight);
 	}
 
 	private void setupSteps()
@@ -236,7 +270,7 @@ public class TheGolem extends BasicQuestHelper
 
 		talkToGolem = new NpcStep(this, NpcID.BROKEN_CLAY_GOLEM, new WorldPoint(3485, 3088, 0), "Talk to the Golem in Uzer.");
 		talkToGolem.addDialogStep("Shall I try to repair you?");
-		useClay = new NpcStep(this, NpcID.DAMAGED_CLAY_GOLEM, new WorldPoint(3485, 3088, 0), "Use 4 soft clay on the Golem in Uzer.", clay4Highlight);
+		useClay = new NpcStep(this, NpcID.BROKEN_CLAY_GOLEM, new WorldPoint(3485, 3088, 0), "Use 4 soft clay on the Golem in Uzer.", clay4Highlight);
 		useClay.addIcon(ItemID.SOFT_CLAY);
 		useClay2 = new NpcStep(this, NpcID.BROKEN_CLAY_GOLEM, new WorldPoint(3485, 3088, 0), "Use 3 soft clay on the Golem in Uzer.", clay3Highlight);
 		useClay2.addIcon(ItemID.SOFT_CLAY);
@@ -290,26 +324,36 @@ public class TheGolem extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(clay4Highlight, vial, pestleAndMortar, papyrus));
+		return Arrays.asList(clay4Highlight, vial, pestleAndMortar, papyrus);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(varrockTeleport, digsiteTeleport, waterskins));
+		return Arrays.asList(varrockTeleport, digsiteTeleport, waterskins);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		return Arrays.asList(new SkillRequirement(Skill.CRAFTING, 20),
+			new SkillRequirement(Skill.THIEVING, 25, true));
+	}
 
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(talkToGolem, useClay, pickUpLetter, enterRuinForFirstTime, pickUpImplement)), clay4Highlight));
-		allSteps.add(new PanelDetails("Finding the statuette", new ArrayList<>(Arrays.asList(talkToElissa, searchBookcase, readBook, talkToCurator, pickpocketCurator, goUpInMuseum, openCabinet))));
-		allSteps.add(new PanelDetails("Opening the portal", new ArrayList<>(Arrays.asList(enterRuin, useStatuette, turnStatue1, enterThroneRoom, leaveThroneRoom, talkToGolemAfterPortal, pickBlackMushroom, grindMushroom,
-			stealFeather, useFeatherOnInk, useQuillOnPapyrus, useProgramOnGolem)), vial, pestleAndMortar, papyrus));
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(talkToGolem, useClay, pickUpLetter, enterRuinForFirstTime,
+			pickUpImplement), clay4Highlight));
+		allSteps.add(new PanelDetails("Finding the statuette", Arrays.asList(talkToElissa, searchBookcase, readBook,
+			talkToCurator, pickpocketCurator, goUpInMuseum, openCabinet)));
+		allSteps.add(new PanelDetails("Opening the portal", Arrays.asList(enterRuin, useStatuette, turnStatue1,
+			enterThroneRoom, leaveThroneRoom, talkToGolemAfterPortal, pickBlackMushroom, grindMushroom,
+			stealFeather, useFeatherOnInk, useQuillOnPapyrus, useProgramOnGolem), vial, pestleAndMortar, papyrus));
 
 		return allSteps;
 	}

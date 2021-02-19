@@ -24,34 +24,39 @@
  */
 package com.questhelper.quests.monkeymadnessi;
 
+import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.WidgetTextRequirement;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.WidgetTextCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import net.runelite.api.widgets.WidgetInfo;
 
 @QuestDescriptor(
@@ -59,11 +64,15 @@ import net.runelite.api.widgets.WidgetInfo;
 )
 public class MonkeyMadnessI extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement monkeyBonesOrCorpse, ballOfWool, goldBar, royalSeal, narnodesOrders, monkeyDentures, mould, monkeyDenturesHighlight, mouldHighlight, barHighlight, enchantedBar,
 		enchantedBarHighlight, ballOfWoolHighlight, unstrungAmuletHighlight, amulet, banana5, amuletWorn, talisman, talismanHighlight, karamjanGreegree, monkeyBonesOrCorpseHighlight,
-		monkey, karamjanGreegreeEquipped, sigilEquipped, combatGear;
+		monkey, karamjanGreegreeEquipped, sigilEquipped;
 
-	ConditionForStep inStronghold, inFloor1, inFloor2, inFloor3, inKaramja, talkedToCaranock, reportedBackToNarnode, inHangar, startedPuzzle, solvedPuzzle,
+	//Items Recommendded
+	ItemRequirement combatGear, antipoison;
+
+	Requirement inStronghold, inFloor1, inFloor2, inFloor3, inKaramja, talkedToCaranock, reportedBackToNarnode, inHangar, startedPuzzle, solvedPuzzle,
 		talkedToDaeroAfterPuzzle, onCrashIsland, talkedToLumdo, talkedToWaydar, onApeAtollSouth, inPrison, onApeAtollNorth, talkedToGarkor, inDentureBuilding,
 		hasMonkeyDentures, hasMould, inMouldRoom, hadDenturesAndMould, inZooknockDungeon, talkedToZooknock, givenDentures, givenBar, givenMould, hadEnchantedBar,
 		inTempleDungeon, hasUnstrungAmulet, hasAmulet, hasTalisman, hasMonkeyTalismanMade, givenTalisman, givenBones, hasMonkey, inMonkeyPen, talkedToGarkorWithGreeGree,
@@ -82,10 +91,11 @@ public class MonkeyMadnessI extends BasicQuestHelper
 	NpcStep talkToDaero, talkToDaeroInHangar, talkToDaeroAfterPuzzle, talkToWaydarAfterPuzzle, talkToWaydarOnCrash, talkToDaeroTravel,
 		talkToDaeroForAmuletRun, talkToWaydarForAmuletRun, talkToLumdoForAmuletRun, talkToLumdo, talkToLumdoToReturn, talkToDaeroForAmuletMake,
 		talkToWaydarForAmuletMake, talkToLumdoForAmuletMake, talkToZooknockForTalisman, talkToLumdoForTalismanRun, talkToWaydarForTalismanRun,
-		talkToDaeroForTalismanRun,  talkToLumdoForTalkingToAwow, talkToWaydarForTalkingToAwow, talkToDaeroForTalkingToAwow;
+		talkToDaeroForTalismanRun, talkToLumdoForTalkingToAwow, talkToWaydarForTalkingToAwow, talkToDaeroForTalkingToAwow;
 
 	ObjectStep enterTemple;
 
+	//Zones
 	Zone stronghold, floor1, floor2, floor3, karamja, hangar, hangar2, crashIsland, apeAtollSouth1, apeAtollSouth2, apeAtollSouth3, prison, apeAtollNorth1,
 		apeAtollNorth2, apeAtollNorth3, apeAtollNorth4, apeAtollNorthBridge, apeAtollOverBridge, dentureBuilding, mouldRoom, zooknockDungeon, templeDungeon,
 		monkeyPen1, monkeyPen2, monkeyPen3, throne1, throne2, throne3, throne4, jungleDemonRoom;
@@ -224,7 +234,7 @@ public class MonkeyMadnessI extends BasicQuestHelper
 	public void setupItemRequirements()
 	{
 		royalSeal = new ItemRequirement("Gnome royal seal", ItemID.GNOME_ROYAL_SEAL);
-		royalSeal.setTip("You can get another from King Narnode");
+		royalSeal.setTooltip("You can get another from King Narnode");
 
 		goldBar = new ItemRequirement("Gold bar", ItemID.GOLD_BAR);
 
@@ -243,7 +253,7 @@ public class MonkeyMadnessI extends BasicQuestHelper
 		monkeyBonesOrCorpseHighlight.addAlternates(ItemID.MONKEY_CORPSE);
 
 		narnodesOrders = new ItemRequirement("Narnode's orders", ItemID.NARNODES_ORDERS);
-		narnodesOrders.setTip("You can get another from King Narnode");
+		narnodesOrders.setTooltip("You can get another from King Narnode");
 
 		monkeyDentures = new ItemRequirement("Monkey dentures", ItemID.MONKEY_DENTURES);
 		monkeyDenturesHighlight = new ItemRequirement("Monkey dentures", ItemID.MONKEY_DENTURES);
@@ -254,11 +264,11 @@ public class MonkeyMadnessI extends BasicQuestHelper
 		mouldHighlight.setHighlightInInventory(true);
 
 		enchantedBar = new ItemRequirement("Enchanted bar", ItemID.ENCHANTED_BAR);
-		enchantedBar.setTip("If you've lost this you'll need to make another by bringing Zooknock some monkey dentures, an m'amulet mould and a gold bar");
+		enchantedBar.setTooltip("If you've lost this you'll need to make another by bringing Zooknock some monkey dentures, an m'amulet mould and a gold bar");
 
 		enchantedBarHighlight = new ItemRequirement("Enchanted bar", ItemID.ENCHANTED_BAR);
 		enchantedBarHighlight.setHighlightInInventory(true);
-		enchantedBarHighlight.setTip("If you've lost this you'll need to make another by bringing Zooknock some monkey dentures, an m'amulet mould and a gold bar");
+		enchantedBarHighlight.setTooltip("If you've lost this you'll need to make another by bringing Zooknock some monkey dentures, an m'amulet mould and a gold bar");
 
 		unstrungAmuletHighlight = new ItemRequirement("M'speak amulet", ItemID.MSPEAK_AMULET_4022);
 		unstrungAmuletHighlight.setHighlightInInventory(true);
@@ -267,13 +277,13 @@ public class MonkeyMadnessI extends BasicQuestHelper
 		amuletWorn = new ItemRequirement("M'speak amulet", ItemID.MSPEAK_AMULET, 1, true);
 
 		banana5 = new ItemRequirement("Banana", ItemID.BANANA, 5);
-		banana5.setTip("You can pick some from the trees near the monkey child");
+		banana5.setTooltip("You can pick some from the trees near the monkey child");
 
 		talisman = new ItemRequirement("Monkey talisman", ItemID.MONKEY_TALISMAN);
-		talisman.setTip("You can get another from the monkey child");
+		talisman.setTooltip("You can get another from the monkey child");
 		talismanHighlight = new ItemRequirement("Monkey talisman", ItemID.MONKEY_TALISMAN);
 		talismanHighlight.setHighlightInInventory(true);
-		talismanHighlight.setTip("You can get another from the monkey child");
+		talismanHighlight.setTooltip("You can get another from the monkey child");
 
 		karamjanGreegree = new ItemRequirement("Karamjan monkey greegree", ItemID.KARAMJAN_MONKEY_GREEGREE);
 		karamjanGreegreeEquipped = new ItemRequirement("Karamjan monkey greegree", ItemID.KARAMJAN_MONKEY_GREEGREE, 1, true);
@@ -281,9 +291,12 @@ public class MonkeyMadnessI extends BasicQuestHelper
 		monkey = new ItemRequirement("Monkey", ItemID.MONKEY);
 
 		sigilEquipped = new ItemRequirement("10th squad sigil", ItemID._10TH_SQUAD_SIGIL, 1, true);
-		sigilEquipped.setTip("You can get another from Garkor");
+		sigilEquipped.setTooltip("You can get another from Garkor");
 
 		combatGear = new ItemRequirement("Combat gear, food and potions", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
+
+		antipoison = new ItemRequirement("Antipoison", ItemCollections.getAntipoisons());
 	}
 
 	public void loadZones()
@@ -332,85 +345,86 @@ public class MonkeyMadnessI extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inKaramja = new ZoneCondition(karamja);
-		inFloor1 = new ZoneCondition(floor1);
-		inFloor2 = new ZoneCondition(floor2);
-		inFloor3 = new ZoneCondition(floor3);
-		inStronghold = new ZoneCondition(stronghold);
-		inHangar = new ZoneCondition(hangar, hangar2);
-		onCrashIsland = new ZoneCondition(crashIsland);
-		inPrison = new ZoneCondition(prison);
-		onApeAtollNorth = new ZoneCondition(apeAtollNorth1, apeAtollNorth2, apeAtollNorth3, apeAtollNorth4, apeAtollNorthBridge, apeAtollOverBridge);
-		inDentureBuilding = new ZoneCondition(dentureBuilding);
-		inMouldRoom = new ZoneCondition(mouldRoom);
-		inZooknockDungeon = new ZoneCondition(zooknockDungeon);
-		inTempleDungeon = new ZoneCondition(templeDungeon);
-		inMonkeyPen = new ZoneCondition(monkeyPen1, monkeyPen2, monkeyPen3);
-		onApeAtollNorthBridge = new ZoneCondition(apeAtollNorthBridge);
-		onApeAtollOverBridge = new ZoneCondition(apeAtollOverBridge);
-		inThroneRoom = new ZoneCondition(throne1, throne2, throne3, throne4);
-		inJungleDemonRoom = new ZoneCondition(jungleDemonRoom);
+		inKaramja = new ZoneRequirement(karamja);
+		inFloor1 = new ZoneRequirement(floor1);
+		inFloor2 = new ZoneRequirement(floor2);
+		inFloor3 = new ZoneRequirement(floor3);
+		inStronghold = new ZoneRequirement(stronghold);
+		inHangar = new ZoneRequirement(hangar, hangar2);
+		onCrashIsland = new ZoneRequirement(crashIsland);
+		inPrison = new ZoneRequirement(prison);
+		onApeAtollNorth = new ZoneRequirement(apeAtollNorth1, apeAtollNorth2, apeAtollNorth3, apeAtollNorth4, apeAtollNorthBridge, apeAtollOverBridge);
+		inDentureBuilding = new ZoneRequirement(dentureBuilding);
+		inMouldRoom = new ZoneRequirement(mouldRoom);
+		inZooknockDungeon = new ZoneRequirement(zooknockDungeon);
+		inTempleDungeon = new ZoneRequirement(templeDungeon);
+		inMonkeyPen = new ZoneRequirement(monkeyPen1, monkeyPen2, monkeyPen3);
+		onApeAtollNorthBridge = new ZoneRequirement(apeAtollNorthBridge);
+		onApeAtollOverBridge = new ZoneRequirement(apeAtollOverBridge);
+		inThroneRoom = new ZoneRequirement(throne1, throne2, throne3, throne4);
+		inJungleDemonRoom = new ZoneRequirement(jungleDemonRoom);
 
-		talkedToCaranock = new VarbitCondition(122, 3);
+		talkedToCaranock = new VarbitRequirement(122, 3);
 
-		reportedBackToNarnode = new VarbitCondition(121, 7);
+		reportedBackToNarnode = new VarbitRequirement(121, 7);
 
-		startedPuzzle = new VarbitCondition(123, 5, Operation.GREATER_EQUAL);
+		startedPuzzle = new VarbitRequirement(123, 5, Operation.GREATER_EQUAL);
 
-		solvedPuzzle = new VarbitCondition(123, 6, Operation.GREATER_EQUAL);
-		talkedToDaeroAfterPuzzle = new VarbitCondition(123, 7, Operation.GREATER_EQUAL);
+		solvedPuzzle = new VarbitRequirement(123, 6, Operation.GREATER_EQUAL);
+		talkedToDaeroAfterPuzzle = new VarbitRequirement(123, 7, Operation.GREATER_EQUAL);
 
-		talkedToLumdo = new VarbitCondition(125, 2, Operation.GREATER_EQUAL);
-		talkedToWaydar = new VarbitCondition(125, 3, Operation.GREATER_EQUAL);
+		talkedToLumdo = new VarbitRequirement(125, 2, Operation.GREATER_EQUAL);
+		talkedToWaydar = new VarbitRequirement(125, 3, Operation.GREATER_EQUAL);
 
 		// 128 0->1 talked to Karam
 
-		onApeAtollSouth = new ZoneCondition(apeAtollSouth1, apeAtollSouth2, apeAtollSouth3);
+		onApeAtollSouth = new ZoneRequirement(apeAtollSouth1, apeAtollSouth2, apeAtollSouth3);
 
-		talkedToGarkor = new VarbitCondition(126, 2, Operation.GREATER_EQUAL);
+		talkedToGarkor = new VarbitRequirement(126, 2, Operation.GREATER_EQUAL);
 
-		hasMonkeyDentures = new ItemRequirementCondition(monkeyDentures);
+		hasMonkeyDentures = new ItemRequirements(monkeyDentures);
 
-		hasMould = new ItemRequirementCondition(mould);
+		hasMould = new ItemRequirements(mould);
 
-		talkedToZooknock = new VarbitCondition(127, 5, Operation.GREATER_EQUAL);
+		talkedToZooknock = new VarbitRequirement(127, 5, Operation.GREATER_EQUAL);
 
 		givenDentures = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_SPRITE_TEXT, "You hand Zooknock the magical monkey dentures."),
-			new WidgetTextCondition(119, 3, true, "<str> - Something to do with monkey speech."));
+			new WidgetTextRequirement(WidgetInfo.DIALOG_SPRITE_TEXT, "You hand Zooknock the magical monkey dentures."),
+			new WidgetTextRequirement(119, 3, true, "<str> - Something to do with monkey speech."));
 		givenBar = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_SPRITE_TEXT, "You hand Zooknock the gold bar."),
-			new WidgetTextCondition(119, 3, true, "<str> - A gold bar."));
+			new WidgetTextRequirement(WidgetInfo.DIALOG_SPRITE_TEXT, "You hand Zooknock the gold bar."),
+			new WidgetTextRequirement(119, 3, true, "<str> - A gold bar."));
 		givenMould = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_SPRITE_TEXT, "You hand Zooknock the monkey amulet mould."),
-			new WidgetTextCondition(119, 3, true, "<str> - A monkey amulet mould."));
+			new WidgetTextRequirement(WidgetInfo.DIALOG_SPRITE_TEXT, "You hand Zooknock the monkey amulet mould."),
+			new WidgetTextRequirement(119, 3, true, "<str> - A monkey amulet mould."));
 
-		hasUnstrungAmulet = new ItemRequirementCondition(unstrungAmuletHighlight);
-		hasAmulet = new ItemRequirementCondition(amulet);
+		hasUnstrungAmulet = new ItemRequirements(unstrungAmuletHighlight);
+		hasAmulet = new ItemRequirements(amulet);
 
-		hasMonkeyTalismanMade = new ItemRequirementCondition(karamjanGreegree);
+		hasMonkeyTalismanMade = new ItemRequirements(karamjanGreegree);
 
-		hasTalisman = new Conditions(LogicType.OR, hasMonkeyTalismanMade, new ItemRequirementCondition(talisman));
+		hasTalisman = new Conditions(LogicType.OR, hasMonkeyTalismanMade, new ItemRequirements(talisman));
 
-		hadEnchantedBar = new Conditions(LogicType.OR, hasTalisman, hasUnstrungAmulet, hasAmulet, new ItemRequirementCondition(enchantedBar));
+		hadEnchantedBar = new Conditions(LogicType.OR, hasTalisman, hasUnstrungAmulet, hasAmulet, new ItemRequirements(enchantedBar));
 		hadDenturesAndMould = new Conditions(LogicType.OR, hadEnchantedBar, new Conditions(hasMonkeyDentures, hasMould));
 
 		givenTalisman = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_SPRITE_TEXT, "You hand Zooknock the monkey talisman."),
-			new WidgetTextCondition(119, 3, true, "<str> - An authentic magical monkey talisman."));
+			new WidgetTextRequirement(WidgetInfo.DIALOG_SPRITE_TEXT, "You hand Zooknock the monkey talisman."),
+			new WidgetTextRequirement(119, 3, true, "<str> - An authentic magical monkey talisman."));
 		givenBones = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_SPRITE_TEXT, "You hand Zooknock the monkey remains."),
-			new WidgetTextCondition(119, 3, true, "<str> - Some kind of monkey remains."));
+			new WidgetTextRequirement(WidgetInfo.DIALOG_SPRITE_TEXT, "You hand Zooknock the monkey remains."),
+			new WidgetTextRequirement(119, 3, true, "<str> - Some kind of monkey remains."));
 
-		hasMonkey = new ItemRequirementCondition(monkey);
+		hasMonkey = new Conditions(true, new ItemRequirements(monkey));
 
-		talkedToGarkorWithGreeGree = new VarbitCondition(126, 3, Operation.GREATER_EQUAL);
-		talkedToGuard = new Conditions(true, LogicType.OR, new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "He goes by the name of Kruk."));
-		talkedToKruk = new Conditions(true, LogicType.OR, new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "As you wish.", "I see. Very well, you look genuine enough. Follow me."));
+		talkedToGarkorWithGreeGree = new VarbitRequirement(126, 3, Operation.GREATER_EQUAL);
+		talkedToGuard = new Conditions(true, LogicType.OR, new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "He goes by the name of Kruk."));
+		talkedToKruk = new Conditions(true, LogicType.OR, new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "As you wish.", "I see. Very well, you look genuine enough. Follow me."));
 
-		givenMonkey = new Conditions(true, LogicType.OR, new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "We are still pondering your proposition", "You have shown yourself to be very resourceful."), new WidgetTextCondition(119, 3, true,"appear to have earnt Awowogei's favour."));
+		givenMonkey = new Conditions(true, LogicType.OR, new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "We are still pondering your proposition", "You have shown yourself to be very resourceful."),
+			new WidgetTextRequirement(119, 3, true, "appear to have earnt Awowogei's favour."));
 
-		gotSigil = new VarbitCondition(126, 6, Operation.GREATER_EQUAL);
+		gotSigil = new VarbitRequirement(126, 6, Operation.GREATER_EQUAL);
 	}
 
 	public void setupSteps()
@@ -463,24 +477,25 @@ public class MonkeyMadnessI extends BasicQuestHelper
 
 		enterValley = new DetailedQuestStep(this, new WorldPoint(2721, 2750, 0), "Head west and enter the valley going north WITH PROTECT FROM RANGED ON. Be wary of poison and taking damage.");
 		enterValley.addSubSteps(talkToLumdoToReturn, talkToDaeroTravel);
-		leavePrison = new DetailedQuestStep(this, new WorldPoint(2779, 2802, 0), "Wait for the gorrila guard to start going away from the prison cell, then sneak out and go to the north side of the prison.");
+		leavePrison = new DetailedQuestStep(this, new WorldPoint(2779, 2802, 0), "Wait for the gorilla guard to start" +
+			" going away from the prison cell, then sneak out and go to the north side of the prison.");
 
 		talkToGarkor = new NpcStep(this, NpcID.GARKOR_7158, new WorldPoint(2807, 2762, 0), "Stick to the east edge of the town, and make your way to Garkor to the south east.");
-		talkToGarkor.setLinePoints(new ArrayList<>(Arrays.asList(
+		talkToGarkor.setLinePoints(Arrays.asList(
 			new WorldPoint(2762, 2806, 0),
 			new WorldPoint(2784, 2806, 0),
 			new WorldPoint(2784, 2770, 0),
 			new WorldPoint(2807, 2770, 0),
-			new WorldPoint(2807, 2762, 0))));
+			new WorldPoint(2807, 2762, 0)));
 
 		enterDentureBuilding = new ObjectStep(this, ObjectID.DOORWAY_4710, new WorldPoint(2764, 2764, 0), "Head west and enter the large open building via the south door. DO NOT STAND ON THE LIGHT FLOOR IN THE BUILDING.");
-		enterDentureBuilding.setLinePoints(new ArrayList<>(Arrays.asList(
+		enterDentureBuilding.setLinePoints(Arrays.asList(
 			new WorldPoint(2807, 2764, 0),
 			new WorldPoint(2807, 2768, 0),
 			new WorldPoint(2786, 2768, 0),
 			new WorldPoint(2780, 2763, 0),
 			new WorldPoint(2764, 2763, 0)
-		)));
+		));
 
 		searchForDentures = new ObjectStep(this, ObjectID.CRATE_4715, new WorldPoint(2767, 2769, 0), "DO NOT WALK ON THE LIGHT FLOOR. Search the stacked crates for monkey dentures.");
 		searchForDentures.addDialogStep("Yes");
@@ -489,6 +504,7 @@ public class MonkeyMadnessI extends BasicQuestHelper
 		goDownFromDentures.addDialogStep("Yes, I'm sure.");
 
 		searchForMould = new ObjectStep(this, ObjectID.CRATE_4724, new WorldPoint(2782, 9172, 0), "Search the crate in the north west of the room for a M'amulet mould.");
+		searchForMould.addDialogStep("Yes");
 
 		leaveToPrepareForBar = new DetailedQuestStep(this, "Teleport out to prepare for a dangerous portion. You'll want energy/stamina potions, food and prayer potions.");
 
@@ -509,7 +525,7 @@ public class MonkeyMadnessI extends BasicQuestHelper
 
 		enterDungeonForAmuletRun = new ObjectStep(this, ObjectID.BAMBOO_LADDER_4780, new WorldPoint(2763, 2703, 0), "Enter the dungeon in south Ape Atoll.", goldBar, monkeyDentures, mould);
 
-		ArrayList<WorldPoint> zooknockDungeonPath = new ArrayList<>(Arrays.asList(
+		List<WorldPoint> zooknockDungeonPath = Arrays.asList(
 			new WorldPoint(2768, 9101, 0),
 			new WorldPoint(2788, 9102, 0),
 			new WorldPoint(2788, 9109, 0),
@@ -541,7 +557,7 @@ public class MonkeyMadnessI extends BasicQuestHelper
 			new WorldPoint(2750, 9142, 0),
 			new WorldPoint(2773, 9144, 0),
 			new WorldPoint(2799, 9138, 0)
-		));
+		);
 
 		talkToZooknock = new NpcStep(this, NpcID.ZOOKNOCK_7170, new WorldPoint(2805, 9143, 0), "Talk to Zooknock in the north east of the dungeon.", goldBar, monkeyDentures, mould);
 		talkToZooknock.addDialogSteps("What do we need for the monkey amulet?", "I'll be back later.");
@@ -576,14 +592,15 @@ public class MonkeyMadnessI extends BasicQuestHelper
 		enterValleyForAmuletMake = new DetailedQuestStep(this, new WorldPoint(2721, 2750, 0), "Head west and enter the valley going north WITH PROTECT FROM RANGED ON. Be wary of poison and taking damage.", enchantedBar, mould, ballOfWool);
 		enterValleyForAmuletMake.addSubSteps(talkToLumdoToReturn, talkToDaeroTravel);
 
-		enterTemple = new ObjectStep(this, ObjectID.TRAPDOOR_4879, new WorldPoint(2807, 2785, 0), "Wait for the gorrila guard to start going away from the prison cell, then sneak out and go to the north side of the prison. Afterwards, head into the temple's basement.", enchantedBar, mould, ballOfWool);
+		enterTemple = new ObjectStep(this, ObjectID.TRAPDOOR_4879, new WorldPoint(2807, 2785, 0), "Wait for the " +
+			"gorilla guard to start going away from the prison cell, then sneak out and go to the north side of the prison. Afterwards, head into the temple's basement.", enchantedBar, mould, ballOfWool);
 		enterTemple.addAlternateObjects(ObjectID.TRAPDOOR_4880);
-		enterTemple.setLinePoints(new ArrayList<>(Arrays.asList(
+		enterTemple.setLinePoints(Arrays.asList(
 			new WorldPoint(2764, 2806, 0),
 			new WorldPoint(2784, 2806, 0),
 			new WorldPoint(2784, 2787, 0),
 			new WorldPoint(2806, 2785, 0)
-		)));
+		));
 
 		useBarOnFlame = new ObjectStep(this, ObjectID.WALL_OF_FLAME_4766, new WorldPoint(2810, 9209, 0), "Use the enchanted bar on the wall of flame.", enchantedBarHighlight);
 		useBarOnFlame.addIcon(ItemID.ENCHANTED_BAR);
@@ -595,7 +612,7 @@ public class MonkeyMadnessI extends BasicQuestHelper
 		talkToMonkeyChild = new NpcStep(this, NpcID.MONKEY_CHILD, new WorldPoint(2743, 2794, 0), "Go to the north west of the island and talk to the monkey child there a few times. Eventually you'll give him 5 bananas, and he'll give you a monkey talisman.", amuletWorn, banana5);
 		talkToMonkeyChild.addText("Make sure to avoid the monkey's aunt near him otherwise she'll call the guards on you.");
 		talkToMonkeyChild.addDialogSteps("Well I'll be a monkey's uncle!", "How many bananas did Aunty want?", "Ok, I promise!", "I've lost that toy you gave me...", "Wow - can I borrow it?");
-		talkToMonkeyChild.setLinePoints(new ArrayList<>(Arrays.asList(
+		talkToMonkeyChild.setLinePoints(Arrays.asList(
 			new WorldPoint(2806, 2785, 0),
 			new WorldPoint(2784, 2787, 0),
 			new WorldPoint(2784, 2806, 0),
@@ -604,7 +621,7 @@ public class MonkeyMadnessI extends BasicQuestHelper
 			new WorldPoint(2749, 2802, 0),
 			new WorldPoint(2746, 2802, 0),
 			new WorldPoint(2746, 2797, 0)
-		)));
+		));
 
 		talkToMonkeyChild2 = new NpcStep(this, NpcID.MONKEY_CHILD, new WorldPoint(2743, 2794, 0), "Talk to the monkey child again.", amuletWorn);
 		talkToMonkeyChild3 = new NpcStep(this, NpcID.MONKEY_CHILD, new WorldPoint(2743, 2794, 0), "Talk to the monkey child again.", amuletWorn);
@@ -687,13 +704,19 @@ public class MonkeyMadnessI extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(goldBar, ballOfWool, monkeyBonesOrCorpse));
+		return Arrays.asList(goldBar, ballOfWool, monkeyBonesOrCorpse);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<ItemRequirement> getItemRecommended()
+	{
+		return Arrays.asList(combatGear, antipoison);
+	}
+
+	@Override
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Jungle Demon (level 195)");
@@ -701,35 +724,44 @@ public class MonkeyMadnessI extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Collections.singletonList(talkToNarnode))));
-		allSteps.add(new PanelDetails("Investigate the shipyard", new ArrayList<>(Arrays.asList(flyGandius, talkToCaranock, talkToNarnodeAfterShipyard))));
-		allSteps.add(new PanelDetails("Traveling to Ape Atoll", new ArrayList<>(Arrays.asList(talkToDaero, talkToDaeroInHangar, clickPuzzle, talkToDaeroAfterPuzzle, talkToWaydarAfterPuzzle,
-			talkToLumdo, talkToWaydarOnCrash))));
-		allSteps.add(new PanelDetails("Finding Garkor", new ArrayList<>(Arrays.asList(enterValley, leavePrison, talkToGarkor))));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.THE_GRAND_TREE, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.TREE_GNOME_VILLAGE, QuestState.FINISHED));
+		return req;
+	}
 
-		PanelDetails getAmuletItemsPanel = new PanelDetails("Getting amulet parts", new ArrayList<>(Arrays.asList(enterDentureBuilding, searchForDentures, goDownFromDentures, searchForMould, leaveToPrepareForBar)));
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Collections.singletonList(talkToNarnode)));
+		allSteps.add(new PanelDetails("Investigate the shipyard", Arrays.asList(flyGandius, talkToCaranock, talkToNarnodeAfterShipyard)));
+		allSteps.add(new PanelDetails("Traveling to Ape Atoll", Arrays.asList(talkToDaero, talkToDaeroInHangar, clickPuzzle, talkToDaeroAfterPuzzle, talkToWaydarAfterPuzzle,
+			talkToLumdo, talkToWaydarOnCrash)));
+		allSteps.add(new PanelDetails("Finding Garkor", Arrays.asList(enterValley, leavePrison, talkToGarkor)));
+
+		PanelDetails getAmuletItemsPanel = new PanelDetails("Getting amulet parts", Arrays.asList(enterDentureBuilding, searchForDentures, goDownFromDentures, searchForMould, leaveToPrepareForBar));
 		getAmuletItemsPanel.setLockingStep(getAmuletParts);
 		allSteps.add(getAmuletItemsPanel);
 
-		PanelDetails makeBarPanel = new PanelDetails("Making an Enchanted Bar", new ArrayList<>(Arrays.asList(goUpToDaeroForAmuletRun, enterDungeonForAmuletRun, talkToZooknock, useDentures, useMould, useBar)), goldBar, monkeyDentures, mould);
+		PanelDetails makeBarPanel = new PanelDetails("Making an Enchanted Bar", Arrays.asList(goUpToDaeroForAmuletRun, enterDungeonForAmuletRun, talkToZooknock, useDentures, useMould, useBar), goldBar, monkeyDentures, mould);
 		makeBarPanel.setLockingStep(makeBar);
 		allSteps.add(makeBarPanel);
 
-		PanelDetails makeAmuletPanel = new PanelDetails("Making an amulet", new ArrayList<>(Arrays.asList(leaveToPrepareForAmulet, goUpToDaeroForAmuletMake, enterValleyForAmuletMake, enterTemple, useBarOnFlame)), enchantedBar, mould, ballOfWool);
+		PanelDetails makeAmuletPanel = new PanelDetails("Making an amulet", Arrays.asList(leaveToPrepareForAmulet, goUpToDaeroForAmuletMake, enterValleyForAmuletMake, enterTemple, useBarOnFlame), enchantedBar, mould, ballOfWool);
 		makeAmuletPanel.setLockingStep(makeAmulet);
 		allSteps.add(makeAmuletPanel);
 
-		PanelDetails getTalismanPanel = new PanelDetails("Getting the talisman", new ArrayList<>(Arrays.asList(leaveTempleDungeon, talkToMonkeyChild, talkToMonkeyChild2, talkToMonkeyChild3, giveChildBananas, talkToChildForTalisman)), amulet, banana5);
+		PanelDetails getTalismanPanel = new PanelDetails("Getting the talisman", Arrays.asList(leaveTempleDungeon, talkToMonkeyChild, talkToMonkeyChild2, talkToMonkeyChild3, giveChildBananas, talkToChildForTalisman), amulet, banana5);
 		getTalismanPanel.setLockingStep(getTalisman);
 		allSteps.add(getTalismanPanel);
 
-		allSteps.add(new PanelDetails("Making a greegree", new ArrayList<>(Arrays.asList(leaveToPrepareForTalismanRun, goUpToDaeroForTalismanRun, enterDungeonForTalismanRun, useTalisman, useBones)), talisman, monkeyBonesOrCorpse));
-		allSteps.add(new PanelDetails("Save a monkey", new ArrayList<>(Arrays.asList(talkToMinder, talkToMonkeyAtZoo, talkToMinderAgain, goUpToDaeroForTalkingToAwow,
-			talkToGarkorWithMonkey, talkToGuard, talkToKruk, talkToAwow, talkToGarkorForSigil)), karamjanGreegree, amulet));
-		allSteps.add(new PanelDetails("Defeat the demon", new ArrayList<>(Arrays.asList(prepareForBattle, killDemon, talkToNarnodeToFinish)), combatGear));
+		allSteps.add(new PanelDetails("Making a greegree", Arrays.asList(leaveToPrepareForTalismanRun, goUpToDaeroForTalismanRun, enterDungeonForTalismanRun, useTalisman, useBones), talisman, monkeyBonesOrCorpse));
+		allSteps.add(new PanelDetails("Save a monkey", Arrays.asList(talkToMinder, talkToMonkeyAtZoo, talkToMinderAgain, goUpToDaeroForTalkingToAwow,
+			talkToGarkorWithMonkey, talkToGuard, talkToKruk, talkToAwow, talkToGarkorForSigil), karamjanGreegree, amulet));
+		allSteps.add(new PanelDetails("Defeat the demon", Arrays.asList(prepareForBattle, killDemon, talkToNarnodeToFinish), combatGear));
 
 		return allSteps;
 	}

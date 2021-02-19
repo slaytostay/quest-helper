@@ -25,45 +25,50 @@
 package com.questhelper.quests.lostcity;
 
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.NpcCondition;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.ConditionalStep;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.ZoneCondition;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.LOST_CITY
 )
 public class LostCity extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement knife, axe, combatGear, teleport, bronzeAxe, dramenBranch, dramenStaff, dramenStaffEquipped;
 
-	ConditionForStep onEntrana, inDungeon, shamusNearby, bronzeAxeNearby, hasBronzeAxe, dramenSpiritNearby, hasBranch, hasStaff;
+	Requirement onEntrana, inDungeon, shamusNearby, bronzeAxeNearby, hasBronzeAxe, dramenSpiritNearby, hasBranch, hasStaff;
 
 	QuestStep talkToWarrior, chopTree, talkToShamus, goToEntrana, goDownHole, getAxe, pickupAxe, attemptToCutDramen, killDramenSpirit, cutDramenBranch,
 		teleportAway, craftBranch, enterZanaris, getAnotherBranch;
 
+	//Zones
 	Zone entrana, entranaDungeon;
 
 	@Override
@@ -116,6 +121,7 @@ public class LostCity extends BasicQuestHelper
 		axe = new ItemRequirement("Any axe", ItemID.BRONZE_AXE);
 		axe.addAlternates(ItemCollections.getAxes());
 		combatGear = new ItemRequirement("Runes, or a way of dealing damage which you can smuggle onto Entrana. Runes for Crumble Undead (level 39 Magic) are best.", -1, -1);
+		combatGear.setDisplayItemId(ItemID.SKULL);
 		teleport = new ItemRequirement("Teleport to Lumbridge. Home teleport will work if off cooldown.", ItemID.LUMBRIDGE_TELEPORT);
 		dramenBranch = new ItemRequirement("Dramen branch", ItemID.DRAMEN_BRANCH);
 		dramenStaff = new ItemRequirement("Dramen staff", ItemID.DRAMEN_STAFF);
@@ -128,14 +134,14 @@ public class LostCity extends BasicQuestHelper
 	}
 
 	public void setupConditions() {
-		onEntrana = new ZoneCondition(entrana);
-		inDungeon = new ZoneCondition(entranaDungeon);
+		onEntrana = new ZoneRequirement(entrana);
+		inDungeon = new ZoneRequirement(entranaDungeon);
 		shamusNearby = new NpcCondition(NpcID.SHAMUS);
-		bronzeAxeNearby = new ItemCondition(ItemID.BRONZE_AXE);
-		hasBronzeAxe = new ItemRequirementCondition(bronzeAxe);
+		bronzeAxeNearby = new ItemOnTileRequirement(ItemID.BRONZE_AXE);
+		hasBronzeAxe = new ItemRequirements(bronzeAxe);
 		dramenSpiritNearby = new NpcCondition(NpcID.TREE_SPIRIT);
-		hasBranch = new ItemRequirementCondition(dramenBranch);
-		hasStaff = new ItemRequirementCondition(dramenStaff);
+		hasBranch = new ItemRequirements(dramenBranch);
+		hasStaff = new ItemRequirements(dramenStaff);
 	}
 
 	public void setupSteps() {
@@ -163,7 +169,7 @@ public class LostCity extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Multiple zombies (level 25) (can be safespotted)");
@@ -172,7 +178,7 @@ public class LostCity extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(axe);
@@ -181,7 +187,7 @@ public class LostCity extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(combatGear);
@@ -189,13 +195,22 @@ public class LostCity extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Collections.singletonList(talkToWarrior)), axe));
-		allSteps.add(new PanelDetails("Finding Shamus", new ArrayList<>(Arrays.asList(chopTree, talkToShamus))));
-		allSteps.add(new PanelDetails("Getting a Dramen branch", new ArrayList<>(Arrays.asList(goToEntrana, goDownHole, getAxe, attemptToCutDramen, killDramenSpirit, cutDramenBranch, teleportAway))));
-		allSteps.add(new PanelDetails("Entering Zanaris", new ArrayList<>(Arrays.asList(craftBranch, enterZanaris)), knife));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new SkillRequirement(Skill.CRAFTING, 31, true));
+		req.add(new SkillRequirement(Skill.WOODCUTTING, 36, true));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Collections.singletonList(talkToWarrior), axe));
+		allSteps.add(new PanelDetails("Finding Shamus", Arrays.asList(chopTree, talkToShamus)));
+		allSteps.add(new PanelDetails("Getting a Dramen branch", Arrays.asList(goToEntrana, goDownHole, getAxe, attemptToCutDramen, killDramenSpirit, cutDramenBranch, teleportAway)));
+		allSteps.add(new PanelDetails("Entering Zanaris", Arrays.asList(craftBranch, enterZanaris), knife));
 
 		return allSteps;
 	}

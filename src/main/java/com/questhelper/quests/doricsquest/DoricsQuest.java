@@ -25,18 +25,22 @@
 package com.questhelper.quests.doricsquest;
 
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
 import com.questhelper.steps.NpcStep;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
 import com.questhelper.steps.QuestStep;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -44,8 +48,10 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class DoricsQuest extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement clay, copper, iron;
 
+	//NPC Steps
 	QuestStep talkToDoric;
 
 	@Override
@@ -76,7 +82,15 @@ public class DoricsQuest extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<Requirement> getGeneralRecommended()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new SkillRequirement(Skill.MINING, 15, true, "15 Mining to get ores yourself"));
+		return req;
+	}
+
+	@Override
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(clay);
@@ -86,11 +100,11 @@ public class DoricsQuest extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-		allSteps.add(new PanelDetails("Help Doric", new ArrayList<>(Collections.singletonList(talkToDoric)), clay, copper, iron));
+		allSteps.add(new PanelDetails("Help Doric", Collections.singletonList(talkToDoric), clay, copper, iron));
 		return allSteps;
 	}
 }

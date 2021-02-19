@@ -27,23 +27,25 @@ package com.questhelper.quests.priestinperil;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.LogicType;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.ZoneCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
@@ -55,10 +57,14 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class PriestInPeril extends BasicQuestHelper
 {
-	ItemRequirement runeEssence, lotsOfRuneEssence, bucket, runePouches, varrockTeleport, weaponAndArmour, goldenKey, rangedMagedGear,
+	//Items Required
+	ItemRequirement runeEssence, lotsOfRuneEssence, bucket, weaponAndArmour, goldenKey, rangedMagedGear,
 		murkyWater, ironKey, blessedWaterHighlighted, bucketHighlighted, goldenKeyHighlighted;
 
-	ConditionForStep inUnderground, hasGoldenOrIronKey, inTempleGroundFloor, inTemple, inTempleFirstFloor, inTempleSecondFloor, hasBlessedOrMurkyWater, hasIronKey,
+	//Items Recommended
+	ItemRequirement runePouches, varrockTeleport;
+
+	Requirement inUnderground, hasGoldenOrIronKey, inTempleGroundFloor, inTemple, inTempleFirstFloor, inTempleSecondFloor, hasBlessedOrMurkyWater, hasIronKey,
 		hasBlessedWater;
 
 	QuestStep talkToRoald, goToTemple, goDownToDog, killTheDog, climbUpAfterKillingDog, returnToKingRoald, returnToTemple, killMonk, talkToDrezel,
@@ -66,6 +72,7 @@ public class PriestInPeril extends BasicQuestHelper
 		openDoor, useBlessedWater, blessWater, goUpWithWaterToSurface, goUpWithWaterToFirstFloor, goUpWithWaterToSecondFloor, talkToDrezelAfterFreeing,
 		goDownToFloorOneAfterFreeing, goDownToGroundFloorAfterFreeing, enterUndergroundAfterFreeing, talkToDrezelUnderground, bringDrezelEssence;
 
+	//Zones
 	Zone underground, temple1, temple2, temple3, temple4, temple5, temple6, templeFloorOne, templeFloorTwo;
 
 	@Override
@@ -194,14 +201,21 @@ public class PriestInPeril extends BasicQuestHelper
 		bucket = new ItemRequirement("Bucket", ItemID.BUCKET);
 		bucketHighlighted = new ItemRequirement("Bucket", ItemID.BUCKET);
 		bucketHighlighted.setHighlightInInventory(true);
-		runePouches = new ItemRequirement("Rune pouches for carrying essence", ItemID.SMALL_POUCH, -1);
+		runePouches = new ItemRequirements(LogicType.AND, "Rune pouches for carrying essence",
+			new ItemRequirement("Small pouch", ItemID.SMALL_POUCH),
+			new ItemRequirement("Medium pouch", ItemID.MEDIUM_POUCH),
+			new ItemRequirement("Large pouch", ItemID.LARGE_POUCH),
+			new ItemRequirement("Giant pouch", ItemID.GIANT_POUCH)
+		);
 		runePouches.addAlternates(ItemID.MEDIUM_POUCH, ItemID.LARGE_POUCH, ItemID.GIANT_POUCH);
 		varrockTeleport = new ItemRequirement("Varrock teleports", ItemID.VARROCK_TELEPORT, 3);
 		weaponAndArmour = new ItemRequirement("Ranged or melee weapon + armour", -1, -1);
+		weaponAndArmour.setDisplayItemId(BankSlotIcons.getCombatGear());
 		goldenKey = new ItemRequirement("Golden key", ItemID.GOLDEN_KEY);
 		goldenKeyHighlighted = new ItemRequirement("Golden key", ItemID.GOLDEN_KEY);
 		goldenKeyHighlighted.setHighlightInInventory(true);
 		rangedMagedGear = new ItemRequirement("Combat gear, ranged or mage to safespot", -1, -1);
+		rangedMagedGear.setDisplayItemId(BankSlotIcons.getRangedCombatGear());
 		lotsOfRuneEssence = new ItemRequirement("As much essence as you can carry, you'll need to bring 50 UNNOTED in total", ItemID.PURE_ESSENCE, -1);
 		murkyWater = new ItemRequirement("Murky water", ItemID.MURKY_WATER);
 		ironKey = new ItemRequirement("Iron key", ItemID.IRON_KEY);
@@ -224,16 +238,16 @@ public class PriestInPeril extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inUnderground = new ZoneCondition(underground);
-		inTempleGroundFloor = new ZoneCondition(temple1, temple2, temple3, temple4, temple5, temple6);
-		inTempleFirstFloor = new ZoneCondition(templeFloorOne);
-		inTempleSecondFloor = new ZoneCondition(templeFloorTwo);
-		inTemple = new ZoneCondition(temple1, temple2, temple3, temple4, temple5, temple6, templeFloorOne, templeFloorTwo);
+		inUnderground = new ZoneRequirement(underground);
+		inTempleGroundFloor = new ZoneRequirement(temple1, temple2, temple3, temple4, temple5, temple6);
+		inTempleFirstFloor = new ZoneRequirement(templeFloorOne);
+		inTempleSecondFloor = new ZoneRequirement(templeFloorTwo);
+		inTemple = new ZoneRequirement(temple1, temple2, temple3, temple4, temple5, temple6, templeFloorOne, templeFloorTwo);
 
-		hasIronKey = new ItemRequirementCondition(ironKey);
-		hasGoldenOrIronKey = new Conditions(LogicType.OR, new ItemRequirementCondition(goldenKey), hasIronKey);
-		hasBlessedOrMurkyWater = new ItemRequirementCondition(murkyWater);
-		hasBlessedWater = new ItemRequirementCondition(blessedWaterHighlighted);
+		hasIronKey = new ItemRequirements(ironKey);
+		hasGoldenOrIronKey = new Conditions(LogicType.OR, new ItemRequirements(goldenKey), hasIronKey);
+		hasBlessedOrMurkyWater = new ItemRequirements(murkyWater);
+		hasBlessedWater = new ItemRequirements(blessedWaterHighlighted);
 	}
 
 	public void setupSteps()
@@ -246,7 +260,7 @@ public class PriestInPeril extends BasicQuestHelper
 		goToTemple.addDialogSteps("I'll get going.", "Roald sent me to check on Drezel.", "Sure. I'm a helpful person!");
 		goDownToDog = new ObjectStep(this, ObjectID.TRAPDOOR_1579, new WorldPoint(3405, 3507, 0), "Go down the ladder north of the temple.");
 		goDownToDog.addDialogStep("Yes.");
-		((ObjectStep)(goDownToDog)).addAlternateObjects(ObjectID.TRAPDOOR_1581);
+		((ObjectStep) (goDownToDog)).addAlternateObjects(ObjectID.TRAPDOOR_1581);
 		killTheDog = new NpcStep(this, NpcID.TEMPLE_GUARDIAN, new WorldPoint(3405, 9901, 0),
 			"Kill the Temple Guardian (level 30). It is immune to magic so you will need to use either ranged or melee.");
 		climbUpAfterKillingDog = new ObjectStep(this, ObjectID.LADDER_17385, new WorldPoint(3405, 9907, 0),
@@ -268,14 +282,14 @@ public class PriestInPeril extends BasicQuestHelper
 		fillBucket = new ObjectStep(this, ObjectID.WELL_3485, new WorldPoint(3423, 9890, 0), "Use the bucket on the well in the central room.", bucketHighlighted);
 		fillBucket.addIcon(ItemID.BUCKET);
 
-		useKeyForKey = new DetailedQuestStep(this,  "Got to the central room, and study the monuments to find which has a key on it. Use the Golden Key on it.", goldenKeyHighlighted);
+		useKeyForKey = new DetailedQuestStep(this, "Got to the central room, and study the monuments to find which has a key on it. Use the Golden Key on it.", goldenKeyHighlighted);
 		useKeyForKey.addIcon(ItemID.GOLDEN_KEY);
 
 		goDownToFloorOneTemple = new ObjectStep(this, ObjectID.LADDER_16679, new WorldPoint(3410, 3485, 2), "Go down to the underground of the temple.", bucket);
 		goDownToGroundFloorTemple = new ObjectStep(this, ObjectID.STAIRCASE_16673, new WorldPoint(3417, 3485, 0), "Go down to the underground of the temple.", bucket);
 		enterUnderground = new ObjectStep(this, ObjectID.TRAPDOOR_1579, new WorldPoint(3405, 3507, 0), "Go down to the underground of the temple.", bucket);
 		enterUnderground.addSubSteps(goDownToFloorOneTemple, goDownToGroundFloorTemple);
-		((ObjectStep)(enterUnderground)).addAlternateObjects(ObjectID.TRAPDOOR_1581);
+		((ObjectStep) (enterUnderground)).addAlternateObjects(ObjectID.TRAPDOOR_1581);
 
 		goUpWithWaterToSurface = new ObjectStep(this, ObjectID.LADDER_17385, new WorldPoint(3405, 9907, 0),
 			"Go back up to the top floor of the temple.");
@@ -295,7 +309,7 @@ public class PriestInPeril extends BasicQuestHelper
 		goDownToFloorOneAfterFreeing = new ObjectStep(this, ObjectID.LADDER_16679, new WorldPoint(3410, 3485, 2), "Go down to the underground of the temple.", lotsOfRuneEssence);
 		goDownToGroundFloorAfterFreeing = new ObjectStep(this, ObjectID.STAIRCASE_16673, new WorldPoint(3417, 3485, 0), "Go down to the underground of the temple.", lotsOfRuneEssence);
 		enterUndergroundAfterFreeing = new ObjectStep(this, ObjectID.TRAPDOOR_1579, new WorldPoint(3405, 3507, 0), "Go down to the underground of the temple.", lotsOfRuneEssence);
-		((ObjectStep)(enterUndergroundAfterFreeing)).addAlternateObjects(ObjectID.TRAPDOOR_1581);
+		((ObjectStep) (enterUndergroundAfterFreeing)).addAlternateObjects(ObjectID.TRAPDOOR_1581);
 		talkToDrezelUnderground = new NpcStep(this, NpcID.DREZEL, new WorldPoint(3439, 9896, 0), "Talk to Drezel in the east of the underground temple area.", lotsOfRuneEssence);
 		talkToDrezelUnderground.addSubSteps(goDownToFloorOneAfterFreeing, goDownToGroundFloorAfterFreeing, enterUndergroundAfterFreeing);
 
@@ -303,7 +317,7 @@ public class PriestInPeril extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(varrockTeleport);
@@ -313,7 +327,7 @@ public class PriestInPeril extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(runeEssence);
@@ -322,20 +336,20 @@ public class PriestInPeril extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Collections.singletonList("Temple guardian (level 30). Can only be hurt by ranged or melee."));
+		return Collections.singletonList("Temple guardian (level 30). Can only be hurt by ranged or melee.");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Start the quest", new ArrayList<>(Collections.singletonList(talkToRoald))));
-		allSteps.add(new PanelDetails("Go to the temple", new ArrayList<>(Arrays.asList(goToTemple, killTheDog, returnToKingRoald)), weaponAndArmour));
-		allSteps.add(new PanelDetails("Return to the temple", new ArrayList<>(Arrays.asList(returnToTemple, killMonk, talkToDrezel)), weaponAndArmour, bucket, lotsOfRuneEssence));
-		allSteps.add(new PanelDetails("Freeing Drezel", new ArrayList<>(Arrays.asList(enterUnderground, useKeyForKey, fillBucket, goUpWithWaterToSecondFloor, openDoor, blessWater, useBlessedWater, talkToDrezelAfterFreeing)), weaponAndArmour, bucket, lotsOfRuneEssence));
-		allSteps.add(new PanelDetails("Curing the Salve", new ArrayList<>(Arrays.asList(talkToDrezelUnderground, bringDrezelEssence)), runeEssence));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Start the quest", Collections.singletonList(talkToRoald)));
+		allSteps.add(new PanelDetails("Go to the temple", Arrays.asList(goToTemple, killTheDog, returnToKingRoald), weaponAndArmour));
+		allSteps.add(new PanelDetails("Return to the temple", Arrays.asList(returnToTemple, killMonk, talkToDrezel), weaponAndArmour, bucket, lotsOfRuneEssence));
+		allSteps.add(new PanelDetails("Freeing Drezel", Arrays.asList(enterUnderground, useKeyForKey, fillBucket, goUpWithWaterToSecondFloor, openDoor, blessWater, useBlessedWater, talkToDrezelAfterFreeing), weaponAndArmour, bucket, lotsOfRuneEssence));
+		allSteps.add(new PanelDetails("Curing the Salve", Arrays.asList(talkToDrezelUnderground, bringDrezelEssence), runeEssence));
 
 		return allSteps;
 	}

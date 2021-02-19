@@ -24,31 +24,37 @@
  */
 package com.questhelper.quests.theforsakentower;
 
+import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.player.FavourRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.WidgetModelRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.WidgetModelCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
+import net.runelite.api.Favour;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -56,9 +62,13 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class TheForsakenTower extends BasicQuestHelper
 {
-	ItemRequirement tinderbox, gamesNecklace, fiveGallon, eightGallon, crank, oldNotes, dinhsHammer;
+	//Items Required
+	ItemRequirement crank, oldNotes, dinhsHammer;
 
-	ConditionForStep has5Gallon, has8Gallon, hasTinderbox, inFirstFloor, inSecondFloor, inBasement, inspectedDisplayCase, finishedFurnacePuzzle, hasCrank, generatorStarted,
+	//Items Recommended
+	ItemRequirement gamesNecklace;
+
+	Requirement inFirstFloor, inSecondFloor, inBasement, inspectedDisplayCase, finishedFurnacePuzzle, hasCrank, generatorStarted,
 		powerPuzzleVisible, finishedPowerPuzzle, hasOldNotes, finishedPotionPuzzle, finishedAltarPuzzle, hasDinhsHammer;
 
 	QuestStep talkToVulcana, talkToUndor, enterTheForsakenTower, inspectDisplayCase, goDownLadderToBasement, searchCrate, inspectGenerator, inspectPowerGrid, doPowerPuzzle,
@@ -70,6 +80,7 @@ public class TheForsakenTower extends BasicQuestHelper
 
 	ConditionalStep powerPuzzle;
 
+	//Zones
 	Zone firstFloor, secondFloor, basement;
 
 	@Override
@@ -124,28 +135,25 @@ public class TheForsakenTower extends BasicQuestHelper
 		crank = new ItemRequirement("Generator crank", ItemID.GENERATOR_CRANK);
 		oldNotes = new ItemRequirement("Old notes", ItemID.OLD_NOTES_22774);
 		dinhsHammer = new ItemRequirement("Dinh's hammer", ItemID.DINHS_HAMMER);
-		gamesNecklace = new ItemRequirement("Games necklace for accessing Wintertodt", ItemID.GAMES_NECKLACE8);
+		gamesNecklace = new ItemRequirement("Games necklace for accessing Wintertodt", ItemCollections.getGamesNecklaces());
 	}
 
 	public void setupConditions()
 	{
-		inFirstFloor = new ZoneCondition(firstFloor);
-		inSecondFloor = new ZoneCondition(secondFloor);
-		inBasement = new ZoneCondition(basement);
+		inFirstFloor = new ZoneRequirement(firstFloor);
+		inSecondFloor = new ZoneRequirement(secondFloor);
+		inBasement = new ZoneRequirement(basement);
 
-		has5Gallon = new ItemRequirementCondition(fiveGallon);
-		has8Gallon = new ItemRequirementCondition(eightGallon);
-		hasTinderbox = new ItemRequirementCondition(tinderbox);
-		inspectedDisplayCase = new VarbitCondition(7804, 1);
-		finishedPowerPuzzle = new VarbitCondition(7797, 4);
-		finishedFurnacePuzzle = new VarbitCondition(7798, 4);
-		finishedPotionPuzzle = new VarbitCondition(7799, 4);
-		finishedAltarPuzzle = new VarbitCondition(7800, 2);
-		hasCrank = new ItemRequirementCondition(crank);
-		generatorStarted = new VarbitCondition(7797, 2, Operation.GREATER_EQUAL);
-		powerPuzzleVisible = new WidgetModelCondition(624, 2, 0, 36246);
-		hasOldNotes = new ItemRequirementCondition(oldNotes);
-		hasDinhsHammer = new ItemRequirementCondition(dinhsHammer);
+		inspectedDisplayCase = new VarbitRequirement(7804, 1);
+		finishedPowerPuzzle = new VarbitRequirement(7797, 4);
+		finishedFurnacePuzzle = new VarbitRequirement(7798, 4);
+		finishedPotionPuzzle = new VarbitRequirement(7799, 4);
+		finishedAltarPuzzle = new VarbitRequirement(7800, 2);
+		hasCrank = new ItemRequirements(crank);
+		generatorStarted = new VarbitRequirement(7797, 2, Operation.GREATER_EQUAL);
+		powerPuzzleVisible = new WidgetModelRequirement(624, 2, 0, 36246);
+		hasOldNotes = new ItemRequirements(oldNotes);
+		hasDinhsHammer = new ItemRequirements(dinhsHammer);
 	}
 
 	public void setupZones()
@@ -160,7 +168,11 @@ public class TheForsakenTower extends BasicQuestHelper
 		talkToVulcana = new NpcStep(this, NpcID.LADY_VULCANA_LOVAKENGJ, new WorldPoint(1483, 3747, 0), "Talk to Lady Vulcana Lovakengj in the south of Lovakengj.");
 		talkToVulcana.addDialogStep("I'm looking for a quest.");
 		talkToVulcana.addDialogStep("I'll get going.");
-		talkToUndor = new NpcStep(this, NpcID.UNDOR, new WorldPoint(1624, 3942, 0), "Talk to Undor at the entrance to Wintertodt. You can teleport there using a Games Necklace, or run north through Arceuus.");
+		talkToUndor = new NpcStep(this, NpcID.UNDOR, new WorldPoint(1624, 3942, 0),
+			"Talk to Undor at the entrance to Wintertodt. If you've never talked to Insignia before, you'll need " +
+				"to talk to her first. She is just north east of Undor. You can " +
+				"teleport there using a Games Necklace, or run" +
+				" north through Arceuus.");
 		talkToUndor.addDialogStep("I've been sent to help you.");
 
 		enterTheForsakenTower = new ObjectStep(this, ObjectID.DOOR_33491, new WorldPoint(1382, 3817, 0), "Enter the Forsaken Tower, west of Lovakengj.");
@@ -198,7 +210,7 @@ public class TheForsakenTower extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(gamesNecklace);
@@ -206,19 +218,27 @@ public class TheForsakenTower extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		return Arrays.asList(new FavourRequirement(Favour.LOVAKENGJ, 20),
+			new QuestRequirement(QuestHelperQuest.CLIENT_OF_KOUREND, QuestState.FINISHED));
+	}
 
-		allSteps.add(new PanelDetails("Stating off", new ArrayList<>(Arrays.asList(talkToVulcana, talkToUndor))));
-		allSteps.add(new PanelDetails("To the Forsaken Tower", new ArrayList<>(Arrays.asList(enterTheForsakenTower, inspectDisplayCase))));
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+
+		allSteps.add(new PanelDetails("Stating off", Arrays.asList(talkToVulcana, talkToUndor)));
+		allSteps.add(new PanelDetails("To the Forsaken Tower", Arrays.asList(enterTheForsakenTower, inspectDisplayCase)));
 		allSteps.addAll(furnacePuzzleSteps.panelDetails());
-		PanelDetails powerPuzzlePanel = new PanelDetails("Power puzzle", new ArrayList<>(Arrays.asList(goDownLadderToBasement, searchCrate, inspectGenerator, inspectPowerGrid, doPowerPuzzle)));
+		PanelDetails powerPuzzlePanel = new PanelDetails("Power puzzle",
+			Arrays.asList(goDownLadderToBasement, searchCrate, inspectGenerator, inspectPowerGrid, doPowerPuzzle));
 		powerPuzzlePanel.setLockingStep(powerPuzzle);
 		allSteps.add(powerPuzzlePanel);
 		allSteps.addAll(potionPuzzle.panelDetails());
 		allSteps.addAll(altarPuzzle.panelDetails());
-		allSteps.add(new PanelDetails("Finishing off", new ArrayList<>(Arrays.asList(getHammer, returnToUndor, returnToVulcana))));
+		allSteps.add(new PanelDetails("Finishing off", Arrays.asList(getHammer, returnToUndor, returnToVulcana)));
 		return allSteps;
 	}
 }

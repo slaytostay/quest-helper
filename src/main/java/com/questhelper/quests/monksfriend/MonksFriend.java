@@ -24,43 +24,49 @@
  */
 package com.questhelper.quests.monksfriend;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.ConditionalStep;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.ZoneCondition;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.MONKS_FRIEND
 )
 public class MonksFriend extends BasicQuestHelper
 {
-	ItemRequirement jugOfWater, log, blanket, ardougneCloak;
+	//Items Required
+	ItemRequirement jugOfWater, log, blanket;
 
-	ConditionForStep inDungeon, hasBlanket;
+	//Items Recommended
+	ItemRequirement ardougneCloak;
+
+	Requirement inDungeon, hasBlanket;
 
 	QuestStep talkToOmad, goDownLadder, grabBlanket, goUpLadder, returnToOmadWithBlanket, talkToOmadAgain, talkToCedric, talkToCedricWithJug,
 		continueTalkingToCedric, talkToCedricWithLog, finishQuest;
 
+	//Zones
 	Zone dungeon;
 
 	@Override
@@ -91,23 +97,27 @@ public class MonksFriend extends BasicQuestHelper
 		return steps;
 	}
 
-	public void setupItemRequirements() {
+	public void setupItemRequirements()
+	{
 		log = new ItemRequirement("Logs", ItemID.LOGS);
 		jugOfWater = new ItemRequirement("Jug of Water", ItemID.JUG_OF_WATER);
 		blanket = new ItemRequirement("Child's blanket", ItemID.CHILDS_BLANKET);
 		ardougneCloak = new ItemRequirement("Ardougne cloak 1 or higher for teleports to the monastery", ItemID.ARDOUGNE_CLOAK);
 	}
 
-	public void loadZones() {
+	public void loadZones()
+	{
 		dungeon = new Zone(new WorldPoint(2559, 9597, 0), new WorldPoint(2582, 9623, 0));
 	}
 
-	public void setupConditions() {
-		inDungeon = new ZoneCondition(dungeon);
-		hasBlanket = new ItemRequirementCondition(blanket);
+	public void setupConditions()
+	{
+		inDungeon = new ZoneRequirement(dungeon);
+		hasBlanket = new ItemRequirements(blanket);
 	}
 
-	public void setupSteps() {
+	public void setupSteps()
+	{
 		talkToOmad = new NpcStep(this, NpcID.BROTHER_OMAD, new WorldPoint(2607, 3211, 0), "Talk to Brother Omad in the monastery south of West Ardougne.");
 		talkToOmad.addDialogStep("Why can't you sleep, what's wrong?");
 		talkToOmad.addDialogStep("Can I help at all?");
@@ -129,7 +139,7 @@ public class MonksFriend extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(jugOfWater);
@@ -138,7 +148,7 @@ public class MonksFriend extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(ardougneCloak);
@@ -146,12 +156,12 @@ public class MonksFriend extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Collections.singletonList(talkToOmad)), jugOfWater, log));
-		allSteps.add(new PanelDetails("Finding the blanket", new ArrayList<>(Arrays.asList(goDownLadder, grabBlanket, goUpLadder, returnToOmadWithBlanket))));
-		allSteps.add(new PanelDetails("Help Cedric", new ArrayList<>(Arrays.asList(talkToOmadAgain, talkToCedric, talkToCedricWithJug, talkToCedricWithLog, finishQuest))));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Collections.singletonList(talkToOmad), jugOfWater, log));
+		allSteps.add(new PanelDetails("Finding the blanket", Arrays.asList(goDownLadder, grabBlanket, goUpLadder, returnToOmadWithBlanket)));
+		allSteps.add(new PanelDetails("Help Cedric", Arrays.asList(talkToOmadAgain, talkToCedric, talkToCedricWithJug, talkToCedricWithLog, finishQuest)));
 
 		return allSteps;
 	}

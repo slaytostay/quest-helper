@@ -24,46 +24,56 @@
  */
 package com.questhelper.quests.theslugmenace;
 
+import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.WidgetModelRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.LogicType;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ItemStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.WidgetModelCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.THE_SLUG_MENACE
 )
 public class TheSlugMenace extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement commorb, commorb2, deadSeaSlug, swampPaste, page1, page2, page3, glue, doorTranscript, pageFragment1, pageFragment2, pageFragment3,
-		essence, blankAir, blankEarth, blankWater, blankFire, blankMind, chisel, airRune, waterRune, earthRune, fireRune, mindRune, meleeGear, ardougneTeleports,
-		essence5, accessToAltars;
+		essence, blankAir, blankEarth, blankWater, blankFire, blankMind, chisel, airRune, waterRune, earthRune, fireRune, mindRune, meleeGear, essence5, accessToAltars;
 
-	ConditionForStep talkedToMaledict, talkedToHobb, talkedToHolgart, talkedToAllImportantPeople, inHobgoblinDungeon, inSeaSlugDungeon, openedWall, hasDeadSlug, hasPage1, hasPage2, hasPage3, receivedFragments,
+	//Items Recommended
+	ItemRequirement ardougneTeleports, necklaceOfPassage, airAltarTeleport, earthAltarTeleport, fireAltarTeleport, waterAltarTeleport, mindAltarTeleport;
+
+	Requirement talkedToMaledict, talkedToHobb, talkedToHolgart, talkedToAllImportantPeople, inHobgoblinDungeon, inSeaSlugDungeon, openedWall, hasDeadSlug, hasPage1, hasPage2, hasPage3, receivedFragments,
 		onPlatform, puzzleUp, repairedPage, pickedUpSlug, hasAirRune, hasWaterRune, hasEarthRune, hasFireRune, hasMindRune, hasOrUsedAirRune, hasOrUsedWaterRune, hasOrUsedEarthRune, hasOrUsedFireRune, hasOrUsedMindRune,
 		hasAllRunes, usedAirRune, usedWaterRune, usedEarthRune, usedFireRune, usedMindRune, usedAllRunes;
 
@@ -71,6 +81,7 @@ public class TheSlugMenace extends BasicQuestHelper
 		talkToNiall3, talkToMaledict2, talkToMaledict3, searchMayorsDesk, talkToLovecraft, talkToNiall4, useSwampPasteOnFragments, talkToJeb, talkToBailey, useGlueOnFragment, solvePuzzle, useEmptyRunes,
 		enterDungeonAgain, enterWallAgain, useEmptyRunesOnDoor, killSlugPrince, reportBackToTiffy, enterDungeonAgainUsedRunes;
 
+	//Zones
 	Zone hobgoblinDungeon, seaSlugDungeon, platform;
 
 	@Override
@@ -166,7 +177,7 @@ public class TheSlugMenace extends BasicQuestHelper
 		pageFragment3 = new ItemRequirement("Fragment 3", ItemID.FRAGMENT_3);
 		pageFragment3.setHighlightInInventory(true);
 
-		receivedFragments = new VarbitCondition(2619, 1);
+		receivedFragments = new VarbitRequirement(2619, 1);
 		glue = new ItemRequirement("Sea slug glue", ItemID.SEA_SLUG_GLUE);
 		glue.setHighlightInInventory(true);
 
@@ -185,14 +196,72 @@ public class TheSlugMenace extends BasicQuestHelper
 		mindRune = new ItemRequirement("Mind rune", ItemID.MIND_RUNE_9697);
 
 		meleeGear = new ItemRequirement("Melee weapon to fight the Slug Prince", -1, -1);
+		meleeGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 
 		doorTranscript = new ItemRequirement("Door transcription", ItemID.DOOR_TRANSCRIPTION);
 
-		ardougneTeleports = new ItemRequirement("Ardougne teleports", ItemID.ARDOUGNE_TELEPORT);
-		essence5 = new ItemRequirement("At least 5 rune/pure essence, 15 to be safe", ItemID.PURE_ESSENCE, -1);
+		ardougneTeleports = new ItemRequirement("Ardougne teleports", ItemID.ARDOUGNE_TELEPORT, 3);
+		essence5 = new ItemRequirement("Rune/pure essence, 15 to be safe", ItemID.PURE_ESSENCE, 5);
 		essence5.addAlternates(ItemID.RUNE_ESSENCE);
 
-		accessToAltars = new ItemRequirement("Access to air, water, earth, fire, and mind runecrafting altars", -1, -1);
+		ItemRequirement airTalisman = new ItemRequirement("Air talisman", ItemID.AIR_TALISMAN);
+		airTalisman.addAlternates(ItemID.AIR_TIARA);
+
+		ItemRequirement waterTalisman = new ItemRequirement("Water talisman", ItemID.WATER_TALISMAN);
+		waterTalisman.addAlternates(ItemID.WATER_TIARA);
+
+		ItemRequirement earthTalisman = new ItemRequirement("Air talisman", ItemID.EARTH_TALISMAN);
+		earthTalisman.addAlternates(ItemID.EARTH_TIARA);
+
+		ItemRequirement fireTalisman = new ItemRequirement("Fire talisman", ItemID.FIRE_TALISMAN);
+		fireTalisman.addAlternates(ItemID.FIRE_TIARA);
+
+		ItemRequirement mindTalisman = new ItemRequirement("Mind talisman", ItemID.MIND_TALISMAN);
+		mindTalisman.addAlternates(ItemID.MIND_TIARA);
+
+		accessToAltars = new ItemRequirements("Access to air, water, earth, fire, and mind runecrafting altars",
+			airTalisman, waterTalisman, earthTalisman, fireTalisman, mindTalisman);
+
+		necklaceOfPassage = new ItemRequirement("Necklace of Passage", ItemCollections.getNecklaceOfPassages());
+
+		airAltarTeleport = new ItemRequirement("Teleport near Air Altar", ItemCollections.getSkillsNecklaces());
+		airAltarTeleport.addAlternates(ItemID.FALADOR_TELEPORT, ItemID.RIMMINGTON_TELEPORT);
+		airAltarTeleport.setDisplayMatchedItemName(true);
+		airAltarTeleport.setTooltip("The best items for this are (in order):");
+		airAltarTeleport.appendToTooltip("Skill Necklace (to Crafting Guild)");
+		airAltarTeleport.appendToTooltip("Falador Teleport");
+		airAltarTeleport.appendToTooltip("Rimmington/House Teleport");
+
+		earthAltarTeleport = new ItemRequirement("Teleport near Earth Altar", ItemCollections.getDigsitePendants());
+		earthAltarTeleport.addAlternates(ItemID.VARROCK_TELEPORT, ItemID.LUMBERYARD_TELEPORT, ItemID.DIGSITE_TELEPORT);
+		earthAltarTeleport.setDisplayMatchedItemName(true);
+		earthAltarTeleport.setTooltip("The best items for this are (in order):");
+		earthAltarTeleport.appendToTooltip("Lumberyard Teleport");
+		earthAltarTeleport.appendToTooltip("Digsite Pendant(s)");
+		earthAltarTeleport.appendToTooltip("Digsite Teleport");
+		earthAltarTeleport.appendToTooltip("Varrock Teleports");
+
+		fireAltarTeleport = new ItemRequirement("Teleport near Fire Altar", ItemCollections.getRingOfDuelings());
+		fireAltarTeleport.addAlternates(ItemCollections.getAmuletOfGlories());
+		fireAltarTeleport.setTooltip("The best items for this are (in order):");
+		fireAltarTeleport.appendToTooltip("Ring of Dueling");
+		fireAltarTeleport.appendToTooltip("Amulet of Glory (to Al Kharid)");
+
+		waterAltarTeleport = new ItemRequirement("Teleport near Water Altar", ItemID.LUMBRIDGE_GRAVEYARD_TELEPORT);
+		waterAltarTeleport.addAlternates(ItemID.LUMBRIDGE_TELEPORT);
+		waterAltarTeleport.setTooltip("The best items for this are (in order):");
+		waterAltarTeleport.appendToTooltip("Lumbridge Graveyard Teleport");
+		waterAltarTeleport.appendToTooltip("Lumbridge Teleport");
+
+		mindAltarTeleport = new ItemRequirement("Teleport near Mind Altar", ItemID.MIND_ALTAR_TELEPORT);
+		mindAltarTeleport.addAlternates(ItemID.FALADOR_TELEPORT, ItemID.LASSAR_TELEPORT, ItemID.TAVERLEY_TELEPORT);
+		mindAltarTeleport.addAlternates(ItemCollections.getCombatBracelets());
+		mindAltarTeleport.setTooltip("The best items for this are (in order):");
+		mindAltarTeleport.appendToTooltip("Mind Altar Teleport (highly recommended)");
+		mindAltarTeleport.appendToTooltip("Lassar Teleport (Ice Mountain)");
+		mindAltarTeleport.appendToTooltip("Combat Bracelet to Monastery");
+		mindAltarTeleport.appendToTooltip("Falador Teleport");
+		mindAltarTeleport.appendToTooltip("Taverley Teleport");
 	}
 
 	public void loadZones()
@@ -204,38 +273,38 @@ public class TheSlugMenace extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		talkedToHolgart = new VarbitCondition(2614, 1);
-		talkedToHobb = new VarbitCondition(2615, 1);
-		talkedToMaledict = new VarbitCondition(2616, 1);
-		talkedToAllImportantPeople = new VarbitCondition(2617, 7);
-		inHobgoblinDungeon = new ZoneCondition(hobgoblinDungeon);
-		inSeaSlugDungeon = new ZoneCondition(seaSlugDungeon);
-		openedWall = new VarbitCondition(2618, 1);
+		talkedToHolgart = new VarbitRequirement(2614, 1);
+		talkedToHobb = new VarbitRequirement(2615, 1);
+		talkedToMaledict = new VarbitRequirement(2616, 1);
+		talkedToAllImportantPeople = new VarbitRequirement(2617, 7);
+		inHobgoblinDungeon = new ZoneRequirement(hobgoblinDungeon);
+		inSeaSlugDungeon = new ZoneRequirement(seaSlugDungeon);
+		openedWall = new VarbitRequirement(2618, 1);
 
-		hasDeadSlug = new ItemRequirementCondition(deadSeaSlug);
-		hasPage1 = new ItemRequirementCondition(page1);
-		hasPage2 = new ItemRequirementCondition(page2);
-		hasPage3 = new ItemRequirementCondition(page3);
+		hasDeadSlug = new ItemRequirements(deadSeaSlug);
+		hasPage1 = new ItemRequirements(page1);
+		hasPage2 = new ItemRequirements(page2);
+		hasPage3 = new ItemRequirements(page3);
 
-		onPlatform = new ZoneCondition(platform);
+		onPlatform = new ZoneRequirement(platform);
 
-		puzzleUp = new WidgetModelCondition(460, 4, 18393);
+		puzzleUp = new WidgetModelRequirement(460, 4, 18393);
 
-		repairedPage = new VarbitCondition(2611, 1);
+		repairedPage = new VarbitRequirement(2611, 1);
 
-		pickedUpSlug = new VarbitCondition(2631, 1);
+		pickedUpSlug = new VarbitRequirement(2631, 1);
 
-		hasAirRune = new ItemRequirementCondition(airRune);
-		hasEarthRune = new ItemRequirementCondition(earthRune);
-		hasWaterRune = new ItemRequirementCondition(waterRune);
-		hasFireRune = new ItemRequirementCondition(fireRune);
-		hasMindRune = new ItemRequirementCondition(mindRune);
+		hasAirRune = new ItemRequirements(airRune);
+		hasEarthRune = new ItemRequirements(earthRune);
+		hasWaterRune = new ItemRequirements(waterRune);
+		hasFireRune = new ItemRequirements(fireRune);
+		hasMindRune = new ItemRequirements(mindRune);
 
-		usedAirRune = new VarbitCondition(2623, 1);
-		usedEarthRune = new VarbitCondition(2622, 1);
-		usedWaterRune = new VarbitCondition(2625, 1);
-		usedFireRune = new VarbitCondition(2624, 1);
-		usedMindRune = new VarbitCondition(2626, 1);
+		usedAirRune = new VarbitRequirement(2623, 1);
+		usedEarthRune = new VarbitRequirement(2622, 1);
+		usedWaterRune = new VarbitRequirement(2625, 1);
+		usedFireRune = new VarbitRequirement(2624, 1);
+		usedMindRune = new VarbitRequirement(2626, 1);
 
 		hasOrUsedAirRune = new Conditions(LogicType.OR, hasAirRune, usedAirRune);
 		hasOrUsedWaterRune = new Conditions(LogicType.OR, hasWaterRune, usedWaterRune);
@@ -245,7 +314,7 @@ public class TheSlugMenace extends BasicQuestHelper
 
 		hasAllRunes = new Conditions(hasOrUsedAirRune, hasOrUsedEarthRune, hasOrUsedFireRune, hasOrUsedMindRune, hasOrUsedWaterRune);
 
-		usedAllRunes = new VarbitCondition(2627, 31);
+		usedAllRunes = new VarbitRequirement(2627, 31);
 	}
 
 	public void setupSteps()
@@ -277,7 +346,8 @@ public class TheSlugMenace extends BasicQuestHelper
 		tryToOpenImposingDoor = new ObjectStep(this, ObjectID.IMPOSING_DOORS, new WorldPoint(2351, 5093, 0), "Follow the path until you reach an imposing door, and try opening it. After, try scanning with the commorb v2.", commorb2);
 		scanWithComm = new DetailedQuestStep(this, "Try scanning with the commorb.", commorb);
 		pickUpDeadSlug = new ItemStep(this, "Pick up the dead sea slug next to the imposing door.", deadSeaSlug);
-		talkToJorral = new NpcStep(this, NpcID.JORRAL, new WorldPoint(2436, 3347, 0), "Talk to Jorral north of West Ardougne.");
+		talkToJorral = new NpcStep(this, NpcID.JORRAL, new WorldPoint(2436, 3347, 0), "Talk to Jorral north of West Ardougne.", necklaceOfPassage);
+		talkToJorral.addDialogStep("Translations");
 		talkToNiall3 = new NpcStep(this, NpcID.COL_ONIALL, new WorldPoint(2739, 3311, 0), "Return to Col. O'Niall on the pier in Witchaven.");
 		talkToMaledict2 = new NpcStep(this, NpcID.BROTHER_MALEDICT, new WorldPoint(2724, 3283, 0), "Talk to Brother Maledict in the church.");
 		talkToMaledict3 = new NpcStep(this, NpcID.BROTHER_MALEDICT_4788, new WorldPoint(2724, 3283, 0), "Talk to Brother Maledict in the church.");
@@ -291,7 +361,7 @@ public class TheSlugMenace extends BasicQuestHelper
 
 		solvePuzzle = new PuzzleStep(this);
 
-		useEmptyRunes = new DetailedQuestStep(this, "Right-click each page to turn rune/pure essence into empty runes. Take each empty rune and use it on its respective Runecrafting Altar.", page1, page2, page3 ,essence, chisel);
+		useEmptyRunes = new DetailedQuestStep(this, "Right-click each page to turn rune/pure essence into empty runes. Take each empty rune and use it on its respective Runecrafting Altar.", page1, page2, page3, essence, chisel);
 
 		enterDungeonAgain = new ObjectStep(this, ObjectID.OLD_RUIN_ENTRANCE, new WorldPoint(2696, 3283, 0), "Prepare to fight the Slug Prince (level 62). Only melee can hurt it. Then, enter the old ruin entrance west of Witchaven.", meleeGear, airRune, waterRune, earthRune, fireRune, mindRune);
 		enterDungeonAgainUsedRunes = new ObjectStep(this, ObjectID.OLD_RUIN_ENTRANCE, new WorldPoint(2696, 3283, 0), "Prepare to fight the Slug Prince (level 62). Only melee can hurt it. Then, enter the old ruin entrance west of Witchaven.", meleeGear);
@@ -306,7 +376,7 @@ public class TheSlugMenace extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(commorb);
@@ -318,15 +388,17 @@ public class TheSlugMenace extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(ardougneTeleports);
+		reqs.add(necklaceOfPassage);
+		reqs.addAll(Arrays.asList(airAltarTeleport, earthAltarTeleport, fireAltarTeleport, waterAltarTeleport, mindAltarTeleport));
 		return reqs;
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Slug Prince (level 62) (can only be hurt by melee)");
@@ -334,14 +406,27 @@ public class TheSlugMenace extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Collections.singletonList(talkToTiffy)), commorb));
-		allSteps.add(new PanelDetails("Investigating", new ArrayList<>(Arrays.asList(talkToNiall, talkToMaledict, talkToHobb, talkToHolgart, talkToNiall2, enterDungeon, pushFalseWall, tryToOpenImposingDoor,
-			scanWithComm, pickUpDeadSlug)), commorb2));
-		allSteps.add(new PanelDetails("Uncovering the truth", new ArrayList<>(Arrays.asList(talkToJorral, talkToNiall3, talkToMaledict2, searchMayorsDesk, talkToLovecraft, talkToNiall4, useSwampPasteOnFragments, talkToJeb, talkToBailey, useGlueOnFragment, solvePuzzle, useEmptyRunes)), commorb2, deadSeaSlug, swampPaste, chisel, essence5, accessToAltars));
-		allSteps.add(new PanelDetails("Facing the prince", new ArrayList<>(Arrays.asList(enterDungeonAgain, enterWallAgain, useEmptyRunesOnDoor, killSlugPrince, reportBackToTiffy)), meleeGear, airRune, waterRune, earthRune, fireRune, mindRune));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.WANTED, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.SEA_SLUG, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.CRAFTING, 30));
+		req.add(new SkillRequirement(Skill.RUNECRAFT, 30));
+		req.add(new SkillRequirement(Skill.SLAYER, 30));
+		req.add(new SkillRequirement(Skill.THIEVING, 30));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Collections.singletonList(talkToTiffy), commorb));
+		allSteps.add(new PanelDetails("Investigating", Arrays.asList(talkToNiall, talkToMaledict, talkToHobb, talkToHolgart, talkToNiall2, enterDungeon, pushFalseWall, tryToOpenImposingDoor,
+			scanWithComm, pickUpDeadSlug), commorb2));
+		allSteps.add(new PanelDetails("Uncovering the truth", Arrays.asList(talkToJorral, talkToNiall3, talkToMaledict2, searchMayorsDesk, talkToLovecraft, talkToNiall4, useSwampPasteOnFragments, talkToJeb, talkToBailey, useGlueOnFragment, solvePuzzle, useEmptyRunes), commorb2, deadSeaSlug, swampPaste, chisel, essence5, accessToAltars));
+		allSteps.add(new PanelDetails("Facing the prince", Arrays.asList(enterDungeonAgain, enterWallAgain, useEmptyRunesOnDoor, killSlugPrince, reportBackToTiffy), meleeGear, airRune, waterRune, earthRune, fireRune, mindRune));
 		return allSteps;
 	}
 }

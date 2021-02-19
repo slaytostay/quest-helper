@@ -24,28 +24,35 @@
  */
 package com.questhelper.quests.recipefordisaster;
 
+import com.questhelper.ItemCollections;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.QuestVarbits;
 import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.quest.QuestPointRequirement;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import net.runelite.api.Client;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
+import net.runelite.api.QuestState;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -55,11 +62,12 @@ public class RFDFinal extends BasicQuestHelper
 {
 	ItemRequirement iceGloves, restorePotions, combatGear;
 
-	ConditionForStep inFightArena, killedAgrith, killedFlambeed, killedKaramel, killedDessourt, killedMother;
+	Requirement inFightArena, killedAgrith, killedFlambeed, killedKaramel, killedDessourt, killedMother;
 
 	QuestStep enterPortal, killAgrith, enterPortalFlambeed, killFlambeed, enterPortalKaramel, killKaramel, enterPortalDessourt, killDessourt,
 		enterPortalMother, killMother, enterPortalCulinaromancer, killCulinaromancer;
 
+	//Zones
 	Zone fightArena;
 
 	@Override
@@ -97,25 +105,25 @@ public class RFDFinal extends BasicQuestHelper
 	public void setupRequirements()
 	{
 		iceGloves = new ItemRequirement("Ice gloves", ItemID.ICE_GLOVES);
-		restorePotions = new ItemRequirement("Restore potions for Karamel", ItemID.SUPER_RESTORE1);
-		restorePotions.addAlternates(ItemID.SUPER_RESTORE2, ItemID.SUPER_RESTORE3, ItemID.SUPER_RESTORE4, ItemID.RESTORE_POTION1, ItemID.RESTORE_POTION2, ItemID.RESTORE_POTION3, ItemID.RESTORE_POTION4);
+		restorePotions = new ItemRequirement("Restore potions for Karamel", ItemCollections.getRestorePotions());
 		combatGear = new ItemRequirement("Combat gear, food and potions", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 
 	}
 
 	public void loadZones()
 	{
 		fightArena = new Zone(new WorldPoint(1889, 5345, 2), new WorldPoint(1910, 5366, 2));
-		killedAgrith = new VarbitCondition(1855, 1);
-		killedFlambeed = new VarbitCondition(1855, 2);
-		killedKaramel = new VarbitCondition(1855, 3);
-		killedDessourt = new VarbitCondition(1855, 4);
-		killedMother = new VarbitCondition(1855, 5);
+		killedAgrith = new VarbitRequirement(1855, 1);
+		killedFlambeed = new VarbitRequirement(1855, 2);
+		killedKaramel = new VarbitRequirement(1855, 3);
+		killedDessourt = new VarbitRequirement(1855, 4);
+		killedMother = new VarbitRequirement(1855, 5);
 	}
 
 	public void setupConditions()
 	{
-		inFightArena = new ZoneCondition(fightArena);
+		inFightArena = new ZoneRequirement(fightArena);
 	}
 
 	public void setupSteps()
@@ -146,23 +154,45 @@ public class RFDFinal extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(iceGloves, restorePotions, combatGear));
+		return Arrays.asList(iceGloves, restorePotions, combatGear);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("Agrith-Na-Na (level 146)", "Flambeed (level 149)", "Karamel (level 136)", "Dessourt (level 121)", "Gelatinnoth Mother (level 130)", "Culinaromancer (level 75)"));
+		return Arrays.asList("Agrith-Na-Na (level 146)", "Flambeed (level 149)", "Karamel (level 136)", "Dessourt (level 121)", "Gelatinnoth Mother (level 130)", "Culinaromancer (level 75)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Defeating the Culinaromancer", new ArrayList<>(Arrays.asList(enterPortal, killAgrith, killFlambeed, killKaramel, killDessourt, killMother, killCulinaromancer))));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestPointRequirement(175));
+		req.add(new QuestRequirement(QuestHelperQuest.DESERT_TREASURE, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.HORROR_FROM_THE_DEEP, QuestState.FINISHED));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Defeating the Culinaromancer", Arrays.asList(enterPortal, killAgrith, killFlambeed, killKaramel, killDessourt, killMother, killCulinaromancer)));
 		return allSteps;
+	}
+
+	@Override
+	public QuestState getState(Client client)
+	{
+		int questState = client.getVarbitValue(QuestVarbits.QUEST_RECIPE_FOR_DISASTER.getId());
+		if (questState < 4)
+		{
+			return QuestState.NOT_STARTED;
+		}
+
+		return getQuest().getState(client);
 	}
 
 	@Override

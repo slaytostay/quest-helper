@@ -24,43 +24,25 @@
  */
 package com.questhelper.steps;
 
+import com.questhelper.QuestHelperPlugin;
+import com.questhelper.questhelpers.QuestHelper;
 import com.questhelper.requirements.Requirement;
-import java.awt.Graphics2D;
-import java.awt.Shape;
+import com.questhelper.steps.overlay.DirectionArrow;
+import com.questhelper.steps.tools.QuestPerspective;
+import net.runelite.api.Point;
+import net.runelite.api.*;
+import net.runelite.api.coords.LocalPoint;
+import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.events.*;
+import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.ui.overlay.OverlayUtil;
+
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import net.runelite.api.GameObject;
-import net.runelite.api.GameState;
-import net.runelite.api.Point;
-import net.runelite.api.Tile;
-import net.runelite.api.TileObject;
-import net.runelite.api.coords.LocalPoint;
-import net.runelite.api.coords.WorldPoint;
-import net.runelite.api.events.DecorativeObjectChanged;
-import net.runelite.api.events.DecorativeObjectDespawned;
-import net.runelite.api.events.DecorativeObjectSpawned;
-import net.runelite.api.events.GameObjectChanged;
-import net.runelite.api.events.GameObjectDespawned;
-import net.runelite.api.events.GameObjectSpawned;
-import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.GameTick;
-import net.runelite.api.events.GroundObjectChanged;
-import net.runelite.api.events.GroundObjectDespawned;
-import net.runelite.api.events.GroundObjectSpawned;
-import net.runelite.api.events.WallObjectChanged;
-import net.runelite.api.events.WallObjectDespawned;
-import net.runelite.api.events.WallObjectSpawned;
-import net.runelite.client.eventbus.Subscribe;
-import com.questhelper.QuestHelperPlugin;
-import static com.questhelper.QuestHelperWorldOverlay.CLICKBOX_BORDER_COLOR;
-import static com.questhelper.QuestHelperWorldOverlay.CLICKBOX_FILL_COLOR;
-import static com.questhelper.QuestHelperWorldOverlay.CLICKBOX_HOVER_BORDER_COLOR;
-import com.questhelper.questhelpers.QuestHelper;
-import net.runelite.client.ui.overlay.OverlayUtil;
 
 public class ObjectStep extends DetailedQuestStep
 {
@@ -69,6 +51,8 @@ public class ObjectStep extends DetailedQuestStep
 	private TileObject object;
 
 	private final List<TileObject> objects = new ArrayList<>();
+	private int lastPlane;
+	private boolean revalidateObjects;
 
 	public ObjectStep(QuestHelper questHelper, int objectID, WorldPoint worldPoint, String text, Requirement... requirements)
 	{
@@ -82,41 +66,60 @@ public class ObjectStep extends DetailedQuestStep
 		this.objectID = objectID;
 	}
 
+	public void setRevalidateObjects(boolean value)
+	{
+		this.revalidateObjects = value;
+	}
+
 	@Override
 	public void startUp()
 	{
 		super.startUp();
-
 		if (worldPoint != null)
 		{
 			checkTileForObject(worldPoint);
 		}
 		else
 		{
-			Tile[][] tiles = client.getScene().getTiles()[client.getPlane()];
-			for (Tile[] lineOfTiles : tiles)
-			{
-				for (Tile tile : lineOfTiles)
-				{
-					if (tile != null)
-					{
-						for (GameObject object : tile.getGameObjects())
-						{
-							handleObjects(object);
-						}
+			loadObjects();
+		}
+	}
 
-						handleObjects(tile.getDecorativeObject());
-						handleObjects(tile.getGroundObject());
-						handleObjects(tile.getWallObject());
+	private void loadObjects()
+	{
+		objects.clear();
+		Tile[][] tiles = client.getScene().getTiles()[client.getPlane()];
+		for (Tile[] lineOfTiles : tiles)
+		{
+			for (Tile tile : lineOfTiles)
+			{
+				if (tile != null)
+				{
+					for (GameObject object : tile.getGameObjects())
+					{
+						handleObjects(object);
 					}
+
+					handleObjects(tile.getDecorativeObject());
+					handleObjects(tile.getGroundObject());
+					handleObjects(tile.getWallObject());
 				}
 			}
 		}
 	}
 
+
 	@Subscribe
 	public void onGameTick(final GameTick event)
 	{
+		if (revalidateObjects)
+		{
+			if (lastPlane != client.getPlane())
+			{
+				lastPlane = client.getPlane();
+				loadObjects();
+			}
+		}
 		if (worldPoint == null)
 		{
 			return;
@@ -128,7 +131,7 @@ public class ObjectStep extends DetailedQuestStep
 
 	public void checkTileForObject(WorldPoint wp)
 	{
-		Collection<WorldPoint> localWorldPoints = toLocalInstance(client, wp);
+		Collection<WorldPoint> localWorldPoints = QuestPerspective.toLocalInstance(client, wp);
 
 		for (WorldPoint point : localWorldPoints)
 		{
@@ -146,11 +149,7 @@ public class ObjectStep extends DetailedQuestStep
 			Tile tile = tiles[client.getPlane()][localPoint.getSceneX()][localPoint.getSceneY()];
 			if (tile != null)
 			{
-				for (GameObject object : tile.getGameObjects())
-				{
-					handleObjects(object);
-				}
-
+				Arrays.stream(tile.getGameObjects()).forEach(this::handleObjects);
 				handleObjects(tile.getDecorativeObject());
 				handleObjects(tile.getGroundObject());
 				handleObjects(tile.getWallObject());
@@ -277,39 +276,42 @@ public class ObjectStep extends DetailedQuestStep
 		{
 			if (tileObject.getPlane() == client.getPlane())
 			{
-				OverlayUtil.renderHoverableArea(graphics, tileObject.getClickbox(), mousePosition,
-					CLICKBOX_FILL_COLOR, CLICKBOX_BORDER_COLOR, CLICKBOX_HOVER_BORDER_COLOR);
+				Color configColor = getQuestHelper().getConfig().targetOverlayColor();
+				Color fillColor = new Color(configColor.getRed(), configColor.getGreen(), configColor.getBlue(), 20);
+				OverlayUtil.renderHoverableArea(graphics, tileObject.getClickbox(), mousePosition, fillColor,
+					getQuestHelper().getConfig().targetOverlayColor().darker(),
+					getQuestHelper().getConfig().targetOverlayColor());
 			}
 		}
 
-		if (iconItemID != -1 && object != null)
+		if (iconItemID != -1 && object != null && questHelper.getConfig().showSymbolOverlay())
 		{
 			Shape clickbox = object.getClickbox();
-			if (clickbox != null)
+			if (clickbox != null && !inCutscene)
 			{
 				Rectangle2D boundingBox = clickbox.getBounds2D();
-				addItemImageToLocation(graphics, (int) boundingBox.getCenterX() - 15, (int) boundingBox.getCenterY() - 10);
+				graphics.drawImage(icon, (int) boundingBox.getCenterX() - 15,  (int) boundingBox.getCenterY() - 10,
+					null);
 			}
 		}
 	}
 
-	@Override
-	public void renderArrow(Graphics2D graphics)
-	{
-		if (object == null || ! hideWorldArrow)
-		{
-			return;
-		}
-		Shape clickbox = object.getClickbox();
-		if (clickbox != null)
-		{
-			BufferedImage arrow = getArrow();
-			Rectangle2D boundingBox = clickbox.getBounds2D();
-			int x = (int) boundingBox.getCenterX() - ARROW_SHIFT_X;
-			int y = (int) boundingBox.getMinY() - ARROW_SHIFT_Y;
-			Point point = new Point(x, y);
 
-			OverlayUtil.renderImageLocation(graphics, point, arrow);
+
+	@Override
+	public void renderArrow(Graphics2D graphics) {
+		if (questHelper.getConfig().showMiniMapArrow()) {
+			if (object == null || hideWorldArrow) {
+				return;
+			}
+			Shape clickbox = object.getClickbox();
+			if (clickbox != null && questHelper.getConfig().showMiniMapArrow()) {
+				Rectangle2D boundingBox = clickbox.getBounds2D();
+				int x = (int) boundingBox.getCenterX();
+				int y = (int) boundingBox.getMinY() - 20;
+
+				DirectionArrow.drawWorldArrow(graphics, getQuestHelper().getConfig().targetOverlayColor(), x, y);
+			}
 		}
 	}
 
@@ -318,13 +320,9 @@ public class ObjectStep extends DetailedQuestStep
 		if (object.equals(this.object))
 		{
 			this.object = null;
-			clearArrow();
 		}
 
-		if (objects.contains(object))
-		{
-			objects.remove(object);
-		}
+		objects.remove(object);
 	}
 
 	private void handleObjects(TileObject object)
@@ -337,20 +335,45 @@ public class ObjectStep extends DetailedQuestStep
 		Collection<WorldPoint> localWorldPoints = null;
 		if (worldPoint != null)
 		{
-			localWorldPoints = toLocalInstance(client, worldPoint);
+			localWorldPoints = QuestPerspective.toLocalInstance(client, worldPoint);
 		}
-		
+
 		if (object.getId() == objectID || alternateObjectIDs.contains(object.getId()))
 		{
-			if (localWorldPoints != null && localWorldPoints.contains(object.getWorldLocation()))
+			setObjects(object, localWorldPoints);
+			return;
+		}
+
+		final ObjectComposition comp = client.getObjectDefinition(object.getId());
+		final int[] impostorIds = comp.getImpostorIds();
+
+		if (impostorIds != null && comp.getImpostor() != null)
+		{
+			boolean imposterIsMainObject = comp.getImpostor().getId() == objectID;
+			boolean imposterIsAlternateObject = alternateObjectIDs.contains(comp.getImpostor().getId());
+			if (imposterIsMainObject || imposterIsAlternateObject)
 			{
-				this.object = object;
-				this.objects.add(object);
-				return;
+				setObjects(object, localWorldPoints);
 			}
-			if (worldPoint == null)
+		}
+	}
+
+	private void setObjects(TileObject object, Collection<WorldPoint> localWorldPoints)
+	{
+		if (localWorldPoints != null && localWorldPoints.contains(object.getWorldLocation()))
+		{
+			this.object = object;
+			if (!this.objects.contains(object))
 			{
-				this.object = object;
+				this.objects.add(object);
+			}
+			return;
+		}
+		if (worldPoint == null)
+		{
+			this.object = object;
+			if (!this.objects.contains(object))
+			{
 				this.objects.add(object);
 			}
 		}

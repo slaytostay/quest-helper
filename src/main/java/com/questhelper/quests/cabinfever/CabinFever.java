@@ -24,44 +24,53 @@
  */
 package com.questhelper.quests.cabinfever;
 
+import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.player.FreeInventorySlotRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.LogicType;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import net.runelite.api.InventoryID;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.CABIN_FEVER
 )
 public class CabinFever extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement food, fuse1, tinderbox, ropes4, ropeHighlight, fuseHighlight, floorTinderbox, rope3, floorRope, tinderboxHighlight, planks2, planks4,
 		planks6, hammer, tacks10, tacks20, tacks30, paste1, paste2, paste3, ropes2, loot10, plunderHighlight, barrel, gunpowder, ramrod, canister,
 		powderHighlight, ramrodHighlight, canisterHighlight, fuses, cannonball, cannonballHighlight;
 
-	ConditionForStep onBoatF0, onBoatF1, onBoatF2, onEnemyBoatF0, onEnemyBoatF1, onEnemyBoatF2, onEnemyBoat, onBoatAtDock, hasRopes4, hasTinderbox, hasFuseOrAdded,
+	Requirement onBoatF0, onBoatF1, onBoatF2, onEnemyBoatF0, onEnemyBoatF1, onEnemyBoatF2, onEnemyBoat, onBoatAtDock, hasRopes4, hasTinderbox, hasFuseOrAdded,
 		hasSetSail, onSail, onEnemySail, hasRope, addedFuse, explodedBarrel, hasPlank6, hasPlank4, hasPlank2, hasHammer, hasTacks30, hasTacks60, hasTacks90,
 		hasPaste3, hasPaste6, hasPaste9, planked1, planked2, planked3, pasted1, pasted2, pasted3, hasPlanked1, hasPlanked2, hasPlanked3,
 		hasRepaired1, hasRepaired2, hasRepaired3, hasRopes2, lootedAll, has10Plunder, hasBarrel, cannonBroken, addedPowder, hasFuse, hasCanister, hasRamrod,
@@ -81,6 +90,7 @@ public class CabinFever extends BasicQuestHelper
 	ObjectStep take4Ropes, take1Fuse, takeHoleItems1, takeHoleItems2, takeHoleItems3, takePasteHole1, takePasteHole2, takePasteHole3, take2Ropes, lootEnemyShip, takeBarrel, getRamrod,
 		getBalls;
 
+	//Zones
 	Zone boatAtDock, boatF0, boatF1, boatF2, enemyBoatF0, enemyBoatF1, enemyBoatF2, sail, enemySail;
 
 	@Override
@@ -332,14 +342,14 @@ public class CabinFever extends BasicQuestHelper
 
 	public void setupItemRequirements()
 	{
-		food = new ItemRequirement("Food", -1, -1);
+		food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
 		fuse1 = new ItemRequirement("Fuse", ItemID.FUSE);
 		ropes4 = new ItemRequirement("Rope", ItemID.ROPE, 4);
 		ropes2 = new ItemRequirement("Rope", ItemID.ROPE, 2);
 		ropeHighlight = new ItemRequirement("Rope", ItemID.ROPE);
 		ropeHighlight.setHighlightInInventory(true);
 		tinderbox = new ItemRequirement("Tinderbox", ItemID.TINDERBOX);
-		tinderbox.setTip("You can get another from the ship's hull");
+		tinderbox.setTooltip("You can get another from the ship's hull");
 		tinderboxHighlight = new ItemRequirement("Tinderbox", ItemID.TINDERBOX);
 		tinderboxHighlight.setHighlightInInventory(true);
 		floorTinderbox = new ItemRequirement("Tinderbox", ItemID.TINDERBOX_7156);
@@ -400,76 +410,76 @@ public class CabinFever extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		onBoatAtDock = new ZoneCondition(boatAtDock);
-		onBoatF0 = new ZoneCondition(boatF0);
-		onBoatF1 = new ZoneCondition(boatF1);
-		onBoatF2 = new ZoneCondition(boatF2);
-		onSail = new ZoneCondition(sail);
+		onBoatAtDock = new ZoneRequirement(boatAtDock);
+		onBoatF0 = new ZoneRequirement(boatF0);
+		onBoatF1 = new ZoneRequirement(boatF1);
+		onBoatF2 = new ZoneRequirement(boatF2);
+		onSail = new ZoneRequirement(sail);
 
-		onEnemyBoatF0 = new ZoneCondition(enemyBoatF0);
-		onEnemyBoatF1 = new ZoneCondition(enemyBoatF1);
-		onEnemyBoatF2 = new ZoneCondition(enemyBoatF2);
-		onEnemySail = new ZoneCondition(enemySail);
-		onEnemyBoat = new ZoneCondition(enemyBoatF0, enemyBoatF1, enemyBoatF2, enemySail);
+		onEnemyBoatF0 = new ZoneRequirement(enemyBoatF0);
+		onEnemyBoatF1 = new ZoneRequirement(enemyBoatF1);
+		onEnemyBoatF2 = new ZoneRequirement(enemyBoatF2);
+		onEnemySail = new ZoneRequirement(enemySail);
+		onEnemyBoat = new ZoneRequirement(enemyBoatF0, enemyBoatF1, enemyBoatF2, enemySail);
 
-		hasSetSail = new VarbitCondition(1741, 1);
-		hasRopes4 = new ItemRequirementCondition(ropes4);
-		hasRopes2 = new ItemRequirementCondition(ropes2);
-		hasTinderbox = new ItemRequirementCondition(tinderbox);
-		hasRope = new ItemRequirementCondition(ropeHighlight);
+		hasSetSail = new VarbitRequirement(1741, 1);
+		hasRopes4 = new ItemRequirements(ropes4);
+		hasRopes2 = new ItemRequirements(ropes2);
+		hasTinderbox = new ItemRequirements(tinderbox);
+		hasRope = new ItemRequirements(ropeHighlight);
 
-		addedFuse = new VarbitCondition(1756, 2);
-		hasFuseOrAdded = new Conditions(LogicType.OR, new ItemRequirementCondition(fuse1), addedFuse);
+		addedFuse = new VarbitRequirement(1756, 2);
+		hasFuseOrAdded = new Conditions(LogicType.OR, new ItemRequirements(fuse1), addedFuse);
 
-		explodedBarrel = new VarbitCondition(1756, 1);
+		explodedBarrel = new VarbitRequirement(1756, 1);
 		// 1740 1 if swinging
 
-		planked1 = new VarbitCondition(1751, 1);
-		planked2 = new VarbitCondition(1757, 1);
-		planked3 = new VarbitCondition(1758, 1);
-		pasted1 = new VarbitCondition(1751, 2);
-		pasted2 = new VarbitCondition(1757, 2);
-		pasted3 = new VarbitCondition(1758, 2);
+		planked1 = new VarbitRequirement(1751, 1);
+		planked2 = new VarbitRequirement(1757, 1);
+		planked3 = new VarbitRequirement(1758, 1);
+		pasted1 = new VarbitRequirement(1751, 2);
+		pasted2 = new VarbitRequirement(1757, 2);
+		pasted3 = new VarbitRequirement(1758, 2);
 
-		hasHammer = new ItemRequirementCondition(hammer);
-		hasPlank2 = new ItemRequirementCondition(planks2);
-		hasPlank4 = new ItemRequirementCondition(planks4);
-		hasPlank6 = new ItemRequirementCondition(planks6);
-		hasTacks30 = new ItemRequirementCondition(tacks10);
-		hasTacks60 = new ItemRequirementCondition(tacks20);
-		hasTacks90 = new ItemRequirementCondition(tacks30);
-		hasPaste3 = new ItemRequirementCondition(paste1);
-		hasPaste6 = new ItemRequirementCondition(paste2);
-		hasPaste9 = new ItemRequirementCondition(paste3);
+		hasHammer = new ItemRequirements(hammer);
+		hasPlank2 = new ItemRequirements(planks2);
+		hasPlank4 = new ItemRequirements(planks4);
+		hasPlank6 = new ItemRequirements(planks6);
+		hasTacks30 = new ItemRequirements(tacks10);
+		hasTacks60 = new ItemRequirements(tacks20);
+		hasTacks90 = new ItemRequirements(tacks30);
+		hasPaste3 = new ItemRequirements(paste1);
+		hasPaste6 = new ItemRequirements(paste2);
+		hasPaste9 = new ItemRequirements(paste3);
 
-		hasPlanked1 = new VarbitCondition(1759, 1);
-		hasPlanked2 = new VarbitCondition(1759, 2);
-		hasPlanked3 = new VarbitCondition(1759, 3);
+		hasPlanked1 = new VarbitRequirement(1759, 1);
+		hasPlanked2 = new VarbitRequirement(1759, 2);
+		hasPlanked3 = new VarbitRequirement(1759, 3);
 
-		hasRepaired1 = new VarbitCondition(1760, 1);
-		hasRepaired2 = new VarbitCondition(1760, 2);
-		hasRepaired3 = new VarbitCondition(1760, 3);
+		hasRepaired1 = new VarbitRequirement(1760, 1);
+		hasRepaired2 = new VarbitRequirement(1760, 2);
+		hasRepaired3 = new VarbitRequirement(1760, 3);
 
-		lootedAll = new Conditions(new VarbitCondition(1753, 1), new VarbitCondition(1754, 1), new VarbitCondition(1755, 1));
+		lootedAll = new Conditions(new VarbitRequirement(1753, 1), new VarbitRequirement(1754, 1), new VarbitRequirement(1755, 1));
 
-		has10Plunder = new ItemRequirementCondition(loot10);
-		hasBarrel = new ItemRequirementCondition(barrel);
+		has10Plunder = new ItemRequirements(loot10);
+		hasBarrel = new ItemRequirements(barrel);
 
-		cannonBroken = new VarbitCondition(1741, 1);
-		addedPowder = new VarbitCondition(1742, 1);
-		usedRamrod = new VarbitCondition(1743, 1);
-		usedCanister = new VarbitCondition(1744, 2);
-		usedBalls = new VarbitCondition(1744, 1);
-		usedFuse = new VarbitCondition(1741, 3);
-		firedCannon = new VarbitCondition(1746, 1);
+		cannonBroken = new VarbitRequirement(1741, 1);
+		addedPowder = new VarbitRequirement(1742, 1);
+		usedRamrod = new VarbitRequirement(1743, 1);
+		usedCanister = new VarbitRequirement(1744, 2);
+		usedBalls = new VarbitRequirement(1744, 1);
+		usedFuse = new VarbitRequirement(1741, 3);
+		firedCannon = new VarbitRequirement(1746, 1);
 
-		hasFuse = new ItemRequirementCondition(fuse1);
-		hasCanister = new ItemRequirementCondition(canister);
-		hasRamrod = new ItemRequirementCondition(ramrod);
-		hasPowder = new ItemRequirementCondition(gunpowder);
-		hasCannonball = new ItemRequirementCondition(cannonball);
+		hasFuse = new ItemRequirements(fuse1);
+		hasCanister = new ItemRequirements(canister);
+		hasRamrod = new ItemRequirements(ramrod);
+		hasPowder = new ItemRequirements(gunpowder);
+		hasCannonball = new ItemRequirements(cannonball);
 
-		canisterInWrong = new VarbitCondition(1747, 1);
+		canisterInWrong = new VarbitRequirement(1747, 1);
 
 		// 1752 = num plunder stashed
 
@@ -552,7 +562,7 @@ public class CabinFever extends BasicQuestHelper
 		pasteHole3 = new ObjectStep(this, NullObjectID.NULL_11223, new WorldPoint(1817, 4830, 0), "Waterproof the hole.", paste1);
 		pasteHole1.addSubSteps(pasteHole2, pasteHole3);
 
-		goUpAfterRepair =  new ObjectStep(this, ObjectID.SHIPS_LADDER_11308, new WorldPoint(1815, 4836, 0), "Go up to the deck.");
+		goUpAfterRepair = new ObjectStep(this, ObjectID.SHIPS_LADDER_11308, new WorldPoint(1815, 4836, 0), "Go up to the deck.");
 		talkToBillAfterRepair = new NpcStep(this, NpcID.BILL_TEACH_4014, new WorldPoint(1815, 4834, 1), "Talk to Bill Teach.");
 
 		take2Ropes = new ObjectStep(this, ObjectID.REPAIR_LOCKER, new WorldPoint(1814, 4832, 0), "Search the repair locker for 2 ropes.", ropes2);
@@ -634,31 +644,53 @@ public class CabinFever extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Collections.singletonList(food));
+		return Collections.singletonList(food);
 	}
 
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Collections.singletonList("Able to survive multiple pirates (level 57) attacking you"));
+		return Collections.singletonList("Able to survive multiple pirates (level 57) attacking you");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(talkToBill, talkToBillOnBoat))));
-		allSteps.add(new PanelDetails("Sabotage", new ArrayList<>(Arrays.asList(take4Ropes, take1Fuse, takeTinderbox, leaveHullForSabo, climbUpNetForSabo,
-			useRopeOnSailForSabo, useFuseOnEnemyBarrel, lightEnemyFuse, climbEnemyNetAfterSabo, useRopeOnEnemySailAfterSabo, talkToBillAfterSabo))));
-		allSteps.add(new PanelDetails("Repair", new ArrayList<>(Arrays.asList(goDownToFixLeak, takeHoleItems1, repairHole1, pasteHole1, goUpAfterRepair, talkToBillAfterRepair))));
-		allSteps.add(new PanelDetails("Plunder the pirates", new ArrayList<>(Arrays.asList(goUpToSailToLoot, useRopeOnSailToLoot, enterEnemyHullForLoot, lootEnemyShip,
-			enterHullWithLoot, useLootOnChest, goUpAfterLoot, talkToBillAfterLoot))));
-		allSteps.add(new PanelDetails("Repair the cannon", new ArrayList<>(Arrays.asList(goDownForBarrel, takeBarrel, goUpWithBarrel, useBarrel, talkToBillAfterBarrel))));
-		allSteps.add(new PanelDetails("Fire canisters", new ArrayList<>(Arrays.asList(goDownForRamrod, getRamrod,goUpToCannon, getPowder, usePowder, useRamrod, useCanister, useFuse, fireCannon, repeatCanisterSteps, talkToBillAfterCanisterCannon))));
-		allSteps.add(new PanelDetails("Fire cannon balls", new ArrayList<>(Arrays.asList(goDownForBalls, getBalls, goUpToCannonWithBalls, getPowderForBalls, usePowderForBalls, useRamrodForBalls, useBall, useFuseForBalls, fireCannonForBalls, repeatBallSteps))));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(talkToBill, talkToBillOnBoat)));
+		allSteps.add(new PanelDetails("Sabotage", Arrays.asList(take4Ropes, take1Fuse, takeTinderbox, leaveHullForSabo, climbUpNetForSabo,
+			useRopeOnSailForSabo, useFuseOnEnemyBarrel, lightEnemyFuse, climbEnemyNetAfterSabo, useRopeOnEnemySailAfterSabo, talkToBillAfterSabo)));
+		allSteps.add(new PanelDetails("Repair", Arrays.asList(goDownToFixLeak, takeHoleItems1, repairHole1, pasteHole1, goUpAfterRepair, talkToBillAfterRepair)));
+		allSteps.add(new PanelDetails("Plunder the pirates", Arrays.asList(goUpToSailToLoot, useRopeOnSailToLoot, enterEnemyHullForLoot, lootEnemyShip,
+			enterHullWithLoot, useLootOnChest, goUpAfterLoot, talkToBillAfterLoot)));
+		allSteps.add(new PanelDetails("Repair the cannon", Arrays.asList(goDownForBarrel, takeBarrel, goUpWithBarrel, useBarrel, talkToBillAfterBarrel)));
+		allSteps.add(new PanelDetails("Fire canisters", Arrays.asList(goDownForRamrod, getRamrod, goUpToCannon, getPowder, usePowder, useRamrod, useCanister, useFuse, fireCannon, repeatCanisterSteps, talkToBillAfterCanisterCannon)));
+		allSteps.add(new PanelDetails("Fire cannon balls", Arrays.asList(goDownForBalls, getBalls, goUpToCannonWithBalls, getPowderForBalls, usePowderForBalls, useRamrodForBalls, useBall, useFuseForBalls, fireCannonForBalls, repeatBallSteps)));
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRecommended()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new FreeInventorySlotRequirement(InventoryID.INVENTORY, 11));
+		return req;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		List<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.PIRATES_TREASURE, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.RUM_DEAL, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.PRIEST_IN_PERIL, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.AGILITY, 42));
+		req.add(new SkillRequirement(Skill.CRAFTING, 45));
+		req.add(new SkillRequirement(Skill.SMITHING, 50));
+		req.add(new SkillRequirement(Skill.RANGED, 40));
+		return req;
 	}
 }

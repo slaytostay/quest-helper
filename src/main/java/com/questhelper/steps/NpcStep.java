@@ -25,33 +25,35 @@
  */
 package com.questhelper.steps;
 
+import com.questhelper.QuestHelperPlugin;
+import com.questhelper.questhelpers.QuestHelper;
 import com.questhelper.requirements.Requirement;
-import java.awt.Color;
+import com.questhelper.steps.overlay.DirectionArrow;
+import com.questhelper.steps.tools.QuestPerspective;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import javax.inject.Inject;
 import lombok.Setter;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.NPC;
-import net.runelite.api.Perspective;
-import net.runelite.api.Player;
-import net.runelite.api.Point;
+import net.runelite.api.SpriteID;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.NpcChanged;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.client.eventbus.Subscribe;
-import com.questhelper.questhelpers.QuestHelper;
-import com.questhelper.QuestHelperPlugin;
-import static com.questhelper.QuestHelperWorldOverlay.IMAGE_Z_OFFSET;
 import net.runelite.client.ui.overlay.OverlayUtil;
+import static com.questhelper.QuestHelperWorldOverlay.IMAGE_Z_OFFSET;
 
 public class NpcStep extends DetailedQuestStep
 {
@@ -60,13 +62,11 @@ public class NpcStep extends DetailedQuestStep
 
 	private final int npcID;
 	private final ArrayList<Integer> alternateNpcIDs = new ArrayList<>();
+	private final List<WorldPoint> safespots = new ArrayList<>();
 
 	private boolean allowMultipleHighlights;
 
-	private NPC npc;
-	private ArrayList<NPC> otherNpcs = new ArrayList<>();
-
-	protected BufferedImage npcIcon;
+	private final ArrayList<NPC> npcs = new ArrayList<>();
 
 	@Setter
 	private int maxRoamRange = 48;
@@ -104,13 +104,13 @@ public class NpcStep extends DetailedQuestStep
 			if (npcID == npc.getId() || alternateNpcIDs.contains(npc.getId()))
 			{
 				WorldPoint npcPoint = WorldPoint.fromLocalInstance(client, npc.getLocalLocation());
-				if (this.npc == null && (worldPoint == null || npcPoint.distanceTo(worldPoint) < maxRoamRange))
+				if (this.npcs.size() == 0 && (worldPoint == null || npcPoint.distanceTo(worldPoint) < maxRoamRange))
 				{
-					this.npc = npc;
+					this.npcs.add(npc);
 				}
 				else if (allowMultipleHighlights)
 				{
-					this.otherNpcs.add(npc);
+					this.npcs.add(npc);
 				}
 			}
 		}
@@ -121,12 +121,24 @@ public class NpcStep extends DetailedQuestStep
 		this.alternateNpcIDs.addAll(Arrays.asList(alternateNpcIDs));
 	}
 
+	public void addSafeSpots(WorldPoint... points)
+	{
+		this.safespots.addAll(Arrays.asList(points));
+	}
+
+	public List<Integer> allIds()
+	{
+		List<Integer> ids = new ArrayList<>();
+		ids.add(npcID);
+		ids.addAll(alternateNpcIDs);
+		return ids;
+	}
+
 	@Override
 	public void shutDown()
 	{
 		super.shutDown();
-		npc = null;
-		otherNpcs = new ArrayList<>();
+		npcs.clear();
 	}
 
 	@Subscribe
@@ -136,8 +148,7 @@ public class NpcStep extends DetailedQuestStep
 		super.onGameStateChanged(event);
 		if (event.getGameState() == GameState.HOPPING)
 		{
-			npc = null;
-			otherNpcs.clear();
+			npcs.clear();
 		}
 	}
 
@@ -147,26 +158,22 @@ public class NpcStep extends DetailedQuestStep
 		if (event.getNpc().getId() == npcID || alternateNpcIDs.contains(event.getNpc().getId()))
 		{
 			WorldPoint npcPoint = WorldPoint.fromLocalInstance(client, event.getNpc().getLocalLocation());
-			if (npc == null)
+			if (npcs.size() == 0)
 			{
 				if (worldPoint == null)
 				{
-					npc = event.getNpc();
+					npcs.add(event.getNpc());
 				}
 				else if (npcPoint.distanceTo(worldPoint) < maxRoamRange)
 				{
-					npc = event.getNpc();
+					npcs.add(event.getNpc());
 				}
 			}
 			else if (allowMultipleHighlights)
 			{
-				if (worldPoint == null)
+				if (worldPoint == null || npcPoint.distanceTo(worldPoint) < maxRoamRange)
 				{
-					npc = event.getNpc();
-				}
-				else if (npcPoint.distanceTo(worldPoint) < maxRoamRange)
-				{
-					otherNpcs.add(event.getNpc());
+					npcs.add(event.getNpc());
 				}
 			}
 		}
@@ -175,17 +182,22 @@ public class NpcStep extends DetailedQuestStep
 	@Subscribe
 	public void onNpcDespawned(NpcDespawned event)
 	{
-		if (event.getNpc().equals(npc))
+		npcs.remove(event.getNpc());
+	}
+
+	@Subscribe
+	public void onNpcChanged(NpcChanged npcChanged)
+	{
+		int newNpcId = npcChanged.getNpc().getId();
+		npcs.remove(npcChanged.getNpc());
+
+		if (allIds().contains(newNpcId))
 		{
-			npc = null;
-			if (allowMultipleHighlights && !otherNpcs.isEmpty())
+			if (npcs.size() == 0 || allowMultipleHighlights)
 			{
-				npc = otherNpcs.get(0);
-				otherNpcs.remove(0);
+				npcs.add(npcChanged.getNpc());
 			}
 		}
-
-		otherNpcs.remove(event.getNpc());
 	}
 
 	@Override
@@ -200,101 +212,86 @@ public class NpcStep extends DetailedQuestStep
 
 		if (worldPoint != null)
 		{
-			Collection<WorldPoint> localWorldPoints = toLocalInstance(client, worldPoint);
+			Collection<WorldPoint> localWorldPoints = QuestPerspective.toLocalInstance(client, worldPoint);
 			if (localWorldPoints.isEmpty())
 			{
 				return;
 			}
 		}
 
-		if (npcIcon == null)
-		{
-			npcIcon = getQuestImage();
-		}
-
-		if (iconItemID != -1 && icon == null)
-		{
-			addIconImage();
-			npcIcon = icon;
-		}
-
-		for (NPC otherNpc : otherNpcs)
-		{
-			OverlayUtil.renderActorOverlayImage(graphics, otherNpc, npcIcon, Color.CYAN, IMAGE_Z_OFFSET);
-		}
-
-		if (npc == null)
+		if (!questHelper.getConfig().showSymbolOverlay())
 		{
 			return;
 		}
 
-		OverlayUtil.renderActorOverlayImage(graphics, npc, npcIcon, Color.CYAN, IMAGE_Z_OFFSET);
+		if (!safespots.isEmpty())
+		{
+			BufferedImage combatIcon = spriteManager.getSprite(SpriteID.TAB_COMBAT, 0);
+			for (WorldPoint location : safespots)
+			{
+				LocalPoint localPoint = LocalPoint.fromWorld(client, location);
+				if (localPoint != null)
+				{
+					OverlayUtil.renderTileOverlay(client, graphics, localPoint, combatIcon, questHelper.getConfig().targetOverlayColor());
+				}
+			}
+		}
+
+		for (NPC otherNpc : npcs)
+		{
+			OverlayUtil.renderActorOverlayImage(graphics, otherNpc, icon, questHelper.getConfig().targetOverlayColor(),
+				IMAGE_Z_OFFSET);
+		}
+
+		if (npcs.size() == 0)
+		{
+			return;
+		}
+
+		OverlayUtil.renderActorOverlayImage(graphics, npcs.get(0), icon, questHelper.getConfig().targetOverlayColor(),
+			IMAGE_Z_OFFSET);
 	}
 
 	@Override
 	public void renderArrow(Graphics2D graphics)
 	{
-		if (npc == null)
+		if (questHelper.getConfig().showMiniMapArrow()) {
+		if (npcs.size() == 0)
 		{
 			super.renderArrow(graphics);
 		}
-		else if (!hideWorldArrow)
+		else if (!hideWorldArrow && !npcs.contains(client.getHintArrowNpc()))
 		{
-			BufferedImage arrow = getArrow();
-			Shape hull = npc.getConvexHull();
+			Shape hull = npcs.get(0).getConvexHull();
 			if (hull != null)
 			{
 				Rectangle rect = hull.getBounds();
-				int x = (int) rect.getCenterX() - ARROW_SHIFT_X;
+				int x = (int) rect.getCenterX();
 				int y = (int) rect.getMinY() - ARROW_SHIFT_Y;
-				Point point = new Point(x, y);
 
-				OverlayUtil.renderImageLocation(graphics, point, arrow);
+				DirectionArrow.drawWorldArrow(graphics, getQuestHelper().getConfig().targetOverlayColor(), x, y);
 			}
 		}
 	}
+	}
 
 	@Override
-	public void renderMinimapArrow(Graphics2D graphics)
-	{
-		Player player = client.getLocalPlayer();
+	public void renderMinimapArrow(Graphics2D graphics) {
+		if (questHelper.getConfig().showMiniMapArrow()) {
+			if (npcs.contains(client.getHintArrowNpc())) {
+				return;
+			}
 
-		if (player == null)
-		{
-			return;
+			if (!npcs.isEmpty() && npcs.get(0).getMinimapLocation() != null) {
+				int x = npcs.get(0).getMinimapLocation().getX();
+				int y = npcs.get(0).getMinimapLocation().getY();
+				Line2D.Double line = new Line2D.Double(x, y - 18, x, y - 8);
+
+				DirectionArrow.drawMinimapArrow(graphics, line, getQuestHelper().getConfig().targetOverlayColor());
+				return;
+			}
+
+			super.renderMinimapArrow(graphics);
 		}
-
-		WorldPoint playerLocation = player.getWorldLocation();
-
-		if (npc != null && npc.getMinimapLocation() != null)
-		{
-			graphics.drawImage(getSmallArrow(), npc.getMinimapLocation().getX() - 5, npc.getMinimapLocation().getY() - 14, null);
-			return;
-		}
-
-		if (worldPoint == null)
-		{
-			return;
-		}
-
-		if (worldPoint.distanceTo(playerLocation) >= MAX_DRAW_DISTANCE)
-		{
-			createMinimapDirectionArrow(graphics);
-			return;
-		}
-
-		LocalPoint lp = LocalPoint.fromWorld(client, worldPoint);
-		if (lp == null)
-		{
-			return;
-		}
-
-		Point posOnMinimap = Perspective.localToMinimap(client, lp);
-		if (posOnMinimap == null)
-		{
-			return;
-		}
-
-		graphics.drawImage(getSmallArrow(), posOnMinimap.getX() - 5, posOnMinimap.getY() - 14, null);
 	}
 }

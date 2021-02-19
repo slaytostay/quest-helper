@@ -25,22 +25,22 @@
 package com.questhelper.quests.theforsakentower;
 
 import com.google.inject.Inject;
-import com.questhelper.requirements.ItemRequirement;
 import com.questhelper.QuestHelperPlugin;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.QuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import com.questhelper.steps.OwnerStep;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import net.runelite.api.Client;
 import net.runelite.api.ItemID;
 import net.runelite.api.NullObjectID;
@@ -65,7 +65,7 @@ public class AltarPuzzle extends QuestStep implements OwnerStep
 
 	Zone secondFloor, floor1, basement;
 
-	ConditionForStep inSecondFloor, inFloor1, inBasement;
+	Requirement inSecondFloor, inFloor1, inBasement;
 
 	DetailedQuestStep goUpLadder, goUpStairs, goUpToSecondFloor, restartStep, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15;
 
@@ -104,15 +104,15 @@ public class AltarPuzzle extends QuestStep implements OwnerStep
 
 	protected void updateSteps()
 	{
-		if (inBasement.checkCondition(client))
+		if (inBasement.check(client))
 		{
 			startUpStep(goUpLadder);
 		}
-		else if (inFloor1.checkCondition(client))
+		else if (inFloor1.check(client))
 		{
 			startUpStep(goUpToSecondFloor);
 		}
-		else if (inSecondFloor.checkCondition(client))
+		else if (inSecondFloor.check(client))
 		{
 			int currentW = client.getVarbitValue(7847);
 			int currentC = client.getVarbitValue(7848);
@@ -350,9 +350,9 @@ public class AltarPuzzle extends QuestStep implements OwnerStep
 
 	private void setupConditions()
 	{
-		inSecondFloor = new ZoneCondition(secondFloor);
-		inFloor1 = new ZoneCondition(floor1);
-		inBasement = new ZoneCondition(basement);
+		inSecondFloor = new ZoneRequirement(secondFloor);
+		inFloor1 = new ZoneRequirement(floor1);
+		inBasement = new ZoneRequirement(basement);
 	}
 
 	private void setupZones()
@@ -407,11 +407,11 @@ public class AltarPuzzle extends QuestStep implements OwnerStep
 		restartStep = new DetailedQuestStep(getQuestHelper(), "Unknown state. Restart the puzzle to start again.");
 	}
 
-	public ArrayList<PanelDetails> panelDetails()
+	public List<PanelDetails> panelDetails()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 		PanelDetails potionPanel = new PanelDetails("Altar puzzle",
-			new ArrayList<>(Arrays.asList(goUpToSecondFloor, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15)));
+			Arrays.asList(goUpToSecondFloor, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15));
 		potionPanel.setLockingStep(this);
 		allSteps.add(potionPanel);
 		return allSteps;
@@ -421,7 +421,7 @@ public class AltarPuzzle extends QuestStep implements OwnerStep
 	@Override
 	public Collection<QuestStep> getSteps()
 	{
-		ArrayList<QuestStep> steps = new ArrayList<>();
+		List<QuestStep> steps = new ArrayList<>();
 		steps.addAll(rebalanceC);
 		steps.addAll(rebalanceW);
 		steps.addAll(rebalanceE);

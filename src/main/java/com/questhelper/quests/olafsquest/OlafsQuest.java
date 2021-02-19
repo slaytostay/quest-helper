@@ -25,49 +25,58 @@
 package com.questhelper.quests.olafsquest;
 
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.WidgetModelRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.DigStep;
 import com.questhelper.steps.ItemStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
 import com.questhelper.steps.WidgetStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.WidgetModelCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.OLAFS_QUEST
 )
 public class OlafsQuest extends BasicQuestHelper
 {
-	ItemRequirement combatGear, axe, tinderbox, spade, dampPlanks, windsweptLogs, crudeCarving, cruderCarving, food, key, rottenBarrels2, rottenBarrel, ropes6, ropes3, crossKey, squareKey,
+	//Items Required
+	ItemRequirement axe, tinderbox, spade, dampPlanks, windsweptLogs, crudeCarving, cruderCarving, key, rottenBarrels2, rottenBarrel, ropes6, ropes3, crossKey, squareKey,
 		triangleKey, circleKey, starKey;
 
-	ConditionForStep hasWindsweptLogs, givenIngridCarving, inFirstArea, inSecondArea, inThirdArea, keyNearby, puzzleOpen, hasKey, has2Barrels6Ropes, hasBarrel3Ropes, placedBarrel1, placedBarrel2,
+	//Items Recommended
+	ItemRequirement  prayerPotions, food, combatGear;
+
+	Requirement hasWindsweptLogs, givenIngridCarving, inFirstArea, inSecondArea, inThirdArea, keyNearby, puzzleOpen, hasKey, has2Barrels6Ropes, hasBarrel3Ropes, placedBarrel1, placedBarrel2,
 		keyInterfaceOpen, hasCrossKey, hasSquareKey, hasTriangleKey, hasCircleKey, hasStarKey, ulfricNearby, killedUlfric;
 
 	QuestStep talkToOlaf, chopTree, giveLogToOlaf, talkToIngrid, talkToVolf, returnToOlaf, useDampPlanks, talkToOlafAfterPlanks, digHole, pickUpKey, searchPainting, doPuzzle, pickUpItems,
@@ -77,6 +86,7 @@ public class OlafsQuest extends BasicQuestHelper
 
 	ObjectStep searchChest, searchChestAgain;
 
+	//Zones
 	Zone firstArea, firstArea2, secondArea, secondArea2, thirdArea;
 
 	@Override
@@ -134,6 +144,10 @@ public class OlafsQuest extends BasicQuestHelper
 	public void setupItemRequirements()
 	{
 		combatGear = new ItemRequirement("Combat gear, food + prayer potions", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
+		food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
+		prayerPotions = new ItemRequirement("Prayer potions", ItemCollections.getPrayerPotions(), -1);
+
 		axe = new ItemRequirement("Any axe", ItemCollections.getAxes());
 		tinderbox = new ItemRequirement("Tinderbox", ItemID.TINDERBOX);
 		spade = new ItemRequirement("Spade", ItemID.SPADE);
@@ -142,11 +156,9 @@ public class OlafsQuest extends BasicQuestHelper
 		windsweptLogs = new ItemRequirement("Windswept logs", ItemID.WINDSWEPT_LOGS);
 
 		crudeCarving = new ItemRequirement("Crude carving", ItemID.CRUDE_CARVING);
-		crudeCarving.setTip("You can get another from Olaf");
+		crudeCarving.setTooltip("You can get another from Olaf");
 		cruderCarving = new ItemRequirement("Cruder carving", ItemID.CRUDER_CARVING);
-		cruderCarving.setTip("You can get another from Olaf");
-
-		food = new ItemRequirement("Food", -1, -1);
+		cruderCarving.setTooltip("You can get another from Olaf");
 
 		key = new ItemRequirement("Key", ItemID.KEY_11039);
 		key.addAlternates(ItemID.KEY_11040, ItemID.KEY_11041, ItemID.KEY_11042, ItemID.KEY_11043);
@@ -170,28 +182,28 @@ public class OlafsQuest extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		hasWindsweptLogs = new ItemRequirementCondition(windsweptLogs);
-		givenIngridCarving = new VarbitCondition(3536, 1, Operation.GREATER_EQUAL);
-		inFirstArea = new ZoneCondition(firstArea, firstArea2);
-		inSecondArea = new ZoneCondition(secondArea, secondArea2);
-		inThirdArea = new ZoneCondition(thirdArea);
-		keyNearby = new ItemCondition(key);
-		puzzleOpen = new WidgetModelCondition(253, 0, 24126);
-		hasKey = new ItemRequirementCondition(key);
-		hasBarrel3Ropes = new ItemRequirementCondition(rottenBarrel, ropes3);
-		has2Barrels6Ropes = new ItemRequirementCondition(rottenBarrels2, ropes6);
-		placedBarrel1 = new VarbitCondition(3547, 1);
-		placedBarrel2 = new VarbitCondition(3548, 1);
-		keyInterfaceOpen = new WidgetModelCondition(252, 0, 24124);
-		hasSquareKey = new ItemRequirementCondition(squareKey);
-		hasCrossKey = new ItemRequirementCondition(crossKey);
-		hasTriangleKey = new ItemRequirementCondition(triangleKey);
-		hasCircleKey = new ItemRequirementCondition(circleKey);
-		hasStarKey = new ItemRequirementCondition(starKey);
+		hasWindsweptLogs = new ItemRequirements(windsweptLogs);
+		givenIngridCarving = new VarbitRequirement(3536, 1, Operation.GREATER_EQUAL);
+		inFirstArea = new ZoneRequirement(firstArea, firstArea2);
+		inSecondArea = new ZoneRequirement(secondArea, secondArea2);
+		inThirdArea = new ZoneRequirement(thirdArea);
+		keyNearby = new ItemOnTileRequirement(key);
+		puzzleOpen = new WidgetModelRequirement(253, 0, 24126);
+		hasKey = new ItemRequirements(key);
+		hasBarrel3Ropes = new ItemRequirements(rottenBarrel, ropes3);
+		has2Barrels6Ropes = new ItemRequirements(rottenBarrels2, ropes6);
+		placedBarrel1 = new VarbitRequirement(3547, 1);
+		placedBarrel2 = new VarbitRequirement(3548, 1);
+		keyInterfaceOpen = new WidgetModelRequirement(252, 0, 24124);
+		hasSquareKey = new ItemRequirements(squareKey);
+		hasCrossKey = new ItemRequirements(crossKey);
+		hasTriangleKey = new ItemRequirements(triangleKey);
+		hasCircleKey = new ItemRequirements(circleKey);
+		hasStarKey = new ItemRequirements(starKey);
 
 		ulfricNearby = new NpcCondition(NpcID.ULFRIC);
 
-		killedUlfric = new VarbitCondition(3539, 1);
+		killedUlfric = new VarbitRequirement(3539, 1);
 	}
 
 	public void loadZones()
@@ -206,7 +218,7 @@ public class OlafsQuest extends BasicQuestHelper
 	public void setupSteps()
 	{
 		talkToOlaf = new NpcStep(this, NpcID.OLAF_HRADSON, new WorldPoint(2722, 3727, 0), "Talk to Olaf Hradson north east of Rellekka.");
-		talkToOlaf.addDialogStep("Okay, I'll help you out.");
+		talkToOlaf.addDialogStep("Yes.");
 		chopTree = new ObjectStep(this, ObjectID.WINDSWEPT_TREE_18137, new WorldPoint(2749, 3735, 0), "Chop a log from the Swaying Tree east of Olaf.", axe);
 		giveLogToOlaf = new NpcStep(this, NpcID.OLAF_HRADSON, new WorldPoint(2722, 3727, 0), "Bring the logs to to Olaf Hradson north east of Rellekka.", windsweptLogs);
 		talkToIngrid = new NpcStep(this, NpcID.INGRID_HRADSON, new WorldPoint(2670, 3670, 0), "Talk to Ingrid Hradson in Rellekka.", crudeCarving);
@@ -239,11 +251,11 @@ public class OlafsQuest extends BasicQuestHelper
 
 		openGate = new ObjectStep(this, ObjectID.GATE_23216, new WorldPoint(2725, 10168, 0), "Open the gate on the walkway, clicking the key hole which matches your key.", key);
 
-		chooseSquare = new WidgetStep(this,  "Click the square key hole.", 252, 3);
-		chooseCross = new WidgetStep(this,  "Click the cross key hole.", 252, 4);
-		chooseTriangle = new WidgetStep(this,  "Click the triangle key hole.", 252, 5);
-		chooseCircle = new WidgetStep(this,  "Click the circle key hole.", 252, 6);
-		chooseStar = new WidgetStep(this,  "Click the star key hole.", 252, 7);
+		chooseSquare = new WidgetStep(this, "Click the square key hole.", 252, 3);
+		chooseCross = new WidgetStep(this, "Click the cross key hole.", 252, 4);
+		chooseTriangle = new WidgetStep(this, "Click the triangle key hole.", 252, 5);
+		chooseCircle = new WidgetStep(this, "Click the circle key hole.", 252, 6);
+		chooseStar = new WidgetStep(this, "Click the star key hole.", 252, 7);
 		openGate.addSubSteps(chooseCircle, chooseCross, chooseSquare, chooseStar, chooseTriangle);
 
 		searchChest = new ObjectStep(this, ObjectID.CHEST_14197, new WorldPoint(2740, 10164, 0), "WALK off the remaining walkway, and search the chest in the wreck. Be prepared to fight Ulfric.");
@@ -256,32 +268,44 @@ public class OlafsQuest extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(axe, tinderbox, spade));
+		return Arrays.asList(axe, tinderbox, spade);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Collections.singletonList(combatGear));
+		return Arrays.asList(combatGear, food, prayerPotions);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("Skeleton fremennik (level 40)", "Ulfric (level 100)"));
+		return Arrays.asList("Skeleton fremennik (level 40)", "Ulfric (level 100)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.THE_FREMENNIK_TRIALS, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.FIREMAKING, 40, true));
+		req.add(new SkillRequirement(Skill.WOODCUTTING, 50, true));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
 		allSteps.add(new PanelDetails("Starting off",
-			new ArrayList<>(Arrays.asList(talkToOlaf, chopTree, giveLogToOlaf, talkToIngrid, talkToVolf, returnToOlaf, useDampPlanks, talkToOlafAfterPlanks)), axe, tinderbox, spade));
+			Arrays.asList(talkToOlaf, chopTree, giveLogToOlaf, talkToIngrid,
+				talkToVolf, returnToOlaf, useDampPlanks, talkToOlafAfterPlanks), axe, tinderbox, spade));
 
 		allSteps.add(new PanelDetails("Finding treasure",
-			new ArrayList<>(Arrays.asList(digHole, killSkeleton, searchPainting, doPuzzle, pickUpItems, useBarrel, useBarrel2, openGate, searchChest, killUlfric, searchChestAgain))));
+			Arrays.asList(digHole, killSkeleton, searchPainting, doPuzzle, pickUpItems,
+				useBarrel, useBarrel2, openGate, searchChest, killUlfric, searchChestAgain)));
 		return allSteps;
 	}
 }

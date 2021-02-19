@@ -24,47 +24,49 @@
  */
 package com.questhelper.quests.shieldofarrav;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
-import com.questhelper.QuestVarPlayer;
-import com.questhelper.QuestVarbits;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.conditional.ObjectCondition;
 import com.questhelper.steps.ConditionalStep;
+import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.ObjectCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.DetailedQuestStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.SHIELD_OF_ARRAV_BLACK_ARM_GANG
 )
 public class ShieldOfArravBlackArmGang extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement storeRoomKey, twoPhoenixCrossbow, shieldHalf, certificateHalf, phoenixCertificateHalf, certificate;
 
-	ConditionForStep inStoreRoom, hasTwoPhoenixCrossbow, hasStoreRoomKey, weaponMasterAlive, isUpstairsInBase, cupboardOpen, hasCertificateHalf,
+	Requirement inStoreRoom, hasTwoPhoenixCrossbow, hasStoreRoomKey, weaponMasterAlive, isUpstairsInBase, cupboardOpen, hasCertificateHalf,
 		hasPhoenixCertificateHalf, hasCertificate, hasShieldHalf;
 
 	QuestStep talkToCharlie, getWeaponStoreKey, talkToKatrine, goUpToWeaponStore, killWeaponsMaster, pickupTwoCrossbows, goDownFromWeaponStore, returnToKatrine,
 	goUpstairsInBase, getShieldFromCupboard, getShieldFromCupboard1, goDownstairsInBase, talkToHaig, tradeCertificateHalf, combineCertificate, talkToRoald;
 
+	//Zones
 	Zone storeRoom, upstairsInBase;
 
 	@Override
@@ -116,16 +118,16 @@ public class ShieldOfArravBlackArmGang extends BasicQuestHelper
 	}
 
 	public void setupConditions() {
-		hasStoreRoomKey = new ItemRequirementCondition(storeRoomKey);
-		inStoreRoom = new ZoneCondition(storeRoom);
-		hasTwoPhoenixCrossbow = new ItemRequirementCondition(twoPhoenixCrossbow);
+		hasStoreRoomKey = new ItemRequirements(storeRoomKey);
+		inStoreRoom = new ZoneRequirement(storeRoom);
+		hasTwoPhoenixCrossbow = new ItemRequirements(twoPhoenixCrossbow);
 		weaponMasterAlive = new NpcCondition(NpcID.WEAPONSMASTER);
-		isUpstairsInBase = new ZoneCondition(upstairsInBase);
+		isUpstairsInBase = new ZoneRequirement(upstairsInBase);
 		cupboardOpen = new ObjectCondition(ObjectID.CUPBOARD_2401);
-		hasShieldHalf = new ItemRequirementCondition(shieldHalf);
-		hasCertificateHalf = new ItemRequirementCondition(certificateHalf);
-		hasPhoenixCertificateHalf = new ItemRequirementCondition(phoenixCertificateHalf);
-		hasCertificate = new ItemRequirementCondition(certificate);
+		hasShieldHalf = new ItemRequirements(shieldHalf);
+		hasCertificateHalf = new ItemRequirements(certificateHalf);
+		hasPhoenixCertificateHalf = new ItemRequirements(phoenixCertificateHalf);
+		hasCertificate = new ItemRequirements(certificate);
 	}
 
 	public void setupSteps() {
@@ -174,28 +176,28 @@ public class ShieldOfArravBlackArmGang extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Start quest", new ArrayList<>(Arrays.asList(talkToCharlie, talkToKatrine))));
-		allSteps.add(new PanelDetails("Get the phoenix crossbows", new ArrayList<>(Arrays.asList(getWeaponStoreKey, goUpToWeaponStore, killWeaponsMaster, pickupTwoCrossbows, returnToKatrine))));
-		allSteps.add(new PanelDetails("Return the shield", new ArrayList<>(Arrays.asList(goUpstairsInBase, getShieldFromCupboard, talkToHaig, tradeCertificateHalf, combineCertificate, talkToRoald))));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Start quest", Arrays.asList(talkToCharlie, talkToKatrine)));
+		allSteps.add(new PanelDetails("Get the phoenix crossbows", Arrays.asList(getWeaponStoreKey, goUpToWeaponStore, killWeaponsMaster, pickupTwoCrossbows, returnToKatrine)));
+		allSteps.add(new PanelDetails("Return the shield", Arrays.asList(goUpstairsInBase, getShieldFromCupboard, talkToHaig, tradeCertificateHalf, combineCertificate, talkToRoald)));
 		return allSteps;
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("Weaponsmaster (level 23), or a friend to kill him for you"));
+		return Collections.singletonList("Weaponsmaster (level 23), or a friend to kill him for you");
 	}
 
 	@Override
-	public ArrayList<String> getNotes()
+	public List<String> getNotes()
 	{
-		return new ArrayList<>(
+		return 
 			Arrays.asList("You can also do this quest by joining the Phoenix Gang, which instead requires you to kill Jonny the beard (level 2).",
 			"Once you're accepted into one of the gangs, you CANNOT change gang.",
-			"This quest requires you to swap items with another player who's in the other gang, so it's recommended to either find a friend to help you, or you can use the friend's chat 'OSRS SOA' and find someone to help there."));
+			"This quest requires you to swap items with another player who's in the other gang, so it's recommended to either find a friend to help you, or you can use the friend's chat 'OSRS SOA' and find someone to help there.");
 	}
 
 	@Override

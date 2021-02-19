@@ -24,43 +24,48 @@
  */
 package com.questhelper.quests.plaguecity;
 
-
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.ObjectCondition;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.ObjectCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.PLAGUE_CITY
 )
 public class PlagueCity extends BasicQuestHelper
 {
-	ItemRequirement spade, dwellberries, rope, fourBucketsOfWater, threeBucketsOfWater, twoBucketsOfWater, bucketOfWater, bucketOfMilk,
-		chocolateDust, snapeGrass, pictureOfElena, gasMask, book, bucketOfChocolateMilk, hangoverCure, warrant, key;
+	//Items Required
+	ItemRequirement spade, dwellberries, rope, bucketOfMilk, chocolateDust, snapeGrass,
+		pictureOfElena, gasMask, book, bucketOfChocolateMilk, hangoverCure, warrant, key;
 
-	ConditionForStep inUnderground, hasPictureOfElena, hasTriedToPullGrill, inWestArdougne, hasBook, inUpstairsMathasHouse, hasBucketOfChocolateMilk, hasHangoverCure,
+	//Items Recommended
+	ItemRequirement fourBucketsOfWater, threeBucketsOfWater, twoBucketsOfWater, bucketOfWater;
+
+	Requirement inUnderground, hasPictureOfElena, hasTriedToPullGrill, inWestArdougne, hasBook, inUpstairsMathasHouse, hasBucketOfChocolateMilk, hasHangoverCure,
 	hasWarrant, inPlagueHouse, inDownstairsOfPlagueHouse, hasKey, manholeClosed;
 
 	QuestStep talkToEdmond, talkToAlrena, talkToEdmondAgain, useWaterOnMudPatch1, useWaterOnMudPatch2, useWaterOnMudPatch3, useWaterOnMudPatch4,
@@ -69,6 +74,7 @@ public class PlagueCity extends BasicQuestHelper
 		useSnapeGrassOnChocolateMilk, giveHangoverCureToBravek, talkToBravekAgain, tryToEnterPlagueHouseAgain, searchBarrel, goDownstairsInPlagueHouse,
 		goUpstairsInPlagueHouse, talkToElena, goUpstairsInPlagueHouseToFinish, goDownManhole, goDownManhole2, climbMudPileToFinish, talkToEdmondToFinish;
 
+	//Zones
 	Zone underground, westArdougne1, westArdougne2, westArdougne3, upstairsMathasHouse, plagueHouse1, plagueHouse2, downstairsOfPlagueHouse;
 
 	@Override
@@ -190,19 +196,20 @@ public class PlagueCity extends BasicQuestHelper
 	public void setupItemRequirements()
 	{
 		dwellberries = new ItemRequirement("Dwellberries", ItemID.DWELLBERRIES);
+		dwellberries.setTooltip("You can get these from McGrubor's Wood west of Seers' Village");
 		rope = new ItemRequirement("Rope", ItemID.ROPE);
 		rope.setHighlightInInventory(true);
 		spade = new ItemRequirement("Spade", ItemID.SPADE);
 		spade.setHighlightInInventory(true);
 		fourBucketsOfWater = new ItemRequirement("Buckets of water", ItemID.BUCKET_OF_WATER, 4);
 		fourBucketsOfWater.setHighlightInInventory(true);
-		fourBucketsOfWater.setTip("You can use the nearby bucket on the sink nearby");
+		fourBucketsOfWater.setTooltip("You can use the bucket near the start of the quest on the sink nearby");
 		threeBucketsOfWater = new ItemRequirement("Buckets of water", ItemID.BUCKET_OF_WATER, 3);
 		threeBucketsOfWater.setHighlightInInventory(true);
-		threeBucketsOfWater.setTip("You can use the nearby bucket on the sink nearby");
+		threeBucketsOfWater.setTooltip("You can use the bucket near the start of the quest on the sink nearby");
 		twoBucketsOfWater = new ItemRequirement("Buckets of water", ItemID.BUCKET_OF_WATER, 2);
 		twoBucketsOfWater.setHighlightInInventory(true);
-		twoBucketsOfWater.setTip("You can use the nearby bucket on the sink nearby");
+		twoBucketsOfWater.setTooltip("You can use the bucket near the start of the quest on the sink nearby");
 		bucketOfWater = new ItemRequirement("Bucket of water", ItemID.BUCKET_OF_WATER);
 		bucketOfWater.setHighlightInInventory(true);
 		bucketOfMilk = new ItemRequirement("Bucket of milk", ItemID.BUCKET_OF_MILK);
@@ -213,13 +220,13 @@ public class PlagueCity extends BasicQuestHelper
 		snapeGrass.setHighlightInInventory(true);
 		pictureOfElena = new ItemRequirement("Picture", ItemID.PICTURE);
 		gasMask = new ItemRequirement("Gas mask", ItemID.GAS_MASK, 1, true);
-		gasMask.setTip("You can get another from the cupboard in Edmond's house.");
+		gasMask.setTooltip("You can get another from the cupboard in Edmond's house.");
 		book = new ItemRequirement("Book", ItemID.BOOK_1509);
 		bucketOfChocolateMilk = new ItemRequirement("Chocolatey milk", ItemID.CHOCOLATEY_MILK);
 		hangoverCure = new ItemRequirement("Hangover cure", ItemID.HANGOVER_CURE);
 		warrant = new ItemRequirement("Warrant", ItemID.WARRANT);
-		inPlagueHouse = new ZoneCondition(plagueHouse1, plagueHouse2);
-		inDownstairsOfPlagueHouse = new ZoneCondition(downstairsOfPlagueHouse);
+		inPlagueHouse = new ZoneRequirement(plagueHouse1, plagueHouse2);
+		inDownstairsOfPlagueHouse = new ZoneRequirement(downstairsOfPlagueHouse);
 		key = new ItemRequirement("A small key", ItemID.A_SMALL_KEY);
 	}
 
@@ -235,16 +242,16 @@ public class PlagueCity extends BasicQuestHelper
 	}
 
 	public void setupConditions() {
-		inUnderground = new ZoneCondition(underground);
-		hasPictureOfElena = new ItemRequirementCondition(pictureOfElena);
-		hasTriedToPullGrill = new VarbitCondition(1786, 1);
-		inWestArdougne = new ZoneCondition(westArdougne1, westArdougne2, westArdougne3);
-		hasBook = new ItemRequirementCondition(book);
-		inUpstairsMathasHouse = new ZoneCondition(upstairsMathasHouse);
-		hasBucketOfChocolateMilk = new ItemRequirementCondition(bucketOfChocolateMilk);
-		hasHangoverCure = new ItemRequirementCondition(hangoverCure);
-		hasWarrant = new ItemRequirementCondition(warrant);
-		hasKey = new ItemRequirementCondition(key);
+		inUnderground = new ZoneRequirement(underground);
+		hasPictureOfElena = new ItemRequirements(pictureOfElena);
+		hasTriedToPullGrill = new VarbitRequirement(1786, 1);
+		inWestArdougne = new ZoneRequirement(westArdougne1, westArdougne2, westArdougne3);
+		hasBook = new ItemRequirements(book);
+		inUpstairsMathasHouse = new ZoneRequirement(upstairsMathasHouse);
+		hasBucketOfChocolateMilk = new ItemRequirements(bucketOfChocolateMilk);
+		hasHangoverCure = new ItemRequirements(hangoverCure);
+		hasWarrant = new ItemRequirements(warrant);
+		hasKey = new ItemRequirements(key);
 		manholeClosed = new ObjectCondition(ObjectID.MANHOLE_2543);
 	}
 
@@ -347,7 +354,7 @@ public class PlagueCity extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(dwellberries);
@@ -360,7 +367,7 @@ public class PlagueCity extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(fourBucketsOfWater);
@@ -368,17 +375,17 @@ public class PlagueCity extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Start the quest", new ArrayList<>(Arrays.asList(talkToEdmond)), dwellberries, spade, rope, bucketOfMilk, chocolateDust, snapeGrass));
-		allSteps.add(new PanelDetails("Infiltrate West Ardougne", new ArrayList<>(Arrays.asList(talkToAlrena, talkToEdmondAgain, useWaterOnMudPatch1,
-			grabPictureOfElena, digHole, goDownHole, attemptToPullGrill, useRopeOnGrill, talkToEdmondUnderground, climbThroughPipe))));
-		allSteps.add(new PanelDetails("Discover Elena's location", new ArrayList<>(Arrays.asList(talkToJethick, enterMarthasHouse, talkToMartha,
-			goUpstairsInMarthasHouse))));
-		allSteps.add(new PanelDetails("Freeing Elena", new ArrayList<>(Arrays.asList(tryToEnterPlagueHouse, talkToClerk, talkToBravek, useDustOnMilk, useSnapeGrassOnChocolateMilk,
-			giveHangoverCureToBravek, tryToEnterPlagueHouseAgain, searchBarrel, goDownstairsInPlagueHouse, talkToElena))));
-		allSteps.add(new PanelDetails("Finishing off", new ArrayList<>(Arrays.asList(talkToEdmondToFinish))));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Start the quest", Collections.singletonList(talkToEdmond), dwellberries, spade, rope, bucketOfMilk, chocolateDust, snapeGrass));
+		allSteps.add(new PanelDetails("Infiltrate West Ardougne", Arrays.asList(talkToAlrena, talkToEdmondAgain, useWaterOnMudPatch1,
+			grabPictureOfElena, digHole, goDownHole, attemptToPullGrill, useRopeOnGrill, talkToEdmondUnderground, climbThroughPipe)));
+		allSteps.add(new PanelDetails("Discover Elena's location", Arrays.asList(talkToJethick, enterMarthasHouse, talkToMartha,
+			goUpstairsInMarthasHouse)));
+		allSteps.add(new PanelDetails("Freeing Elena", Arrays.asList(tryToEnterPlagueHouse, talkToClerk, talkToBravek, useDustOnMilk, useSnapeGrassOnChocolateMilk,
+			giveHangoverCureToBravek, tryToEnterPlagueHouseAgain, searchBarrel, goDownstairsInPlagueHouse, talkToElena)));
+		allSteps.add(new PanelDetails("Finishing off", Collections.singletonList(talkToEdmondToFinish)));
 		return allSteps;
 	}
 }

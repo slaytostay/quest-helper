@@ -24,28 +24,30 @@
  */
 package com.questhelper.quests.princealirescue;
 
+import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.WidgetTextRequirement;
+import com.questhelper.requirements.util.LogicType;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.WidgetTextCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
@@ -57,15 +59,20 @@ import net.runelite.api.widgets.WidgetInfo;
 )
 public class PrinceAliRescue extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement softClay, ballsOfWool3, yellowDye, redberries, ashes, bucketOfWater, potOfFlour, bronzeBar, pinkSkirt, beers3, rope, coins100, wig, dyedWig, paste, keyMould, key,
-	ropeReqs, yellowDyeReqs, glory, ropeHighlighted;
+		ropeReqs, yellowDyeReqs, ropeHighlighted;
 
-	ConditionForStep hasWig, hasDyedWig, hasKey, hasPaste, hasOrGivenKeyMould, inCell, givenKeyMould;
+	//Items Recommended
+	ItemRequirement glory;
+
+	Requirement hasWig, hasDyedWig, hasKey, hasPaste, hasOrGivenKeyMould, inCell, givenKeyMould;
 
 	QuestStep talkToHassan, talkToOsman, talkToNed, talkToAggie, dyeWig, talkToKeli, bringImprintToOsman, talkToLeela, talkToJoe, useRopeOnKeli, useKeyOnDoor, talkToAli, returnToHassan;
 
 	ConditionalStep makeDyedWig, makePaste, makeKeyMould, getKey;
 
+	//Zones
 	Zone cell;
 
 	@Override
@@ -144,31 +151,31 @@ public class PrinceAliRescue extends BasicQuestHelper
 		ropeHighlighted = new ItemRequirement("Rope", ItemID.ROPE);
 		ropeHighlighted.setHighlightInInventory(true);
 		ropeReqs = new ItemRequirement("Rope, or 15 coins / 4 balls of wool to obtain during the quest", ItemID.ROPE);
-		coins100 = new ItemRequirement("100 coins minimum", ItemID.COINS_995, -1);
+		coins100 = new ItemRequirement("Coins minimum", ItemID.COINS_995, 100);
 		wig = new ItemRequirement("Wig", ItemID.WIG_2421);
 		wig.setHighlightInInventory(true);
 		dyedWig = new ItemRequirement("Wig (dyed)", ItemID.WIG);
 		paste = new ItemRequirement("Paste", ItemID.PASTE);
 		keyMould = new ItemRequirement("Key print", ItemID.KEY_PRINT);
 		key = new ItemRequirement("Bronze key", ItemID.BRONZE_KEY);
-		key.setTip("You can get another from Leela for 15 coins");
+		key.setTooltip("You can get another from Leela for 15 coins");
 		yellowDyeReqs = new ItemRequirement("Yellow dye, or 2 onions + 5 coins to obtain during quest", ItemID.YELLOW_DYE);
-		glory = new ItemRequirement("Amulet of Glory for Al Kharid and Draynor Village teleports", ItemID.AMULET_OF_GLORY6);
+		glory = new ItemRequirement("Amulet of Glory for Al Kharid and Draynor Village teleports", ItemCollections.getAmuletOfGlories());
 	}
 
 	public void setupConditions()
 	{
-		inCell = new ZoneCondition(cell);
-		hasDyedWig = new ItemRequirementCondition(dyedWig);
-		hasWig = new ItemRequirementCondition(wig);
-		hasKey = new ItemRequirementCondition(key);
-		hasPaste = new ItemRequirementCondition(paste);
+		inCell = new ZoneRequirement(cell);
+		hasDyedWig = new ItemRequirements(dyedWig);
+		hasWig = new ItemRequirements(wig);
+		hasKey = new ItemRequirements(key);
+		hasPaste = new ItemRequirements(paste);
 		givenKeyMould = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(119, 3, true, "I have duplicated a key, I need to get it from"),
-			new WidgetTextCondition(119, 3, true, "I got a duplicated cell door key"),
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "Pick the key up from Leela."),
+			new WidgetTextRequirement(119, 3, true, "I have duplicated a key, I need to get it from"),
+			new WidgetTextRequirement(119, 3, true, "I got a duplicated cell door key"),
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "Pick the key up from Leela."),
 			hasKey);
-		hasOrGivenKeyMould = new Conditions(LogicType.OR, new ItemRequirementCondition(keyMould), givenKeyMould, hasKey);
+		hasOrGivenKeyMould = new Conditions(LogicType.OR, new ItemRequirements(keyMould), givenKeyMould, hasKey);
 	}
 
 	public void setupZones()
@@ -211,7 +218,7 @@ public class PrinceAliRescue extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(softClay);
@@ -230,7 +237,7 @@ public class PrinceAliRescue extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(glory);
@@ -238,7 +245,7 @@ public class PrinceAliRescue extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Able to survive jail guards (level 26) attacking you");
@@ -246,33 +253,33 @@ public class PrinceAliRescue extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(talkToHassan, talkToOsman))));
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(talkToHassan, talkToOsman)));
 
-		PanelDetails makeWigPanel = new PanelDetails("Make a blonde wig", new ArrayList<>(Arrays.asList(talkToNed, dyeWig)), yellowDye, ballsOfWool3);
+		PanelDetails makeWigPanel = new PanelDetails("Make a blonde wig", Arrays.asList(talkToNed, dyeWig), yellowDye, ballsOfWool3);
 		makeWigPanel.setLockingStep(makeDyedWig);
 		allSteps.add(makeWigPanel);
 
-		PanelDetails makePastePanel = new PanelDetails("Make paste", new ArrayList<>(Collections.singletonList(talkToAggie)), redberries, ashes, potOfFlour, bucketOfWater);
+		PanelDetails makePastePanel = new PanelDetails("Make paste", Collections.singletonList(talkToAggie), redberries, ashes, potOfFlour, bucketOfWater);
 		makePastePanel.setLockingStep(makePaste);
 		allSteps.add(makePastePanel);
 
-		PanelDetails makeKeyMouldPanel = new PanelDetails("Make a key mould", new ArrayList<>(Collections.singletonList(talkToKeli)), softClay);
+		PanelDetails makeKeyMouldPanel = new PanelDetails("Make a key mould", Collections.singletonList(talkToKeli), softClay);
 		makeKeyMouldPanel.setLockingStep(makeKeyMould);
 		allSteps.add(makeKeyMouldPanel);
 
-		PanelDetails getKeyPanel = new PanelDetails("Make the key", new ArrayList<>(Collections.singletonList(bringImprintToOsman)), bronzeBar, keyMould);
+		PanelDetails getKeyPanel = new PanelDetails("Make the key", Collections.singletonList(bringImprintToOsman), bronzeBar, keyMould);
 		getKeyPanel.setLockingStep(getKey);
 		allSteps.add(getKeyPanel);
 
-		allSteps.add(new PanelDetails("Return with the items", new ArrayList<>(Collections.singletonList(talkToLeela)), dyedWig, paste, rope, beers3, pinkSkirt));
+		allSteps.add(new PanelDetails("Return with the items", Collections.singletonList(talkToLeela), dyedWig, paste, rope, beers3, pinkSkirt));
 
-		allSteps.add(new PanelDetails("Free Ali", new ArrayList<>(Arrays.asList(talkToJoe, useRopeOnKeli, useKeyOnDoor, talkToAli)), key, dyedWig, paste, rope, beers3, pinkSkirt));
+		allSteps.add(new PanelDetails("Free Ali", Arrays.asList(talkToJoe, useRopeOnKeli, useKeyOnDoor, talkToAli), key, dyedWig, paste, rope, beers3, pinkSkirt));
 
-		allSteps.add(new PanelDetails("Return to Al Kharid", new ArrayList<>(Collections.singletonList(returnToHassan))));
+		allSteps.add(new PanelDetails("Return to Al Kharid", Collections.singletonList(returnToHassan)));
 		return allSteps;
 	}
 }

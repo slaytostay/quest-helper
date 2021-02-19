@@ -24,41 +24,47 @@
  */
 package com.questhelper.quests.waterfallquest;
 
+import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.ConditionalStep;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.WATERFALL_QUEST
 )
 public class WaterfallQuest extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement rope, highlightRope, glarialsPebble, glarialsUrn, glarialsAmulet, unequippedAmulet, book, key, baxKey, airRunes, waterRunes, earthRunes, airRune, waterRune,
-		earthRune, gamesNecklace, food;
+		earthRune;
 
-	ConditionForStep inGnomeBasement, inGlarialTomb, inFalls, onHudonIsland, onDeadTreeIsland, onLedge, hasGlarialsPebble, hasGlarialsUrn, hasGlarialsAmulet,
+	//Items Recommended
+	ItemRequirement gamesNecklace, food;
+
+	Requirement inGnomeBasement, inGlarialTomb, inFalls, onHudonIsland, onDeadTreeIsland, onLedge, hasGlarialsPebble, hasGlarialsUrn, hasGlarialsAmulet,
 		hasBook, inUpstairsInHouse, hasKey, hasBaxKey, inGolrieRoom, gotPebble, hasAirRunes, hasEarthRunes, hasWaterRunes, hasRope, inEndRoom, inEnd2;
 
 	QuestStep talkToAlmera, boardRaft, talkToHudon, useRopeOnRock, useRopeOnTree, getInBarrel, goUpstairsHadley, searchBookcase,
@@ -68,6 +74,7 @@ public class WaterfallQuest extends BasicQuestHelper
 
 	ConditionalStep goGetPebble, getGlarialStuff;
 
+	//Zones
 	Zone gnomeBasement, glarialTomb, falls, endRoom, end2, hudonIsland, deadTreeIsland, ledge, upstairsInHouse, golrieRoom;
 
 	@Override
@@ -141,11 +148,11 @@ public class WaterfallQuest extends BasicQuestHelper
 		book.setHighlightInInventory(true);
 		glarialsPebble = new ItemRequirement("Glarial's pebble", ItemID.GLARIALS_PEBBLE);
 		glarialsPebble.setHighlightInInventory(true);
-		glarialsPebble.setTip("You can get another from Golrie under the Tree Gnome Village");
+		glarialsPebble.setTooltip("You can get another from Golrie under the Tree Gnome Village");
 		glarialsUrn = new ItemRequirement("Glarial's urn", ItemID.GLARIALS_URN);
-		glarialsUrn.setTip("You can get another from the chest in Glarial's tomb");
+		glarialsUrn.setTooltip("You can get another from the chest in Glarial's tomb");
 		glarialsAmulet = new ItemRequirement("Glarial's amulet", ItemID.GLARIALS_AMULET, 1, true);
-		glarialsAmulet.setTip("You can get another from the chest in Glarial's tomb");
+		glarialsAmulet.setTooltip("You can get another from the chest in Glarial's tomb");
 		unequippedAmulet = new ItemRequirement("Glarial's amulet", ItemID.GLARIALS_AMULET);
 		key = new ItemRequirement("Key", ItemID.KEY_293);
 		baxKey = new ItemRequirement("Key", ItemID.KEY_298);
@@ -157,8 +164,8 @@ public class WaterfallQuest extends BasicQuestHelper
 		waterRunes = new ItemRequirement("Water runes", ItemID.WATER_RUNE, 6);
 		waterRune = new ItemRequirement("Water rune", ItemID.WATER_RUNE);
 
-		gamesNecklace = new ItemRequirement("Games necklace", ItemID.GAMES_NECKLACE8);
-		food = new ItemRequirement("Food", -1, -1);
+		gamesNecklace = new ItemRequirement("Games necklace", ItemCollections.getGamesNecklaces());
+		food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
 	}
 
 	public void loadZones()
@@ -177,27 +184,27 @@ public class WaterfallQuest extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		onDeadTreeIsland = new ZoneCondition(deadTreeIsland);
-		onHudonIsland = new ZoneCondition(hudonIsland);
-		onLedge = new ZoneCondition(ledge);
-		inUpstairsInHouse = new ZoneCondition(upstairsInHouse);
-		hasBook = new ItemRequirementCondition(book);
-		inGnomeBasement = new ZoneCondition(gnomeBasement);
-		inGolrieRoom = new ZoneCondition(golrieRoom);
-		inGlarialTomb = new ZoneCondition(glarialTomb);
-		inFalls = new ZoneCondition(falls);
-		inEndRoom = new ZoneCondition(endRoom);
-		inEnd2 = new ZoneCondition(end2);
-		hasGlarialsAmulet = new ItemRequirementCondition(unequippedAmulet);
-		hasGlarialsPebble = new ItemRequirementCondition(glarialsPebble);
-		hasGlarialsUrn = new ItemRequirementCondition(glarialsUrn);
-		hasKey = new ItemRequirementCondition(key);
-		hasBaxKey = new ItemRequirementCondition(baxKey);
-		gotPebble = new VarbitCondition(9110, 1);
-		hasEarthRunes = new ItemRequirementCondition(earthRunes);
-		hasWaterRunes = new ItemRequirementCondition(waterRunes);
-		hasAirRunes = new ItemRequirementCondition(airRunes);
-		hasRope = new ItemRequirementCondition(highlightRope);
+		onDeadTreeIsland = new ZoneRequirement(deadTreeIsland);
+		onHudonIsland = new ZoneRequirement(hudonIsland);
+		onLedge = new ZoneRequirement(ledge);
+		inUpstairsInHouse = new ZoneRequirement(upstairsInHouse);
+		hasBook = new ItemRequirements(book);
+		inGnomeBasement = new ZoneRequirement(gnomeBasement);
+		inGolrieRoom = new ZoneRequirement(golrieRoom);
+		inGlarialTomb = new ZoneRequirement(glarialTomb);
+		inFalls = new ZoneRequirement(falls);
+		inEndRoom = new ZoneRequirement(endRoom);
+		inEnd2 = new ZoneRequirement(end2);
+		hasGlarialsAmulet = new ItemRequirements(unequippedAmulet);
+		hasGlarialsPebble = new ItemRequirements(glarialsPebble);
+		hasGlarialsUrn = new ItemRequirements(glarialsUrn);
+		hasKey = new ItemRequirements(key);
+		hasBaxKey = new ItemRequirements(baxKey);
+		gotPebble = new VarbitRequirement(9110, 1);
+		hasEarthRunes = new ItemRequirements(earthRunes);
+		hasWaterRunes = new ItemRequirements(waterRunes);
+		hasAirRunes = new ItemRequirements(airRunes);
+		hasRope = new ItemRequirements(highlightRope);
 	}
 
 	public void setupSteps()
@@ -206,7 +213,8 @@ public class WaterfallQuest extends BasicQuestHelper
 		talkToAlmera.addDialogStep("How can I help?");
 		boardRaft = new ObjectStep(this, ObjectID.LOG_RAFT, new WorldPoint(2509, 3494, 0), "Board the log raft west of Almera.");
 		talkToHudon = new NpcStep(this, NpcID.HUDON, new WorldPoint(2511, 3484, 0), "Talk to Hudon.");
-		useRopeOnRock = new ObjectStep(this, ObjectID.ROCK, new WorldPoint(2512, 3468, 0), "Use a rope on the rock to the south", highlightRope);
+		useRopeOnRock = new ObjectStep(this, ObjectID.ROCK, new WorldPoint(2512, 3468, 0), "Use a rope on the rock to" +
+			" the south.", highlightRope);
 		useRopeOnRock.addIcon(ItemID.ROPE);
 		useRopeOnTree = new ObjectStep(this, ObjectID.DEAD_TREE_2020, new WorldPoint(2512, 3465, 0), "Use a rope on the dead tree.", highlightRope);
 		useRopeOnTree.addIcon(ItemID.ROPE);
@@ -228,7 +236,8 @@ public class WaterfallQuest extends BasicQuestHelper
 		getFinalItems = new DetailedQuestStep(this, "Leave Glarial's Tomb and get 6 air, water and earth runes, a rope, glarial's amulet, glarial's urn, a rope, and some food.", airRunes, earthRunes, waterRunes, glarialsAmulet, glarialsUrn, rope);
 
 		boardRaftFinal = new ObjectStep(this, ObjectID.LOG_RAFT, new WorldPoint(2509, 3494, 0), "Board the log raft west of Almera.");
-		useRopeOnRockFinal = new ObjectStep(this, ObjectID.ROCK, new WorldPoint(2512, 3468, 0), "Use a rope on the rock to the south", highlightRope);
+		useRopeOnRockFinal = new ObjectStep(this, ObjectID.ROCK, new WorldPoint(2512, 3468, 0), "Use a rope on the " +
+			"rock to the south.", highlightRope);
 		useRopeOnRockFinal.addIcon(ItemID.ROPE);
 		useRopeOnTreeFinal = new ObjectStep(this, ObjectID.DEAD_TREE_2020, new WorldPoint(2512, 3465, 0), "Use a rope on the dead tree.", highlightRope);
 		useRopeOnTreeFinal.addIcon(ItemID.ROPE);
@@ -247,7 +256,7 @@ public class WaterfallQuest extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(highlightRope);
@@ -258,7 +267,7 @@ public class WaterfallQuest extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Able to survive enemies up to level 86 attacking you");
@@ -266,7 +275,7 @@ public class WaterfallQuest extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(gamesNecklace);
@@ -275,22 +284,22 @@ public class WaterfallQuest extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Collections.singletonList(talkToAlmera))));
-		allSteps.add(new PanelDetails("Investigate", new ArrayList<>(Arrays.asList(boardRaft, talkToHudon, useRopeOnRock, useRopeOnTree, getInBarrel, goUpstairsHadley, searchBookcase, readBook)), rope));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Collections.singletonList(talkToAlmera)));
+		allSteps.add(new PanelDetails("Investigate", Arrays.asList(boardRaft, talkToHudon, useRopeOnRock, useRopeOnTree, getInBarrel, goUpstairsHadley, searchBookcase, readBook), rope));
 
-		PanelDetails getPebblePanel = new PanelDetails("Get Glarial's Pebble", new ArrayList<>(Arrays.asList(enterGnomeDungeon, searchGnomeCrate, enterGnomeDoor, talkToGolrie)));
+		PanelDetails getPebblePanel = new PanelDetails("Get Glarial's Pebble", Arrays.asList(enterGnomeDungeon, searchGnomeCrate, enterGnomeDoor, talkToGolrie));
 		getPebblePanel.setLockingStep(goGetPebble);
 		allSteps.add(getPebblePanel);
 
-		PanelDetails getGlarialStuffPanel = new PanelDetails("Loot Glarial's tomb", new ArrayList<>(Arrays.asList(usePebble, searchGlarialChest, searchGlarialCoffin)));
+		PanelDetails getGlarialStuffPanel = new PanelDetails("Loot Glarial's tomb", Arrays.asList(usePebble, searchGlarialChest, searchGlarialCoffin));
 		getGlarialStuffPanel.setLockingStep(getGlarialStuff);
 
 		allSteps.add(getGlarialStuffPanel);
 
-		PanelDetails finishOffPanel = new PanelDetails("Put Glarial to rest", new ArrayList<>(Arrays.asList(getFinalItems, boardRaftFinal, useRopeOnRockFinal, useRopeOnTreeFinal, enterFalls, searchFallsCrate, useKeyOnFallsDoor, useRunes, useUrnOnChalice)), rope, airRunes, earthRunes, waterRunes, glarialsUrn, glarialsAmulet);
+		PanelDetails finishOffPanel = new PanelDetails("Put Glarial to rest", Arrays.asList(getFinalItems, boardRaftFinal, useRopeOnRockFinal, useRopeOnTreeFinal, enterFalls, searchFallsCrate, useKeyOnFallsDoor, useRunes, useUrnOnChalice), rope, airRunes, earthRunes, waterRunes, glarialsUrn, glarialsAmulet);
 		allSteps.add(finishOffPanel);
 		return allSteps;
 	}

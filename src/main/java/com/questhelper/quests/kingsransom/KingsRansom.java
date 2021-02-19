@@ -25,46 +25,54 @@
 package com.questhelper.quests.kingsransom;
 
 import com.questhelper.ItemCollections;
-import com.questhelper.QuestHelperQuest;
-import com.questhelper.requirements.ItemRequirements;
-import com.questhelper.steps.WidgetStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.WidgetModelCondition;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import net.runelite.api.ItemID;
-import net.runelite.api.NpcID;
-import net.runelite.api.NullObjectID;
-import net.runelite.api.ObjectID;
-import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
 import com.questhelper.QuestDescriptor;
+import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.WidgetModelRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.LogicType;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.WidgetStep;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import net.runelite.api.ItemID;
+import net.runelite.api.NpcID;
+import net.runelite.api.NullObjectID;
+import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
+import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.KINGS_RANSOM
 )
 public class KingsRansom extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement scrapPaper, addressForm, blackHelm, criminalsThread, hairclip, lawRune, airRune, bronzeMed, ironChain, bronzeMedWorn, ironChainWorn,
 		blackKnightLeg, blackKnightLegWorn, blackKnightBody, blackKnightBodyWorn, blackKnightHelm, blackKnightHelmWorn, animateRock, lockpick, grabOrLockpick,
-		hairclipOrLockpick, holyGrail, granite, ardougneTeleport, camelotTeleport, edgevilleTeleport, telegrab;
+		hairclipOrLockpick, holyGrail, granite, telegrab;
 
-	ConditionForStep hasBlackHelm, hasScrapPaper, hasForm, inUpstairsManor, inDownstairsManor, hasCriminalsThread, inTrialRoom, handlerInRoom, butlerInRoom,
+	//Items Recommended
+	ItemRequirement ardougneTeleport, camelotTeleport, edgevilleTeleport;
+
+	Requirement hasBlackHelm, hasScrapPaper, hasForm, inUpstairsManor, inDownstairsManor, hasCriminalsThread, inTrialRoom, handlerInRoom, butlerInRoom,
 		maidInRoom, askedAboutThread, askedAboutDagger, askedAboutNight, askedAboutPoison, inPrison, inBasement, inPuzzle, hasLockpickOrHairpin, hasTelegrabItems,
 		inBoxWidget, inKeepF0, inKeepF1, inKeepF2, inFortressEntrance, inSecretRoom;
 
@@ -77,6 +85,7 @@ public class KingsRansom extends BasicQuestHelper
 
 	NpcStep callAboutThread, talkToCromperty;
 
+	//Zones
 	Zone upstairsManor, downstairsManor, downstairsManor2, trialRoom, prison, basement, keepF0, keepF1, keepF2, secretRoomFloor0, mainEntrance1, mainEntrance2,
 		mainEntrance3, mainEntrance4, secretBasement;
 
@@ -206,7 +215,7 @@ public class KingsRansom extends BasicQuestHelper
 		blackKnightHelmWorn = new ItemRequirement("Black full helm", ItemID.BLACK_FULL_HELM, 1, true);
 
 		animateRock = new ItemRequirement("Animate rock scroll", ItemID.ANIMATE_ROCK_SCROLL);
-		animateRock.setTip("If you don't have one, you can get another from Wizard Cromperty in Ardougne");
+		animateRock.setTooltip("If you don't have one, you can get another from Wizard Cromperty in Ardougne");
 
 		lockpick = new ItemRequirement("Lockpick", ItemID.LOCKPICK);
 
@@ -219,9 +228,10 @@ public class KingsRansom extends BasicQuestHelper
 		hairclipOrLockpick.addAlternates(ItemID.HAIR_CLIP);
 
 		holyGrail = new ItemRequirement("Holy grail", ItemID.HOLY_GRAIL);
-		holyGrail.setTip("You can get another from the purple box on the table in Morgan la Faye's Keep");
+		holyGrail.setTooltip("You can get another from the purple box on the table in Morgan la Faye's Keep");
 
 		granite = new ItemRequirement("Any granite", ItemID.GRANITE_2KG);
+		granite.setDisplayMatchedItemName(true);
 		granite.addAlternates(ItemID.GRANITE_5KG, ItemID.GRANITE_500G);
 
 		ardougneTeleport = new ItemRequirement("Ardougne teleport", ItemID.ARDOUGNE_TELEPORT);
@@ -240,47 +250,47 @@ public class KingsRansom extends BasicQuestHelper
 		keepF1 = new Zone(new WorldPoint(1689, 4250, 1), new WorldPoint(1701, 4264, 1));
 		keepF2 = new Zone(new WorldPoint(1689, 4250, 2), new WorldPoint(1701, 4264, 2));
 		basement = new Zone(new WorldPoint(1862, 4231, 0), new WorldPoint(1871, 4246, 0));
-		secretRoomFloor0 = new Zone(new WorldPoint(3015, 3517,0), new WorldPoint(3016, 3519,0));
+		secretRoomFloor0 = new Zone(new WorldPoint(3015, 3517, 0), new WorldPoint(3016, 3519, 0));
 		secretBasement = new Zone(new WorldPoint(1862, 4264, 0), new WorldPoint(1873, 4229, 0));
-		mainEntrance1 = new Zone(new WorldPoint(3008, 3513,0), new WorldPoint(3012, 3518,0));
-		mainEntrance2 = new Zone(new WorldPoint(3012, 3514,0), new WorldPoint(3014, 3516,0));
-		mainEntrance3 = new Zone(new WorldPoint(3015, 3515,0), new WorldPoint(3019, 3516,0));
-		mainEntrance4 = new Zone(new WorldPoint(3019, 3513,0), new WorldPoint(3019, 3517,0));
+		mainEntrance1 = new Zone(new WorldPoint(3008, 3513, 0), new WorldPoint(3012, 3518, 0));
+		mainEntrance2 = new Zone(new WorldPoint(3012, 3514, 0), new WorldPoint(3014, 3516, 0));
+		mainEntrance3 = new Zone(new WorldPoint(3015, 3515, 0), new WorldPoint(3019, 3516, 0));
+		mainEntrance4 = new Zone(new WorldPoint(3019, 3513, 0), new WorldPoint(3019, 3517, 0));
 	}
 
 	public void setupConditions()
 	{
-		hasForm = new Conditions(LogicType.OR, new ItemRequirementCondition(addressForm), new VarbitCondition(3890, 1));
-		hasScrapPaper = new Conditions(LogicType.OR, new ItemRequirementCondition(scrapPaper), new VarbitCondition(3891, 1));
-		hasBlackHelm = new Conditions(LogicType.OR, new ItemRequirementCondition(blackHelm), new VarbitCondition(3892, 1));
-		hasCriminalsThread = new ItemRequirementCondition(criminalsThread);
-		inUpstairsManor = new ZoneCondition(upstairsManor);
-		inDownstairsManor = new ZoneCondition(downstairsManor, downstairsManor2);
-		inTrialRoom = new ZoneCondition(trialRoom);
-		inPrison = new ZoneCondition(prison);
-		inKeepF0 = new ZoneCondition(keepF0);
-		inKeepF1 = new ZoneCondition(keepF1);
-		inKeepF2 = new ZoneCondition(keepF2);
-		inBasement = new ZoneCondition(basement);
-		inSecretRoom = new ZoneCondition(secretRoomFloor0);
-		inFortressEntrance = new ZoneCondition(mainEntrance1, mainEntrance2, mainEntrance3, mainEntrance4);
+		hasForm = new Conditions(LogicType.OR, new ItemRequirements(addressForm), new VarbitRequirement(3890, 1));
+		hasScrapPaper = new Conditions(LogicType.OR, new ItemRequirements(scrapPaper), new VarbitRequirement(3891, 1));
+		hasBlackHelm = new Conditions(LogicType.OR, new ItemRequirements(blackHelm), new VarbitRequirement(3892, 1));
+		hasCriminalsThread = new ItemRequirements(criminalsThread);
+		inUpstairsManor = new ZoneRequirement(upstairsManor);
+		inDownstairsManor = new ZoneRequirement(downstairsManor, downstairsManor2);
+		inTrialRoom = new ZoneRequirement(trialRoom);
+		inPrison = new ZoneRequirement(prison);
+		inKeepF0 = new ZoneRequirement(keepF0);
+		inKeepF1 = new ZoneRequirement(keepF1);
+		inKeepF2 = new ZoneRequirement(keepF2);
+		inBasement = new ZoneRequirement(basement);
+		inSecretRoom = new ZoneRequirement(secretRoomFloor0);
+		inFortressEntrance = new ZoneRequirement(mainEntrance1, mainEntrance2, mainEntrance3, mainEntrance4);
 
-		handlerInRoom = new VarbitCondition(3907, 2);
-		butlerInRoom = new VarbitCondition(3907, 3);
-		maidInRoom = new VarbitCondition(3907, 5);
+		handlerInRoom = new VarbitRequirement(3907, 2);
+		butlerInRoom = new VarbitRequirement(3907, 3);
+		maidInRoom = new VarbitRequirement(3907, 5);
 
-		askedAboutThread = new VarbitCondition(3900, 1);
-		askedAboutPoison = new VarbitCondition(3912, 1);
-		askedAboutDagger = new VarbitCondition(3913, 1);
-		askedAboutNight = new VarbitCondition(3915, 1);
+		askedAboutThread = new VarbitRequirement(3900, 1);
+		askedAboutPoison = new VarbitRequirement(3912, 1);
+		askedAboutDagger = new VarbitRequirement(3913, 1);
+		askedAboutNight = new VarbitRequirement(3915, 1);
 
-		inPuzzle = new WidgetModelCondition(588, 1, 27214);
+		inPuzzle = new WidgetModelRequirement(588, 1, 27214);
 
-		hasLockpickOrHairpin = new ItemRequirementCondition(hairclipOrLockpick);
+		hasLockpickOrHairpin = new ItemRequirements(hairclipOrLockpick);
 
-		hasTelegrabItems = new Conditions(new ItemRequirementCondition(airRune), new ItemRequirementCondition(lawRune));
+		hasTelegrabItems = new Conditions(new ItemRequirements(airRune), new ItemRequirements(lawRune));
 
-		inBoxWidget = new WidgetModelCondition(390, 0, 27488);
+		inBoxWidget = new WidgetModelRequirement(390, 0, 27488);
 	}
 
 	public void setupSteps()
@@ -400,25 +410,38 @@ public class KingsRansom extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(grabOrLockpick, granite, blackKnightHelm, blackKnightBody, blackKnightLeg, bronzeMed, ironChain));
+		return Arrays.asList(grabOrLockpick, granite, blackKnightHelm, blackKnightBody, blackKnightLeg, bronzeMed, ironChain);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(ardougneTeleport, camelotTeleport, edgevilleTeleport));
+		return Arrays.asList(ardougneTeleport, camelotTeleport, edgevilleTeleport);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Investigating", new ArrayList<>(Arrays.asList(talkToGossip, talkToGuard, breakWindow, grabPaper, goUpstairsManor, takeForm, searchBookcase, goDownstairsManor, leaveWindow, returnToGuard, talkToGossipAgain))));
-		allSteps.add(new PanelDetails("Freeing Anna", new ArrayList<>(Arrays.asList(talkToAnna, goIntoTrial, callHandlerAboutPoison, callButlerAboutDagger, callMaidAboutNight, callAboutThread, leaveCourt, talkToAnnaAfterTrial))));
-		allSteps.add(new PanelDetails("Saving Merlin and Knights", new ArrayList<>(Arrays.asList(enterStatue, talkToMerlin, reachForVent, useGrabOnGuard, useHairClipOnOnDoor, solvePuzzle, climbF0ToF1, searchTable)), grabOrLockpick));
-		allSteps.add(new PanelDetails("Saving Arthur", new ArrayList<>(Arrays.asList(talkToCromperty, enterFortress, enterWallInFortress, goDownToArthur, freeArthur, talkToArthur, talkToArthurInCamelot)), bronzeMed, ironChain, blackKnightHelm, blackKnightBody, blackKnightLeg, granite));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.BLACK_KNIGHTS_FORTRESS, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.HOLY_GRAIL, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.MURDER_MYSTERY, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.ONE_SMALL_FAVOUR, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.MAGIC, 45));
+		req.add(new SkillRequirement(Skill.DEFENCE, 65));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Investigating", Arrays.asList(talkToGossip, talkToGuard, breakWindow, grabPaper, goUpstairsManor, takeForm, searchBookcase, goDownstairsManor, leaveWindow, returnToGuard, talkToGossipAgain)));
+		allSteps.add(new PanelDetails("Freeing Anna", Arrays.asList(talkToAnna, goIntoTrial, callHandlerAboutPoison, callButlerAboutDagger, callMaidAboutNight, callAboutThread, leaveCourt, talkToAnnaAfterTrial)));
+		allSteps.add(new PanelDetails("Saving Merlin and Knights", Arrays.asList(enterStatue, talkToMerlin, reachForVent, useGrabOnGuard, useHairClipOnOnDoor, solvePuzzle, climbF0ToF1, searchTable), grabOrLockpick));
+		allSteps.add(new PanelDetails("Saving Arthur", Arrays.asList(talkToCromperty, enterFortress, enterWallInFortress, goDownToArthur, freeArthur, talkToArthur, talkToArthurInCamelot), bronzeMed, ironChain, blackKnightHelm, blackKnightBody, blackKnightLeg, granite));
 
 		return allSteps;
 	}

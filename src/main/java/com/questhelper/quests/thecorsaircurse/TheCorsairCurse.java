@@ -24,28 +24,30 @@
  */
 package com.questhelper.quests.thecorsaircurse;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.DigStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
@@ -57,9 +59,10 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class TheCorsairCurse extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement spade, tinderbox, ogreArtfact, combatGear;
 
-	ConditionForStep inCove, inCavern, inIthoiHut, inGnocciHut, inArsenHut, inShip, talkedToIthoi, talkedToGnocci, talkedToArsen, talkedToColin,
+	Requirement inCove, inCavern, inIthoiHut, inGnocciHut, inArsenHut, inShip, talkedToIthoi, talkedToGnocci, talkedToArsen, talkedToColin,
 		hasTinderbox, hasSpade, hasOgreArtefact, foundDoll, returnedToothPick, lookedThroughTelescope, finishedGnocci, finishedArsen, finishedColin;
 
 	QuestStep talkToTockFarm, talkToTockRimmington, returnToCove, goUpToIthoi, talkToIthoi, goDownFromIthoi, goUpToArsen, talkToArsen,
@@ -69,6 +72,7 @@ public class TheCorsairCurse extends BasicQuestHelper
 		goUpToGnocci3, talkToGnocci3, goDownFromGnocci3, goUpToArsen3, talkToArsen3, goDownFromArsen3, goUpToIthoi3, talkToIthoi2, goDownFromIthoi3,
 		goOntoShip3, talkToTockShip3, useTinderboxOnWood, goUpToIthoiToKill, killIthoi, goOntoShip4, talkToTockShip4;
 
+	//Zones
 	Zone cove, cavern, ithoiHut, gnocciHut, arsenHut, ship;
 
 	@Override
@@ -179,6 +183,7 @@ public class TheCorsairCurse extends BasicQuestHelper
 	public void setupItemRequirements()
 	{
 		combatGear = new ItemRequirement("Combat gear + food to defeat Ithoi (level 34), who uses magic", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 		spade = new ItemRequirement("Spade", ItemID.SPADE);
 		tinderbox = new ItemRequirement("Tinderbox", ItemID.TINDERBOX);
 		ogreArtfact = new ItemRequirement("Ogre artefact", ItemID.OGRE_ARTEFACT_21837);
@@ -196,29 +201,29 @@ public class TheCorsairCurse extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inCove = new ZoneCondition(cove);
-		inIthoiHut = new ZoneCondition(ithoiHut);
-		inGnocciHut = new ZoneCondition(gnocciHut);
-		inArsenHut = new ZoneCondition(arsenHut);
-		inShip = new ZoneCondition(ship);
-		inCavern = new ZoneCondition(cavern);
-		talkedToIthoi = new VarbitCondition(6075, 1);
+		inCove = new ZoneRequirement(cove);
+		inIthoiHut = new ZoneRequirement(ithoiHut);
+		inGnocciHut = new ZoneRequirement(gnocciHut);
+		inArsenHut = new ZoneRequirement(arsenHut);
+		inShip = new ZoneRequirement(ship);
+		inCavern = new ZoneRequirement(cavern);
+		talkedToIthoi = new VarbitRequirement(6075, 1);
 
-		talkedToArsen = new VarbitCondition(6074, 2, Operation.GREATER_EQUAL);
-		returnedToothPick = new VarbitCondition(6074, 4);
-		finishedArsen = new VarbitCondition(6074, 5, Operation.GREATER_EQUAL);
+		talkedToArsen = new VarbitRequirement(6074, 2, Operation.GREATER_EQUAL);
+		returnedToothPick = new VarbitRequirement(6074, 4);
+		finishedArsen = new VarbitRequirement(6074, 5, Operation.GREATER_EQUAL);
 
-		talkedToColin = new VarbitCondition(6072, 1, Operation.GREATER_EQUAL);
-		lookedThroughTelescope = new VarbitCondition(6072, 2);
-		finishedColin = new VarbitCondition(6072, 3);
+		talkedToColin = new VarbitRequirement(6072, 1, Operation.GREATER_EQUAL);
+		lookedThroughTelescope = new VarbitRequirement(6072, 2);
+		finishedColin = new VarbitRequirement(6072, 3);
 
-		talkedToGnocci = new VarbitCondition(6073, 1);
-		foundDoll = new VarbitCondition(6073, 2);
-		finishedGnocci = new VarbitCondition(6073, 3);
+		talkedToGnocci = new VarbitRequirement(6073, 1);
+		foundDoll = new VarbitRequirement(6073, 2);
+		finishedGnocci = new VarbitRequirement(6073, 3);
 
-		hasTinderbox = new ItemRequirementCondition(tinderbox);
-		hasSpade = new ItemRequirementCondition(spade);
-		hasOgreArtefact = new ItemRequirementCondition(ogreArtfact);
+		hasTinderbox = new ItemRequirements(tinderbox);
+		hasSpade = new ItemRequirements(spade);
+		hasOgreArtefact = new ItemRequirements(ogreArtfact);
 	}
 
 	public void setupSteps()
@@ -263,7 +268,8 @@ public class TheCorsairCurse extends BasicQuestHelper
 		talkToTockShip = new NpcStep(this, NpcID.CAPTAIN_TOCK_7958, new WorldPoint(2574, 2835, 1), "Talk to Captain Tock on the ship.");
 		talkToTockShip.addDialogStep("Arsen says he gave you a sacred ogre relic.");
 		talkToTockShip.addDialogStep("About that sacred ogre relic...");
-		goOntoShip = new ObjectStep(this, ObjectID.GANGPLANK_31756, new WorldPoint(2578, 2839, 0), "Talk to Captin Tock on the ship.");
+		goOntoShip = new ObjectStep(this, ObjectID.GANGPLANK_31756, new WorldPoint(2578, 2839, 0),
+			"Talk to Captain Tock on the ship.");
 
 		leaveShip = new ObjectStep(this, ObjectID.GANGPLANK_31756, new WorldPoint(2578, 2838, 1), "Enter the hole west of the Corsair Cove and talk to Chief Tess.");
 		goDownToTess = new ObjectStep(this, ObjectID.HOLE_31791, new WorldPoint(2523, 2861, 0), "Enter the hole west of the Corsair Cove and talk to Chief Tess.");
@@ -276,7 +282,7 @@ public class TheCorsairCurse extends BasicQuestHelper
 		digSand.addDialogStep("Search for the possessed doll and face the consequences.");
 		digSand.addSubSteps(goUpFromTess);
 
-		goUpToIthoi2 =  new ObjectStep(this, ObjectID.STAIRS_31735, new WorldPoint(2531, 2833, 0), "Go look through Ithoi's telescope.");
+		goUpToIthoi2 = new ObjectStep(this, ObjectID.STAIRS_31735, new WorldPoint(2531, 2833, 0), "Go look through Ithoi's telescope.");
 		lookThroughTelescope = new ObjectStep(this, ObjectID.TELESCOPE_31632, new WorldPoint(2528, 2835, 1), "Go look through Ithoi's telescope.");
 		lookThroughTelescope.addSubSteps(goUpToIthoi2);
 
@@ -331,7 +337,7 @@ public class TheCorsairCurse extends BasicQuestHelper
 		talkToTockShip3.addDialogStep("I've seen Ithoi running around. He's not sick at all.");
 		talkToTockShip3.addSubSteps(goOntoShip3);
 
-		goUpToIthoiToKill =  new ObjectStep(this, ObjectID.STAIRS_31735, new WorldPoint(2531, 2833, 0), "Go kill Ithoi (level 35) in his hut.");
+		goUpToIthoiToKill = new ObjectStep(this, ObjectID.STAIRS_31735, new WorldPoint(2531, 2833, 0), "Go kill Ithoi (level 35) in his hut.");
 		goUpToIthoiToKill.addDialogStep("I'll be back.");
 		killIthoi = new NpcStep(this, NpcID.ITHOI_THE_NAVIGATOR_7964, new WorldPoint(2529, 2840, 1), "Kill Ithoi (level 35).");
 		killIthoi.addSubSteps(goUpToIthoiToKill);
@@ -343,7 +349,7 @@ public class TheCorsairCurse extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(combatGear);
@@ -351,7 +357,7 @@ public class TheCorsairCurse extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Ithoi the Navigator (level 34)");
@@ -359,14 +365,14 @@ public class TheCorsairCurse extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-		allSteps.add(new PanelDetails("Travel to the cove", new ArrayList<>(Arrays.asList(talkToTockFarm, talkToTockRimmington)), combatGear));
-		allSteps.add(new PanelDetails("Solve the curse", new ArrayList<>(Arrays.asList(talkToIthoi, talkToGnocci, talkToArsen, talkToColin, grabTinderbox, pickUpSpade, talkToTockShip, talkToTess, digSand, lookThroughTelescope, talkToGnocci2, talkToArsen2, talkToColin2))));
-		allSteps.add(new PanelDetails("Discover betrayal", new ArrayList<>(Arrays.asList(talkToTockShip2, talkToGnocci3, talkToArsen3, talkToIthoi2, useTinderboxOnWood, talkToTockShip3))));
-		allSteps.add(new PanelDetails("Deal with Ithoi", new ArrayList<>(Arrays.asList(killIthoi, talkToTockShip4))));
+		allSteps.add(new PanelDetails("Travel to the cove", Arrays.asList(talkToTockFarm, talkToTockRimmington), combatGear));
+		allSteps.add(new PanelDetails("Solve the curse", Arrays.asList(talkToIthoi, talkToGnocci, talkToArsen, talkToColin, grabTinderbox, pickUpSpade, talkToTockShip, talkToTess, digSand, lookThroughTelescope, talkToGnocci2, talkToArsen2, talkToColin2)));
+		allSteps.add(new PanelDetails("Discover betrayal", Arrays.asList(talkToTockShip2, talkToGnocci3, talkToArsen3, talkToIthoi2, useTinderboxOnWood, talkToTockShip3)));
+		allSteps.add(new PanelDetails("Deal with Ithoi", Arrays.asList(killIthoi, talkToTockShip4)));
 		return allSteps;
 	}
 }

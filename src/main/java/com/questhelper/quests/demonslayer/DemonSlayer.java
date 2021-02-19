@@ -24,25 +24,28 @@
  */
 package com.questhelper.quests.demonslayer;
 
+import com.questhelper.ItemCollections;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.conditional.NpcCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
@@ -58,18 +61,22 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class DemonSlayer extends BasicQuestHelper
 {
-	ItemRequirement bucket, bucketOfWater, key1, key2, key3, bones, silverlight, combatGear, silverlightEquipped, bucketOfWaterOptional, varrockTeleport,
-		wizardsTowerTeleport, coin, food;
+	//Items Required
+	ItemRequirement bucket, bucketOfWater, key1, key2, key3, bones, silverlight, combatGear, silverlightEquipped, coin, food, bucketOfWaterOptional;
 
-	ConditionForStep inVarrockSewer, inCastleNWFloor1, inCastleNWFloor2, inCastleNEFloor1, hasBucket, hasFilledBucket, hasFirstKey, hasSecondKey, hasThirdKey,
+	//Items Recommended
+	ItemRequirement varrockTeleport, wizardsTowerTeleport;
+
+	Requirement inVarrockSewer, inCastleNWFloor1, inCastleNWFloor2, inCastleNEFloor1, hasBucket, hasFilledBucket, hasFirstKey, hasSecondKey, hasThirdKey,
 		hasPouredWaterIntoDrain, inTowerFloor1, obtainedSilverlight, hasSilverlight, delrithNearby, delrithWeakenedNearby, inInstance;
 
-	QuestStep talkToAris, talkToPrysin, goUpToRovin, goUpToRovin2, talkToRovin, goDownstairsFromRovin, goDownstairsFromRovin2,  goUpToBucket, pickupBucket,
+	QuestStep talkToAris, talkToPrysin, goUpToRovin, goUpToRovin2, talkToRovin, goDownstairsFromRovin, goDownstairsFromRovin2, goUpToBucket, pickupBucket,
 		goDownFromBucket, fillBucket, useFilledBucketOnDrain, goDownManhole, pickupSecondKey, goUpManhole, goUpstairsWizard, talkToTraiborn, returnToPrysin,
 		getSilverlightBack, killDelrith, killDelrithStep;
 
 	ConditionalStep getFirstKey, getSecondKey, getThirdKey, goAndKillDelrith;
 
+	//Zones
 	Zone varrockSewer, castleNWFloor1, castleNWFloor2, castleNEFloor1, towerFloor1;
 
 	@Override
@@ -131,33 +138,34 @@ public class DemonSlayer extends BasicQuestHelper
 		bones = new ItemRequirement("Bones (UNNOTED)", ItemID.BONES, 25);
 		silverlight = new ItemRequirement("Silverlight", ItemID.SILVERLIGHT);
 		silverlightEquipped = new ItemRequirement("Silverlight", ItemID.SILVERLIGHT, 1, true);
-		combatGear = new ItemRequirement("Armour + food", -1, -1);
+		combatGear = new ItemRequirement("Armour", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getArmour());
 
 		bucketOfWaterOptional = new ItemRequirement("Bucket of water (obtainable during quest)", ItemID.BUCKET_OF_WATER);
 		varrockTeleport = new ItemRequirement("Varrock teleport", ItemID.VARROCK_TELEPORT);
 		wizardsTowerTeleport = new ItemRequirement("Teleport to the Wizards' Tower", ItemID.NECKLACE_OF_PASSAGE5);
 		coin = new ItemRequirement("Coin", ItemID.COINS_995);
-		food = new ItemRequirement("Food", -1, -1);
+		food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
 	}
 
 	public void setupConditions()
 	{
-		inCastleNEFloor1 = new ZoneCondition(castleNEFloor1);
-		inCastleNWFloor1 = new ZoneCondition(castleNWFloor1);
-		inCastleNWFloor2 = new ZoneCondition(castleNWFloor2);
-		inVarrockSewer = new ZoneCondition(varrockSewer);
-		inTowerFloor1 = new ZoneCondition(towerFloor1);
-		hasBucket = new ItemRequirementCondition(bucket);
-		hasFilledBucket = new ItemRequirementCondition(bucketOfWater);
-		hasFirstKey = new ItemRequirementCondition(key1);
-		hasSecondKey = new ItemRequirementCondition(key2);
-		hasThirdKey = new ItemRequirementCondition(key3);
-		hasPouredWaterIntoDrain = new VarbitCondition(2568, 1);
-		obtainedSilverlight = new VarbitCondition(2567, 1);
-		hasSilverlight = new ItemRequirementCondition(silverlight);
+		inCastleNEFloor1 = new ZoneRequirement(castleNEFloor1);
+		inCastleNWFloor1 = new ZoneRequirement(castleNWFloor1);
+		inCastleNWFloor2 = new ZoneRequirement(castleNWFloor2);
+		inVarrockSewer = new ZoneRequirement(varrockSewer);
+		inTowerFloor1 = new ZoneRequirement(towerFloor1);
+		hasBucket = new ItemRequirements(bucket);
+		hasFilledBucket = new ItemRequirements(bucketOfWater);
+		hasFirstKey = new ItemRequirements(key1);
+		hasSecondKey = new ItemRequirements(key2);
+		hasThirdKey = new ItemRequirements(key3);
+		hasPouredWaterIntoDrain = new VarbitRequirement(2568, 1);
+		obtainedSilverlight = new VarbitRequirement(2567, 1);
+		hasSilverlight = new ItemRequirements(silverlight);
 		delrithNearby = new NpcCondition(NpcID.DELRITH);
 		delrithWeakenedNearby = new NpcCondition(NpcID.WEAKENED_DELRITH);
-		inInstance = new VarbitCondition(2569, 1);
+		inInstance = new VarbitRequirement(2569, 1);
 	}
 
 	public void setupZones()
@@ -223,42 +231,42 @@ public class DemonSlayer extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(coin, bones, bucketOfWaterOptional, combatGear, food));
+		return Arrays.asList(coin, bones, bucketOfWaterOptional, combatGear, food);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(varrockTeleport, wizardsTowerTeleport));
+		return Arrays.asList(varrockTeleport, wizardsTowerTeleport);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Collections.singletonList("Delirth (level 27)"));
+		return Collections.singletonList("Delirth (level 27)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(talkToAris, talkToPrysin)), coin, bucketOfWaterOptional));
-		PanelDetails rovinPanel = new PanelDetails("Get Rovin's key", new ArrayList<>(Collections.singletonList(talkToRovin)), bucketOfWaterOptional);
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(talkToAris, talkToPrysin), coin, bucketOfWaterOptional));
+		PanelDetails rovinPanel = new PanelDetails("Get Rovin's key", Collections.singletonList(talkToRovin), bucketOfWaterOptional);
 		rovinPanel.setLockingStep(getFirstKey);
 		allSteps.add(rovinPanel);
 
-		PanelDetails prysinPanel = new PanelDetails("Get Prysin's key", new ArrayList<>(Arrays.asList(useFilledBucketOnDrain, goDownManhole, pickupSecondKey)));
+		PanelDetails prysinPanel = new PanelDetails("Get Prysin's key", Arrays.asList(useFilledBucketOnDrain, goDownManhole, pickupSecondKey));
 		prysinPanel.setLockingStep(getSecondKey);
 		allSteps.add(prysinPanel);
 
-		PanelDetails traibornPanel = new PanelDetails("Get Traiborn's key", new ArrayList<>(Collections.singletonList(talkToTraiborn)), bones);
+		PanelDetails traibornPanel = new PanelDetails("Get Traiborn's key", Collections.singletonList(talkToTraiborn), bones);
 		traibornPanel.setLockingStep(getThirdKey);
 		allSteps.add(traibornPanel);
 
-		PanelDetails killDelrithPanel = new PanelDetails("Kill Delrith", new ArrayList<>(Arrays.asList(returnToPrysin, killDelrithStep)), silverlight, combatGear, food);
+		PanelDetails killDelrithPanel = new PanelDetails("Kill Delrith", Arrays.asList(returnToPrysin, killDelrithStep), silverlight, combatGear, food);
 		allSteps.add(killDelrithPanel);
 		return allSteps;
 	}

@@ -25,22 +25,23 @@
 package com.questhelper.quests.clientofkourend;
 
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
+import com.questhelper.requirements.conditional.Conditions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.coords.WorldPoint;
@@ -50,9 +51,13 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class ClientOfKourend extends BasicQuestHelper
 {
-	ItemRequirement feather, enchantedScroll, enchantedQuill, mysteriousOrb;
+	//Items Required
+	ItemRequirement feather;
 
-	ConditionForStep hasEnchantedScroll, hasEnchantedQuill, hasMysteriousOrb, hasFeather, talkedToLeenz, talkedToHorace, talkedToJennifer, talkedToMunty, talkedToRegath;
+	//Other items used
+	ItemRequirement enchantedScroll, enchantedQuill, mysteriousOrb;
+
+	Requirement hasEnchantedScroll, hasEnchantedQuill, hasMysteriousOrb, hasFeather, talkedToLeenz, talkedToHorace, talkedToJennifer, talkedToMunty, talkedToRegath;
 
 	QuestStep talkToVeos, useFeatherOnScroll, talkToLeenz, talkToHorace, talkToJennifer, talkToMunty, talkToRegath, returnToVeos, goToAltar, finishQuest;
 
@@ -104,15 +109,15 @@ public class ClientOfKourend extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		hasEnchantedQuill = new ItemRequirementCondition(enchantedQuill);
-		hasEnchantedScroll = new ItemRequirementCondition(enchantedScroll);
-		hasFeather = new ItemRequirementCondition(feather);
-		hasMysteriousOrb = new ItemRequirementCondition(mysteriousOrb);
-		talkedToLeenz = new VarbitCondition(5620, 1);
-		talkedToRegath = new VarbitCondition(5621, 1);
-		talkedToMunty = new VarbitCondition(5622, 1);
-		talkedToJennifer = new VarbitCondition(5623, 1);
-		talkedToHorace = new VarbitCondition(5624, 1);
+		hasEnchantedQuill = new ItemRequirements(enchantedQuill);
+		hasEnchantedScroll = new ItemRequirements(enchantedScroll);
+		hasFeather = new ItemRequirements(feather);
+		hasMysteriousOrb = new ItemRequirements(mysteriousOrb);
+		talkedToLeenz = new VarbitRequirement(5620, 1);
+		talkedToRegath = new VarbitRequirement(5621, 1);
+		talkedToMunty = new VarbitRequirement(5622, 1);
+		talkedToJennifer = new VarbitRequirement(5623, 1);
+		talkedToHorace = new VarbitRequirement(5624, 1);
 	}
 
 	public void setupSteps()
@@ -152,7 +157,7 @@ public class ClientOfKourend extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(feather);
@@ -160,13 +165,13 @@ public class ClientOfKourend extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(talkToVeos, useFeatherOnScroll)), feather));
-		allSteps.add(new PanelDetails("Learn about Kourend", new ArrayList<>(Arrays.asList(talkToLeenz, talkToRegath, talkToMunty, talkToJennifer, talkToHorace, returnToVeos))));
-		allSteps.add(new PanelDetails("The Dark Altar", new ArrayList<>(Arrays.asList(goToAltar, finishQuest))));
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(talkToVeos, useFeatherOnScroll), feather));
+		allSteps.add(new PanelDetails("Learn about Kourend", Arrays.asList(talkToLeenz, talkToRegath, talkToMunty, talkToJennifer, talkToHorace, returnToVeos)));
+		allSteps.add(new PanelDetails("The Dark Altar", Arrays.asList(goToAltar, finishQuest)));
 		return allSteps;
 	}
 }

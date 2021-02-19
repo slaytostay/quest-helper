@@ -28,30 +28,38 @@ import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.QuestVarbits;
 import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.requirements.WeightRequirement;
+import com.questhelper.requirements.ComplexRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.player.WeightRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import net.runelite.api.Client;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -65,7 +73,7 @@ public class RFDPiratePete extends BasicQuestHelper
 
 	WeightRequirement canSwim;
 
-	ConditionForStep inDiningRoom, askedCookOptions, inUnderWater, hasEnoughRocks, has5Hide, hasCrabMeat, hasKelp, hasGroundKelp, hasGroundCrabMeat,
+	Requirement inDiningRoom, askedCookOptions, inUnderWater, hasEnoughRocks, has5Hide, hasCrabMeat, hasKelp, hasGroundKelp, hasGroundCrabMeat,
 		walkingUnderwater, hasCake, hasRawCake, hasGroundCod, hasBreadcrumbs;
 
 	QuestStep enterDiningRoom, inspectPete, enterKitchen, usePestleOnCod, useKnifeOnBread, talkToMurphy, talkToMurphyAgain, goDiving,
@@ -74,7 +82,10 @@ public class RFDPiratePete extends BasicQuestHelper
 
 	AskAboutFishCake talkToCook;
 
+	//Zones
 	Zone diningRoom, underwater;
+
+	ArrayList<Requirement> generalReqs;
 
 	@Override
 	public Map<Integer, QuestStep> loadSteps()
@@ -155,7 +166,7 @@ public class RFDPiratePete extends BasicQuestHelper
 		knifeHighlighted = new ItemRequirement("Knife", ItemID.KNIFE);
 		knifeHighlighted.setHighlightInInventory(true);
 		breadHighlighted = new ItemRequirement("Bread", ItemID.BREAD);
-		breadHighlighted.setTip("You can make this by using a knife on bread");
+		breadHighlighted.setTooltip("You can make this by using a knife on bread");
 		breadHighlighted.setHighlightInInventory(true);
 		divingAparatus = new ItemRequirement("Diving apparatus", ItemID.DIVING_APPARATUS, 1, true);
 		divingHelmet = new ItemRequirement("Fishbowl helmet", ItemID.FISHBOWL_HELMET, 1, true);
@@ -176,17 +187,18 @@ public class RFDPiratePete extends BasicQuestHelper
 		crabMeatHighlighted.addAlternates(ItemID.CRAB_MEAT_7519);
 		crabMeatHighlighted.setHighlightInInventory(true);
 		groundCrabMeatHighlighted = new ItemRequirement("Ground kelp", ItemID.GROUND_CRAB_MEAT);
-		groundCrabMeatHighlighted.setTip("You will need to kill another underwater crab and grind its meat");
+		groundCrabMeatHighlighted.setTooltip("You will need to kill another underwater crab and grind its meat");
 		groundCrabMeatHighlighted.setHighlightInInventory(true);
 		groundKelpHighlighted = new ItemRequirement("Ground kelp", ItemID.GROUND_KELP);
-		groundKelpHighlighted.setTip("You will need to go underwater with Murphy and pick more kelp to grind");
+		groundKelpHighlighted.setTooltip("You will need to go underwater with Murphy and pick more kelp to grind");
 		groundKelpHighlighted.setHighlightInInventory(true);
 		rawFishCake = new ItemRequirement("Raw fishcake", ItemID.RAW_FISHCAKE);
 		groundCod = new ItemRequirement("Ground cod", ItemID.GROUND_COD);
-		groundCod.setTip("You can make this by use a pestle and mortar on a raw cod");
+		groundCod.setTooltip("You can make this by use a pestle and mortar on a raw cod");
 		breadcrumbs = new ItemRequirement("Breadcrumbs", ItemID.BREADCRUMBS);
 
 		combatGear = new ItemRequirement("Combat gear", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 	}
 
 	public void loadZones()
@@ -197,27 +209,36 @@ public class RFDPiratePete extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inDiningRoom = new ZoneCondition(diningRoom);
-		walkingUnderwater = new VarbitCondition(1871, 1);
+		inDiningRoom = new ZoneRequirement(diningRoom);
+		walkingUnderwater = new VarbitRequirement(1871, 1);
 
 		askedCookOptions = new Conditions(
-			new VarbitCondition(1873, 1),
-			new VarbitCondition(1876, 1),
-			new VarbitCondition(1877, 1));
+			new VarbitRequirement(1873, 1),
+			new VarbitRequirement(1876, 1),
+			new VarbitRequirement(1877, 1));
 
-		inUnderWater = new ZoneCondition(underwater);
+		inUnderWater = new ZoneRequirement(underwater);
 
-		hasEnoughRocks = new VarbitCondition(1869, 5);
+		hasEnoughRocks = new VarbitRequirement(1869, 5);
 
-		has5Hide = new ItemRequirementCondition(mudskipperHide5);
-		hasGroundCrabMeat = new ItemRequirementCondition(groundCrabMeatHighlighted);
-		hasCrabMeat = new Conditions(LogicType.OR, new ItemRequirementCondition(crabMeat), hasGroundCrabMeat);
-		hasGroundKelp = new ItemRequirementCondition(groundKelpHighlighted);
-		hasKelp = new Conditions(LogicType.OR, new ItemRequirementCondition(kelp), hasGroundKelp);
-		hasCake = new ItemRequirementCondition(fishCake);
-		hasRawCake = new ItemRequirementCondition(rawFishCake);
-		hasGroundCod = new ItemRequirementCondition(groundCod);
-		hasBreadcrumbs = new ItemRequirementCondition(breadcrumbs);
+		has5Hide = new ItemRequirements(mudskipperHide5);
+		hasGroundCrabMeat = new ItemRequirements(groundCrabMeatHighlighted);
+		hasCrabMeat = new Conditions(LogicType.OR, new ItemRequirements(crabMeat), hasGroundCrabMeat);
+		hasGroundKelp = new ItemRequirements(groundKelpHighlighted);
+		hasKelp = new Conditions(LogicType.OR, new ItemRequirements(kelp), hasGroundKelp);
+		hasCake = new ItemRequirements(fishCake);
+		hasRawCake = new ItemRequirements(rawFishCake);
+		hasGroundCod = new ItemRequirements(groundCod);
+		hasBreadcrumbs = new ItemRequirements(breadcrumbs);
+
+		generalReqs = new ArrayList<>();
+		generalReqs.add(new SkillRequirement(Skill.COOKING, 31));
+		if (client.getAccountType().isIronman())
+		{
+			generalReqs.add(new ComplexRequirement(LogicType.OR, "42 Crafting or started Rum Deal for a fishbowl",
+				new SkillRequirement(Skill.CRAFTING, 42, true),
+				new QuestRequirement(QuestHelperQuest.RUM_DEAL, QuestState.IN_PROGRESS)));
+		}
 
 		// 1852 = number of people saved
 		// Talked to cook through base dialog: 1854 0->1
@@ -249,7 +270,7 @@ public class RFDPiratePete extends BasicQuestHelper
 		pickUpRocks = new DetailedQuestStep(this, new WorldPoint(2950, 9511, 1), "Pick up 5 rocks in the west of the area.", rocks5);
 		enterCave = new ObjectStep(this, ObjectID.UNDERWATER_CAVERN_ENTRANCE_12461, new WorldPoint(2950, 9516, 1), "Enter the underwater cave entrance.");
 		killMudksippers5 = new NpcStep(this, NpcID.MUDSKIPPER, new WorldPoint(2951, 9526, 1), "Kill mudskippers for 5 hides.", true, mudskipperHide5);
-		((NpcStep)(killMudksippers5)).addAlternateNpcs(NpcID.MUDSKIPPER_4821);
+		((NpcStep) (killMudksippers5)).addAlternateNpcs(NpcID.MUDSKIPPER_4821);
 		returnToNung = new NpcStep(this, NpcID.NUNG, new WorldPoint(2971, 9513, 1), "Bring the hides to Nung.", mudskipperHide5);
 		talkToNungAgain = new NpcStep(this, NpcID.NUNG, new WorldPoint(2971, 9513, 1), "Talk to Nung again.");
 		returnToNung.addSubSteps(talkToNungAgain);
@@ -275,31 +296,54 @@ public class RFDPiratePete extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(fishBowl, needle, bronzeWire3, pestleHighlighted, rawCodHighlighted, breadHighlighted, knifeHighlighted));
+		return Arrays.asList(fishBowl, needle, bronzeWire3, pestleHighlighted, rawCodHighlighted, breadHighlighted, knifeHighlighted);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Collections.singletonList(combatGear));
+		return Collections.singletonList(combatGear);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("5 Mudskippers (level 30/31)", "Crab (level 21/23)"));
+		return Arrays.asList("5 Mudskippers (level 30/31)", "Crab (level 21/23)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(inspectPete, talkToCook, talkToMurphy, talkToMurphyAgain)), fishBowl));
-		allSteps.add(new PanelDetails("Get Crab and Kelp", new ArrayList<>(Arrays.asList(goDiving, pickKelp, talkToNung, pickUpRocks, enterCave, killMudksippers5, returnToNung, giveNungWire, killCrab, climbAnchor)), divingHelmet, divingAparatus, bronzeWire3, needle));
-		allSteps.add(new PanelDetails("Saving Pete", new ArrayList<>(Arrays.asList(grindCrab, grindKelp, usePestleOnCod, useKnifeOnBread, talkToCookAgain, useCrabOnKelp, cookCake, useCakeOnPete)), pestleHighlighted, knifeHighlighted, rawCodHighlighted, breadHighlighted, crabMeat, kelp));
+		return generalReqs;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(inspectPete, talkToCook, talkToMurphy, talkToMurphyAgain), fishBowl));
+		allSteps.add(new PanelDetails("Get Crab and Kelp", Arrays.asList(goDiving, pickKelp, talkToNung, pickUpRocks, enterCave, killMudksippers5, returnToNung, giveNungWire, killCrab, climbAnchor), divingHelmet, divingAparatus, bronzeWire3, needle));
+		allSteps.add(new PanelDetails("Saving Pete", Arrays.asList(grindCrab, grindKelp, usePestleOnCod, useKnifeOnBread, talkToCookAgain, useCrabOnKelp, cookCake, useCakeOnPete), pestleHighlighted, knifeHighlighted, rawCodHighlighted, breadHighlighted, crabMeat, kelp));
 		return allSteps;
+	}
+
+	@Override
+	public QuestState getState(Client client)
+	{
+		int questState = client.getVarbitValue(QuestVarbits.QUEST_RECIPE_FOR_DISASTER_PIRATE_PETE.getId());
+		if (questState == 0)
+		{
+			return QuestState.NOT_STARTED;
+		}
+
+		if (questState < 110)
+		{
+			return QuestState.IN_PROGRESS;
+		}
+
+		return QuestState.FINISHED;
 	}
 
 	@Override

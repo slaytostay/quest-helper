@@ -29,18 +29,19 @@ import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
@@ -52,14 +53,16 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class DruidicRitual extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement rawRat, rawBear, rawBeef, rawChicken, rawRatHighlighted, rawBearHighlighted, rawBeefHighlighted,
 		rawChickenHighlighted, enchantedBear, enchantedBeef, enchantedChicken, enchantedRat;
 
-	ConditionForStep inDungeon, inSanfewRoom, hasEnchantedBeef, hasEnchantedBear, hasEnchantedRat, hasEnchantedChicken;
+	Requirement inDungeon, inSanfewRoom, hasEnchantedBeef, hasEnchantedBear, hasEnchantedRat, hasEnchantedChicken;
 
 	QuestStep talkToKaqemeex, goUpToSanfew, talkToSanfew, enterDungeon, enchantMeats, useRatOnCauldron, useBeefOnCauldron,
 		useBearOnCauldron, useChickenOnCauldron, goUpToSanfewWithMeat, talkToSanfewWithMeat, talkToKaqemeexToFinish;
 
+	//Zones
 	Zone dungeon, sanfewRoom;
 
 	@Override
@@ -125,13 +128,13 @@ public class DruidicRitual extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inSanfewRoom = new ZoneCondition(sanfewRoom);
-		inDungeon = new ZoneCondition(dungeon);
+		inSanfewRoom = new ZoneRequirement(sanfewRoom);
+		inDungeon = new ZoneRequirement(dungeon);
 
-		hasEnchantedBear = new ItemRequirementCondition(enchantedBear);
-		hasEnchantedBeef = new ItemRequirementCondition(enchantedBeef);
-		hasEnchantedChicken = new ItemRequirementCondition(enchantedChicken);
-		hasEnchantedRat = new ItemRequirementCondition(enchantedRat);
+		hasEnchantedBear = new ItemRequirements(enchantedBear);
+		hasEnchantedBeef = new ItemRequirements(enchantedBeef);
+		hasEnchantedChicken = new ItemRequirements(enchantedChicken);
+		hasEnchantedRat = new ItemRequirements(enchantedRat);
 	}
 
 	public void setupSteps()
@@ -171,17 +174,18 @@ public class DruidicRitual extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(rawBear, rawBeef, rawChicken, rawRat));
+		return Arrays.asList(rawBear, rawBeef, rawChicken, rawRat);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 		allSteps.add(new PanelDetails("Helping the druids",
-			new ArrayList<>(Arrays.asList(talkToKaqemeex, talkToSanfew, enterDungeon, enchantMeats, talkToSanfewWithMeat, talkToKaqemeexToFinish)), rawBear, rawBeef, rawChicken, rawRat));
+			Arrays.asList(talkToKaqemeex, talkToSanfew, enterDungeon, enchantMeats, talkToSanfewWithMeat, talkToKaqemeexToFinish),
+				rawBear, rawBeef, rawChicken, rawRat));
 
 		return allSteps;
 	}

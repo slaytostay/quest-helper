@@ -24,29 +24,32 @@
  */
 package com.questhelper.quests.curseoftheemptylord;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.client.eventbus.Subscribe;
 
@@ -58,9 +61,10 @@ public class CurseOfTheEmptyLord extends BasicQuestHelper
 	private final int PATH_VARBIT = 815;
 	private int currentPath = 0;
 
+	//Items Required
 	ItemRequirement ringOfVis, ghostspeak;
 
-	ConditionForStep talkedToValdez, talkedToRennard, talkedToKharrim, talkedToLennissa, talkedToDhalak, talkedToViggora, inRoguesCastle, inEdgevilleDungeon, inSlayerTower,
+	Requirement talkedToValdez, talkedToRennard, talkedToKharrim, talkedToLennissa, talkedToDhalak, talkedToViggora, inRoguesCastle, inEdgevilleDungeon, inSlayerTower,
 		inEdgevilleMonastery, inPartyRoom, onPath1, onPath2, onPath3;
 
 	DetailedQuestStep talkToValdez, talkToRennard, talkToKharrim, talkToLennissa, talkToDhalak, talkToViggora,
@@ -68,6 +72,7 @@ public class CurseOfTheEmptyLord extends BasicQuestHelper
 
 	ObjectStep goDownIntoEdgevilleDungeon;
 
+	//Zones
 	Zone roguesCastleFirstFloor, edgevilleDungeon, slayerTowerFirstFloor, edgevilleMonastery, partyRoom;
 
 	@Override
@@ -128,21 +133,21 @@ public class CurseOfTheEmptyLord extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		talkedToValdez = new VarbitCondition(816, 1);
-		talkedToRennard = new VarbitCondition(817, 1);
-		talkedToKharrim = new VarbitCondition(818, 1);
-		talkedToLennissa = new VarbitCondition(819, 1);
-		talkedToDhalak = new VarbitCondition(820, 1);
-		talkedToViggora = new VarbitCondition(821, 1);
-		inEdgevilleDungeon = new ZoneCondition(edgevilleDungeon);
-		inRoguesCastle = new ZoneCondition(roguesCastleFirstFloor);
-		inSlayerTower = new ZoneCondition(slayerTowerFirstFloor);
-		inEdgevilleMonastery = new ZoneCondition(edgevilleMonastery);
-		inPartyRoom = new ZoneCondition(partyRoom);
+		talkedToValdez = new VarbitRequirement(816, 1);
+		talkedToRennard = new VarbitRequirement(817, 1);
+		talkedToKharrim = new VarbitRequirement(818, 1);
+		talkedToLennissa = new VarbitRequirement(819, 1);
+		talkedToDhalak = new VarbitRequirement(820, 1);
+		talkedToViggora = new VarbitRequirement(821, 1);
+		inEdgevilleDungeon = new ZoneRequirement(edgevilleDungeon);
+		inRoguesCastle = new ZoneRequirement(roguesCastleFirstFloor);
+		inSlayerTower = new ZoneRequirement(slayerTowerFirstFloor);
+		inEdgevilleMonastery = new ZoneRequirement(edgevilleMonastery);
+		inPartyRoom = new ZoneRequirement(partyRoom);
 
-		onPath1 = new VarbitCondition(PATH_VARBIT, 1);
-		onPath2 = new VarbitCondition(PATH_VARBIT, 2);
-		onPath3 = new VarbitCondition(PATH_VARBIT, 3);
+		onPath1 = new VarbitRequirement(PATH_VARBIT, 1);
+		onPath2 = new VarbitRequirement(PATH_VARBIT, 2);
+		onPath3 = new VarbitRequirement(PATH_VARBIT, 3);
 	}
 
 	public void loadZones()
@@ -176,18 +181,18 @@ public class CurseOfTheEmptyLord extends BasicQuestHelper
 		talkToViggora = new NpcStep(this, NpcID.MYSTERIOUS_GHOST_3455, new WorldPoint(2556, 3445, 0), "Talk to the Mysterious Ghost Viggora.", ghostspeak, ringOfVis);
 		talkToViggora.addDialogStep("Tell me your story");
 
-		updateSteps(pathID);
-
 		goUpstairsMonastery = new ObjectStep(this, ObjectID.LADDER_2641, new WorldPoint(3057, 3483, 0), "Talk to the Mysterious Ghost upstairs in the Edgeville Monastery.");
+
+		goUpstairsSlayerTower = new ObjectStep(this, ObjectID.STAIRCASE, new WorldPoint(3436, 3538, 0), "Talk to the Mysterious Ghost upstairs in the Slayer Tower, near the Infernal Mages.");
 
 		goDownIntoEdgevilleDungeon = new ObjectStep(this, ObjectID.TRAPDOOR_1579, new WorldPoint(3097, 3468, 0), "Talk to the Mysterious Ghost in the Edgeville Wilderness Dungeon, near the Earth Warriors.");
 		goDownIntoEdgevilleDungeon.addAlternateObjects(ObjectID.TRAPDOOR_1581);
 
-		goUpstairsSlayerTower = new ObjectStep(this, ObjectID.STAIRCASE, new WorldPoint(3436, 3538, 0), "Talk to the Mysterious Ghost upstairs in the Slayer Tower, near the Infernal Mages.");
-
 		goUpstairsRoguesCastle = new ObjectStep(this, ObjectID.STAIRCASE_14735, new WorldPoint(3281, 3937, 0), "Talk to the Mysterious Ghost Viggora upstairs in the Rogues' Castle in 54 Wilderness.");
 
 		goUpstairsPartyRoom = new ObjectStep(this, ObjectID.STAIRCASE_24249, new WorldPoint(3054, 3384, 0), "Talk to the Mysterious Ghost upstairs in the Falador Party Room.");
+
+		updateSteps(pathID);
 	}
 
 	public void updateSteps(int pathID)
@@ -208,7 +213,9 @@ public class CurseOfTheEmptyLord extends BasicQuestHelper
 
 			talkToViggora.setText("Talk to the Mysterious Ghost Viggora upstairs in the Rogues' Castle in 54 Wilderness.");
 			talkToViggora.setWorldPoint(3295, 3934, 1);
-		} else if (pathID == 2)
+			talkToViggora.addSubSteps(goUpstairsRoguesCastle);
+		}
+		else if (pathID == 2)
 		{
 			talkToRennard.setText("Talk to the Mysterious Ghost in the Bandit Camp in the Wilderness.");
 			talkToRennard.setWorldPoint(3031, 3703, 0);
@@ -221,11 +228,14 @@ public class CurseOfTheEmptyLord extends BasicQuestHelper
 
 			talkToDhalak.setText("Talk to the Mysterious Ghost upstairs in the Edgeville Monastery.");
 			talkToDhalak.setWorldPoint(3052, 3497, 1);
+			talkToDhalak.addSubSteps(goUpstairsMonastery);
 
 			talkToViggora.setText("Talk to the Mysterious Ghost upstairs in the Slayer Tower, near the Infernal Mages.");
 			talkToViggora.setWorldPoint(3447, 3547, 1);
+			talkToViggora.addSubSteps(goUpstairsSlayerTower);
 
-		} else if (pathID == 3)
+		}
+		else if (pathID == 3)
 		{
 			talkToRennard.setText("Talk to the Mysterious Ghost in the Bandit Camp in the desert.");
 			talkToRennard.setWorldPoint(3163, 2981, 0);
@@ -238,25 +248,37 @@ public class CurseOfTheEmptyLord extends BasicQuestHelper
 
 			talkToDhalak.setText("Talk to the Mysterious Ghost upstairs in the Falador Party Room.");
 			talkToDhalak.setWorldPoint(3052, 3378, 1);
+			talkToDhalak.addSubSteps(goUpstairsPartyRoom);
 
 			talkToViggora.setText("Talk to the Mysterious Ghost in the Edgeville Wilderness Dungeon, near the Earth Warriors.");
 			talkToViggora.setWorldPoint(3121, 9995, 0);
+			talkToViggora.addSubSteps(goDownIntoEdgevilleDungeon);
 		}
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(ringOfVis, ghostspeak));
+		return Arrays.asList(ringOfVis, ghostspeak);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 		allSteps.add(new PanelDetails("Learn about the Empty Lord",
-			new ArrayList<>(Arrays.asList(talkToValdez, talkToRennard, talkToKharrim, talkToLennissa, talkToDhalak, talkToViggora)), ghostspeak, ringOfVis));
+			Arrays.asList(talkToValdez, talkToRennard, talkToKharrim, talkToLennissa, talkToDhalak, talkToViggora),
+				ghostspeak, ringOfVis));
 
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.DESERT_TREASURE, QuestState.IN_PROGRESS));
+		req.add(new QuestRequirement(QuestHelperQuest.THE_RESTLESS_GHOST, QuestState.IN_PROGRESS));
+		return req;
 	}
 }

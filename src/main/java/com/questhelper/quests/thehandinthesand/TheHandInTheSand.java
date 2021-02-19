@@ -25,23 +25,27 @@
 package com.questhelper.quests.thehandinthesand;
 
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.requirements.conditional.Conditions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
@@ -49,22 +53,26 @@ import com.questhelper.questhelpers.BasicQuestHelper;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.THE_HAND_IN_THE_SAND
 )
 public class TheHandInTheSand extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement truthSerum, beer, redberries, whiteberries, pinkDye, roseLens, lanternLens, magicalOrb, redberryJuice, bottledWater, hand, beerHand, bertsRota, sandysRota, magicScroll, vial, vial2, sand, wizardsHead,
-		beerOr2Coins, earthRunes5, coins, bucketOfSand, truthSerumHighlight, activatedOrb, teleportsToYanille, teleportsToBrimhaven;
+		beerOr2Coins, earthRunes5, coins, bucketOfSand, truthSerumHighlight, activatedOrb;
 
-	ConditionForStep hasSand, notTeleportedToSarim, inYanille, inLightSpot, receivedBottledWater, hasRedberryJuice, hasPinkDye, hasRoseLens, vialPlaced, madeTruthSerum;
+	//Items Recommended
+	ItemRequirement teleportsToYanille, teleportsToBrimhaven;
+
+	Requirement hasSand, notTeleportedToSarim, inYanille, inLightSpot, receivedBottledWater, hasRedberryJuice, hasPinkDye, hasRoseLens, vialPlaced, madeTruthSerum;
 
 	DetailedQuestStep talkToBert, talkToBertAboutRota, talkToBertAboutScroll, talkToBetty, talkToBettyOnceMore, talkToBettyAgain, talkToRarveAgain, talkToSandyWithPotion, giveCaptainABeer, useLensOnCounter,
 		useDyeOnLanternLens, useSerumOnCoffee, searchSandysDesk, standInDoorway, ringBell, ringBellAgain, pickpocketSandy, addWhiteberries, addRedberries, activateMagicalOrb, interrogateSandy, ringBellAfterInterrogation,
 		ringBellWithItems, talkToMazion, ringBellEnd;
 
+	//Zones
 	Zone yanille, lightSpot;
 
 	@Override
@@ -115,7 +123,7 @@ public class TheHandInTheSand extends BasicQuestHelper
 	{
 		beer = new ItemRequirement("Beer", ItemID.BEER);
 		bottledWater = new ItemRequirement("Bottled water", ItemID.BOTTLED_WATER);
-		bottledWater.setTip("You can get another from Betty");
+		bottledWater.setTooltip("You can get another from Betty");
 		bottledWater.setHighlightInInventory(true);
 
 		redberries = new ItemRequirement("Redberries", ItemID.REDBERRIES);
@@ -128,10 +136,10 @@ public class TheHandInTheSand extends BasicQuestHelper
 		pinkDye = new ItemRequirement("Pink dye", ItemID.PINK_DYE);
 		pinkDye.setHighlightInInventory(true);
 		truthSerum = new ItemRequirement("Truth serum", ItemID.TRUTH_SERUM);
-		truthSerum.setTip("You can get another from Betty in Port Sarim");
+		truthSerum.setTooltip("You can get another from Betty in Port Sarim");
 
 		truthSerumHighlight = new ItemRequirement("Truth serum", ItemID.TRUTH_SERUM);
-		truthSerumHighlight.setTip("You can get another from Betty in Port Sarim");
+		truthSerumHighlight.setTooltip("You can get another from Betty in Port Sarim");
 		truthSerumHighlight.setHighlightInInventory(true);
 
 		lanternLens = new ItemRequirement("Lantern lens", ItemID.LANTERN_LENS);
@@ -139,40 +147,43 @@ public class TheHandInTheSand extends BasicQuestHelper
 		roseLens = new ItemRequirement("Rose-tinted lens", ItemID.ROSE_TINTED_LENS);
 		roseLens.setHighlightInInventory(true);
 		hand = new ItemRequirement("Sandy hand", ItemID.SANDY_HAND);
-		hand.setTip("You can get another from Bert");
+		hand.setTooltip("You can get another from Bert");
 		beerHand = new ItemRequirement("Beer soaked hand", ItemID.BEER_SOAKED_HAND);
-		beerHand.setTip("You can get another from Bert");
+		beerHand.setTooltip("You can get another from Bert");
 		bertsRota = new ItemRequirement("Bert's rota", ItemID.BERTS_ROTA);
-		bertsRota.setTip("You can get another from Bert");
+		bertsRota.setTooltip("You can get another from Bert");
 		sandysRota = new ItemRequirement("Sandy's rota", ItemID.SANDYS_ROTA);
-		sandysRota.setTip("You can get another by searching Sandy's desk");
+		sandysRota.setTooltip("You can get another by searching Sandy's desk");
 
 		magicalOrb = new ItemRequirement("Magical orb", ItemID.MAGICAL_ORB);
-		magicalOrb.setTip("You can get another from Zavistic Rarve in Yanille");
+		magicalOrb.setTooltip("You can get another from Zavistic Rarve in Yanille");
 		magicalOrb.setHighlightInInventory(true);
 
 		activatedOrb = new ItemRequirement("Magical orb", ItemID.MAGICAL_ORB_A);
-		activatedOrb.setTip("You can get another from Zavistic Rarve in Yanille");
+		activatedOrb.setTooltip("You can get another from Zavistic Rarve in Yanille");
 
 		vial = new ItemRequirement("Vial", ItemID.VIAL);
 		vial2 = new ItemRequirement("Vial", ItemID.VIAL, 2);
 
 		magicScroll = new ItemRequirement("A magic scroll", ItemID.A_MAGIC_SCROLL);
-		magicScroll.setTip("You can get another from Bert");
+		magicScroll.setTooltip("You can get another from Bert");
 
 		sand = new ItemRequirement("Sand", ItemID.SAND);
-		sand.setTip("You can get more by pickpocketing Sandy in Brimhaven");
+		sand.setTooltip("You can get more by pickpocketing Sandy in Brimhaven");
 
 		beerOr2Coins = new ItemRequirement("Beer or 2 gp", ItemID.BEER);
 		earthRunes5 = new ItemRequirement("Earth runes", ItemID.EARTH_RUNE, 5);
-		coins = new ItemRequirement("Around 150 coins for boat travel", -1, -1);
+		coins = new ItemRequirement("Coins or more for boat travel", ItemID.COINS_995, 150);
+
 		bucketOfSand = new ItemRequirement("Bucket of sand", ItemID.BUCKET_OF_SAND);
 
 		wizardsHead = new ItemRequirement("Wizard's head", ItemID.WIZARDS_HEAD);
-		wizardsHead.setTip("You can get another from Mazion on Entrana");
+		wizardsHead.setTooltip("You can get another from Mazion on Entrana");
 
-		teleportsToBrimhaven = new ItemRequirement("Teleports to Brimhaven, or to near a boat to Brimhaven", ItemID.BRIMHAVEN_TELEPORT, -1);
-		teleportsToYanille = new ItemRequirement("Teleports to Yanille, such as dueling ring or minigame teleport", ItemID.YANILLE_TELEPORT, -1);
+		teleportsToBrimhaven = new ItemRequirement("Teleports to Brimhaven, or to near a boat to Brimhaven",
+			ItemID.BRIMHAVEN_TELEPORT, 2);
+		teleportsToYanille = new ItemRequirement("Teleports to Yanille, such as dueling ring or minigame teleport",
+			ItemID.YANILLE_TELEPORT, 3);
 	}
 
 	public void loadZones()
@@ -183,16 +194,16 @@ public class TheHandInTheSand extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		hasSand = new ItemRequirementCondition(sand);
-		notTeleportedToSarim = new VarbitCondition(1531, 0);
-		inYanille = new ZoneCondition(yanille);
-		inLightSpot = new ZoneCondition(lightSpot);
-		receivedBottledWater = new VarbitCondition(1532, 1);
-		hasRedberryJuice = new ItemRequirementCondition(redberryJuice);
-		hasPinkDye = new ItemRequirementCondition(pinkDye);
-		hasRoseLens = new ItemRequirementCondition(roseLens);
-		vialPlaced = new VarbitCondition(1537, 1);
-		madeTruthSerum = new VarbitCondition(1532, 5);
+		hasSand = new ItemRequirements(sand);
+		notTeleportedToSarim = new VarbitRequirement(1531, 0);
+		inYanille = new ZoneRequirement(yanille);
+		inLightSpot = new ZoneRequirement(lightSpot);
+		receivedBottledWater = new VarbitRequirement(1532, 1);
+		hasRedberryJuice = new ItemRequirements(redberryJuice);
+		hasPinkDye = new ItemRequirements(pinkDye);
+		hasRoseLens = new ItemRequirements(roseLens);
+		vialPlaced = new VarbitRequirement(1537, 1);
+		madeTruthSerum = new VarbitRequirement(1532, 5);
 	}
 
 	public void setupSteps()
@@ -243,7 +254,7 @@ public class TheHandInTheSand extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(beerOr2Coins);
@@ -258,7 +269,7 @@ public class TheHandInTheSand extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(teleportsToYanille);
@@ -268,15 +279,21 @@ public class TheHandInTheSand extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Collections.singletonList(talkToBert))));
-		allSteps.add(new PanelDetails("Investigating", new ArrayList<>(Arrays.asList(giveCaptainABeer, ringBell, talkToBertAboutRota, searchSandysDesk, pickpocketSandy)), beerOr2Coins));
-		allSteps.add(new PanelDetails("Making a truth serum", new ArrayList<>(Arrays.asList(talkToBertAboutScroll, ringBellAgain, talkToRarveAgain, talkToBetty, addRedberries, addWhiteberries, useDyeOnLanternLens,
-			talkToBettyAgain, useLensOnCounter, talkToBettyOnceMore)), vial2, lanternLens, redberries, whiteberries));
-		allSteps.add(new PanelDetails("Uncover the truth", new ArrayList<>(Arrays.asList(talkToSandyWithPotion, useSerumOnCoffee, activateMagicalOrb, interrogateSandy)), truthSerum, magicalOrb));
-		allSteps.add(new PanelDetails("Finishing off", new ArrayList<>(Arrays.asList(ringBellAfterInterrogation, talkToMazion, ringBellEnd)), earthRunes5, bucketOfSand));
+		return Arrays.asList(new SkillRequirement(Skill.THIEVING, 17), new SkillRequirement(Skill.CRAFTING, 49));
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Collections.singletonList(talkToBert)));
+		allSteps.add(new PanelDetails("Investigating", Arrays.asList(giveCaptainABeer, ringBell, talkToBertAboutRota, searchSandysDesk, pickpocketSandy), beerOr2Coins));
+		allSteps.add(new PanelDetails("Making a truth serum", Arrays.asList(talkToBertAboutScroll, ringBellAgain, talkToRarveAgain, talkToBetty, addRedberries, addWhiteberries, useDyeOnLanternLens,
+			talkToBettyAgain, useLensOnCounter, talkToBettyOnceMore), vial2, lanternLens, redberries, whiteberries));
+		allSteps.add(new PanelDetails("Uncover the truth", Arrays.asList(talkToSandyWithPotion, useSerumOnCoffee, activateMagicalOrb, interrogateSandy), truthSerum, magicalOrb));
+		allSteps.add(new PanelDetails("Finishing off", Arrays.asList(ringBellAfterInterrogation, talkToMazion, ringBellEnd), earthRunes5, bucketOfSand));
 		return allSteps;
 	}
 }

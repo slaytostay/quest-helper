@@ -25,53 +25,63 @@
 package com.questhelper.quests.thelosttribe;
 
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcEmoteStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import com.questhelper.steps.emote.QuestEmote;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.THE_LOST_TRIBE
 )
 public class TheLostTribe extends BasicQuestHelper
 {
-	ItemRequirement pickaxe, lightSource, brooch, book, key, silverware, treaty, varrockTeleport, faladorTeleport, lumbridgeTeleports;
+	//Items Required
+	ItemRequirement pickaxe, lightSource, brooch, book, key, silverware, treaty;
 
-	ConditionForStep inBasement, inLumbridgeF0, inLumbridgeF1, inLumbridgeF2, inTunnels, hasBrooch, hasBook, inMines,
+	//Items Recommended
+	ItemRequirement varrockTeleport, faladorTeleport, lumbridgeTeleports;
+
+	Requirement inBasement, inLumbridgeF0, inLumbridgeF1, inLumbridgeF2, inTunnels, hasBrooch, hasBook, inMines,
 		hasKey, foundRobes, inHamBase, foundSilverware, bobKnows, hansKnows;
 
 	DetailedQuestStep goDownFromF2, talkToSigmund, talkToDuke, goDownFromF1, talkToHans, goUpToF1,
-		goDownIntoBasement, usePickaxeOnRubble, climbThroughHole, grabBrooch, goUpFromBasement, showBroochToDuke,
-		searchBookcase, readBook, talkToGenerals, walkToMistag, emoteAtMistag, pickpocketSigmund, unlockChest,
-		enterHamLair, searchHamCrates, talkToKazgar, talkToMistagForEnd, talkToCook, talkToBob, talkToAereck, talkToAllAboutCellar;
+		goDownIntoBasement, usePickaxeOnRubble, climbThroughHole, grabBrooch, climbOutThroughHole, goUpFromBasement,
+		showBroochToDuke, searchBookcase, readBook, talkToGenerals, walkToMistag, emoteAtMistag, pickpocketSigmund,
+		unlockChest, enterHamLair, searchHamCrates, talkToKazgar, talkToMistagForEnd, talkToBob, talkToAllAboutCellar;
 
 	ConditionalStep goToF1Steps, goDownToBasement, goTalkToSigmundToStart, findGoblinWitnessSteps, goTalkToDukeAfterHans,
 		goMineRubble, enterTunnels, goShowBroochToDuke, goTalkToDukeAfterEmote, goTravelToMistag, goGetKey, goOpenRobeChest,
 		goIntoHamLair, goToDukeWithSilverware, travelToMakePeace;
 
+	//Zones
 	Zone basement, lumbridgeF0, lumbridgeF1, lumbridgeF2, tunnels, mines, hamBase;
 
 	@Override
@@ -127,13 +137,13 @@ public class TheLostTribe extends BasicQuestHelper
 		book.setHighlightInInventory(true);
 		key = new ItemRequirement("Key", ItemID.KEY_5010);
 		silverware = new ItemRequirement("Silverware", ItemID.SILVERWARE);
-		silverware.setTip("You can get another from the crate in the entrance of the H.A.M. hideout");
+		silverware.setTooltip("You can get another from the crate in the entrance of the H.A.M. hideout");
 
 		treaty = new ItemRequirement("Peace treaty", ItemID.PEACE_TREATY);
-		treaty.setTip("You can get another from Duke Horacio");
+		treaty.setTooltip("You can get another from Duke Horacio");
 
 		varrockTeleport = new ItemRequirement("Varrock teleport", ItemID.VARROCK_TELEPORT);
-		lumbridgeTeleports = new ItemRequirement("Lumbridge teleports", ItemID.LUMBRIDGE_TELEPORT, -1);
+		lumbridgeTeleports = new ItemRequirement("Lumbridge teleports", ItemID.LUMBRIDGE_TELEPORT, 3);
 		faladorTeleport = new ItemRequirement("Falador teleports", ItemID.FALADOR_TELEPORT);
 	}
 
@@ -150,23 +160,23 @@ public class TheLostTribe extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inBasement = new ZoneCondition(basement);
-		inLumbridgeF0 = new ZoneCondition(lumbridgeF0);
-		inLumbridgeF1 = new ZoneCondition(lumbridgeF1);
-		inLumbridgeF2 = new ZoneCondition(lumbridgeF2);
-		inTunnels = new ZoneCondition(tunnels);
-		inMines = new ZoneCondition(mines);
-		inHamBase = new ZoneCondition(hamBase);
+		inBasement = new ZoneRequirement(basement);
+		inLumbridgeF0 = new ZoneRequirement(lumbridgeF0);
+		inLumbridgeF1 = new ZoneRequirement(lumbridgeF1);
+		inLumbridgeF2 = new ZoneRequirement(lumbridgeF2);
+		inTunnels = new ZoneRequirement(tunnels);
+		inMines = new ZoneRequirement(mines);
+		inHamBase = new ZoneRequirement(hamBase);
 
-		hasBrooch = new ItemRequirementCondition(brooch);
-		hasBook = new ItemRequirementCondition(book);
-		hasKey = new ItemRequirementCondition(key);
+		hasBrooch = new ItemRequirements(brooch);
+		hasBook = new ItemRequirements(book);
+		hasKey = new ItemRequirements(key);
 
-		foundRobes = new VarbitCondition(534, 1, Operation.GREATER_EQUAL);
-		foundSilverware = new VarbitCondition(534, 3, Operation.GREATER_EQUAL);
+		foundRobes = new VarbitRequirement(534, 1, Operation.GREATER_EQUAL);
+		foundSilverware = new VarbitRequirement(534, 3, Operation.GREATER_EQUAL);
 
-		hansKnows = new VarbitCondition(537, 0);
-		bobKnows = new VarbitCondition(537, 1);
+		hansKnows = new VarbitRequirement(537, 0);
+		bobKnows = new VarbitRequirement(537, 1);
 
 		// 537 0->2->0, Hans
 		// 537 0->1, Bob
@@ -204,6 +214,8 @@ public class TheLostTribe extends BasicQuestHelper
 
 		grabBrooch = new DetailedQuestStep(this, new WorldPoint(3230, 9610, 0), "Pick up the brooch on the floor.", brooch);
 
+		climbOutThroughHole = new ObjectStep(this, ObjectID.HOLE_6905, new WorldPoint(3221, 9618, 0), "");
+
 		showBroochToDuke = new NpcStep(this, NpcID.DUKE_HORACIO, new WorldPoint(3210, 3222, 1), "");
 		showBroochToDuke.addDialogStep("I dug through the rubble...");
 
@@ -214,7 +226,7 @@ public class TheLostTribe extends BasicQuestHelper
 		talkToGenerals.addDialogSteps("Have you ever heard of the Dorgeshuun?", "It doesn't really matter",
 			"Well either way they refused to fight", "Well I found a brooch underground...", "Well why not show me both greetings?");
 
-		ArrayList<WorldPoint> travelLine = new ArrayList<>(Arrays.asList(
+		List<WorldPoint> travelLine = Arrays.asList(
 			new WorldPoint(3222, 9618, 0),
 			new WorldPoint(3224, 9618, 0),
 			new WorldPoint(3229, 9610, 0),
@@ -251,7 +263,7 @@ public class TheLostTribe extends BasicQuestHelper
 			new WorldPoint(3303, 9606, 0),
 			new WorldPoint(3309, 9612, 0),
 			new WorldPoint(3317, 9612, 0)
-		));
+		);
 
 		walkToMistag = new NpcEmoteStep(this, NpcID.MISTAG_7297, QuestEmote.GOBLIN_BOW, new WorldPoint(3319, 9615, 0), "Travel through the tunnels. Make sure you follow the marked path, or you'll be dropped into a hole and your light source extinguished!", lightSource);
 		walkToMistag.setLinePoints(travelLine);
@@ -274,6 +286,7 @@ public class TheLostTribe extends BasicQuestHelper
 		goToF1Steps = new ConditionalStep(this, goUpToF1);
 		goToF1Steps.addStep(inLumbridgeF2, goDownFromF2);
 		goToF1Steps.addStep(inBasement, goUpFromBasement);
+		goToF1Steps.addStep(inTunnels, climbOutThroughHole);
 
 		goDownToBasement = new ConditionalStep(this, goDownIntoBasement);
 		goDownToBasement.addStep(inLumbridgeF2, goDownFromF2);
@@ -307,7 +320,7 @@ public class TheLostTribe extends BasicQuestHelper
 		goTravelToMistag.addStep(inBasement, climbThroughHole);
 		goTravelToMistag.addSubSteps(walkToMistag);
 
-		goTalkToDukeAfterEmote = new ConditionalStep(this, goToF1Steps, "Talk to Duke Horacio in Lumbridge Castle.");
+		goTalkToDukeAfterEmote = new ConditionalStep(this, goToF1Steps, "Talk to Duke Horacio in Lumbridge Castle. You can fast-travel with Mistag back to Lumbridge.");
 		goTalkToDukeAfterEmote.addDialogSteps("I've made contact with the cave goblins...");
 		goTalkToDukeAfterEmote.addStep(inLumbridgeF1, talkToDuke);
 
@@ -334,26 +347,37 @@ public class TheLostTribe extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(pickaxe, lightSource));
+		return Arrays.asList(pickaxe, lightSource);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(lumbridgeTeleports, varrockTeleport, faladorTeleport));
+		return Arrays.asList(lumbridgeTeleports, varrockTeleport, faladorTeleport);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(goTalkToSigmundToStart, talkToAllAboutCellar, goTalkToDukeAfterHans))));
-		allSteps.add(new PanelDetails("Investigating", new ArrayList<>(Arrays.asList(goMineRubble, enterTunnels, grabBrooch, goShowBroochToDuke)), pickaxe, lightSource));
-		allSteps.add(new PanelDetails("Learning about goblins", new ArrayList<>(Arrays.asList(searchBookcase, readBook, talkToGenerals))));
-		allSteps.add(new PanelDetails("Making contact", new ArrayList<>(Arrays.asList(goTravelToMistag, emoteAtMistag, goTalkToDukeAfterEmote)), lightSource));
-		allSteps.add(new PanelDetails("Resolving tensions", new ArrayList<>(Arrays.asList(goGetKey, goOpenRobeChest, goIntoHamLair, goToDukeWithSilverware, travelToMakePeace)), lightSource));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.GOBLIN_DIPLOMACY, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.AGILITY, 13, true));
+		req.add(new SkillRequirement(Skill.THIEVING, 13, true));
+		req.add(new SkillRequirement(Skill.MINING, 17, true));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(goTalkToSigmundToStart, talkToAllAboutCellar, goTalkToDukeAfterHans)));
+		allSteps.add(new PanelDetails("Investigating", Arrays.asList(goMineRubble, enterTunnels, grabBrooch, goShowBroochToDuke), pickaxe, lightSource));
+		allSteps.add(new PanelDetails("Learning about goblins", Arrays.asList(searchBookcase, readBook, talkToGenerals)));
+		allSteps.add(new PanelDetails("Making contact", Arrays.asList(goTravelToMistag, emoteAtMistag, goTalkToDukeAfterEmote), lightSource));
+		allSteps.add(new PanelDetails("Resolving tensions", Arrays.asList(goGetKey, goOpenRobeChest, goIntoHamLair, goToDukeWithSilverware, travelToMakePeace), lightSource));
 
 		return allSteps;
 	}

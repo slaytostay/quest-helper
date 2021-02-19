@@ -25,54 +25,62 @@
 package com.questhelper.quests.betweenarock;
 
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.util.LogicType;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.BETWEEN_A_ROCK
 )
 public class BetweenARock extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement coins5, pickaxe, page1, page2, page3, pages, dwarvenLore, dwarvenLoreHighlight, goldBar, goldBarHighlight, goldCannonball, cannonMould, goldCannonballHighlight, schematic,
 		baseSchematic, schematicEngineer, khorvakSchematic, goldHelmet, hammer, goldBars3, schematicHighlight, solvedSchematic, combatGear,
-		goldOre6, goldBars4, coins1000, goldHelmetEquipped;
+		goldOre6, goldBars4, coins1000, goldHelmetEquipped, food;
 
-	ConditionForStep inTrollRoom, inDwarfEntrance, inDwarfMine, inKeldagrim, inDwarvenMine, hasPage1, hasPage2, hasPage3, hasPages, hasUsedGoldBar, hasCannonball, shotGoldCannonball, hasBaseSchematic,
+	Requirement inTrollRoom, inDwarfEntrance, inDwarfMine, inKeldagrim, inDwarvenMine, hasPage1, hasPage2, hasPage3, hasPages, hasUsedGoldBar, hasCannonball, shotGoldCannonball, hasBaseSchematic,
 		hasSchematicEngineer, inKhorvakRoom, hasGoldHelmet, hasKhorvakSchematic, hasSolvedSchematic, has6Ore, inRealm, avatarNearby;
 
 	QuestStep enterDwarfCave, enterDwarfCave2, talkToFerryman, talkToDondakan, travelBackWithFerryman, talkToBoatman, talkToEngineer, talkToRolad, enterDwarvenMine, killScorpion,
 		searchCart, mineRock, goBackUpToRolad, returnToRolad, readEntireBook, travelToKeldagrim, enterDwarfCaveWithBook, enterDwarfCave2WithBook, talkToFerrymanWithBook, talkToDondakanWithBook,
 		useGoldBarOnDondakan, makeGoldCannonball, enterDwarfCaveWithCannonball, enterDwarfCave2WithCannonball, talkToFerrymanWithCannonball, useGoldCannonballOnDondakan, talkToDondakanAfterShot,
-		readBookAgain, talkToEngineerAgain, travelBackWithFerrymanAgain, travelToKeldagrimAgain, talkToBoatmanAgain, useGoldBarOnAnvil, enterKhorvakRoom, talkToKhorvak, assembleSchematic,  enterDwarfCaveWithHelmet,
+		readBookAgain, talkToEngineerAgain, travelBackWithFerrymanAgain, travelToKeldagrimAgain, talkToBoatmanAgain, useGoldBarOnAnvil, enterKhorvakRoom, talkToKhorvak, assembleSchematic, enterDwarfCaveWithHelmet,
 		enterDwarfCave2WithHelmet, talkToFerrymanWithHelmet, talkToDondakanWithHelmet, mine6GoldOre, talkToDondakanForEnd, talkToSecondFlame, finishQuest;
 
 	NpcStep killAvatar;
 
+	//Zones
 	Zone trollRoom, dwarfEntrance, dwarfMine, keldagrim, keldagrim2, dwarvenMine, khorvakRoom, realm;
 
 	@Override
@@ -173,10 +181,10 @@ public class BetweenARock extends BasicQuestHelper
 		page3 = new ItemRequirement("Book page 3", ItemID.BOOK_PAGE_3);
 		pages = new ItemRequirement("Pages", ItemID.PAGES_4573);
 		dwarvenLore = new ItemRequirement("Dwarven lore", ItemID.DWARVEN_LORE);
-		dwarvenLore.setTip("You can get another from Rolad south of Ice Mountain");
+		dwarvenLore.setTooltip("You can get another from Rolad south of Ice Mountain");
 
 		dwarvenLoreHighlight = new ItemRequirement("Dwarven lore", ItemID.DWARVEN_LORE);
-		dwarvenLoreHighlight.setTip("You can get another from Rolad south of Ice Mountain");
+		dwarvenLoreHighlight.setTooltip("You can get another from Rolad south of Ice Mountain");
 		dwarvenLoreHighlight.setHighlightInInventory(true);
 
 		goldBar = new ItemRequirement("Gold bar", ItemID.GOLD_BAR);
@@ -189,6 +197,7 @@ public class BetweenARock extends BasicQuestHelper
 		goldCannonballHighlight.setHighlightInInventory(true);
 
 		cannonMould = new ItemRequirement("Ammo mould", ItemID.AMMO_MOULD);
+		cannonMould.setTooltip("You can buy one from Nulodion above the Dwarven Mine for 5 coins");
 
 		schematic = new ItemRequirement("Schematic", ItemID.SCHEMATIC);
 
@@ -205,7 +214,10 @@ public class BetweenARock extends BasicQuestHelper
 
 		solvedSchematic = new ItemRequirement("Schematic", ItemID.SCHEMATIC_4578);
 
-		combatGear = new ItemRequirement("Combat gear + food", -1, -1);
+		combatGear = new ItemRequirement("Combat gear", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
+
+		food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
 
 		goldOre6 = new ItemRequirement("Gold ore", ItemID.GOLD_ORE, 6);
 
@@ -227,26 +239,26 @@ public class BetweenARock extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inTrollRoom = new ZoneCondition(trollRoom);
-		inDwarfEntrance = new ZoneCondition(dwarfEntrance);
-		inDwarfMine = new ZoneCondition(dwarfMine);
-		inKeldagrim = new ZoneCondition(keldagrim, keldagrim2);
-		inDwarvenMine = new ZoneCondition(dwarvenMine);
-		inKhorvakRoom = new ZoneCondition(khorvakRoom);
-		hasPage1 = new ItemRequirementCondition(page1);
-		hasPage2 = new ItemRequirementCondition(page2);
-		hasPage3 = new ItemRequirementCondition(page3);
-		hasPages = new ItemRequirementCondition(pages);
-		hasKhorvakSchematic = new ItemRequirementCondition(khorvakSchematic);
-		hasUsedGoldBar = new VarbitCondition(301, 1);
-		shotGoldCannonball = new VarbitCondition(313, 1);
-		hasCannonball = new Conditions(LogicType.OR, new ItemRequirementCondition(goldCannonball), shotGoldCannonball);
-		hasBaseSchematic = new ItemRequirementCondition(baseSchematic);
-		hasGoldHelmet = new Conditions(true, new ItemRequirementCondition(goldHelmet));
-		hasSchematicEngineer = new ItemRequirementCondition(schematicEngineer);
-		hasSolvedSchematic = new VarbitCondition(305, 1);
-		has6Ore = new ItemRequirementCondition(goldOre6);
-		inRealm = new ZoneCondition(realm);
+		inTrollRoom = new ZoneRequirement(trollRoom);
+		inDwarfEntrance = new ZoneRequirement(dwarfEntrance);
+		inDwarfMine = new ZoneRequirement(dwarfMine);
+		inKeldagrim = new ZoneRequirement(keldagrim, keldagrim2);
+		inDwarvenMine = new ZoneRequirement(dwarvenMine);
+		inKhorvakRoom = new ZoneRequirement(khorvakRoom);
+		hasPage1 = new ItemRequirements(page1);
+		hasPage2 = new ItemRequirements(page2);
+		hasPage3 = new ItemRequirements(page3);
+		hasPages = new ItemRequirements(pages);
+		hasKhorvakSchematic = new ItemRequirements(khorvakSchematic);
+		hasUsedGoldBar = new VarbitRequirement(301, 1);
+		shotGoldCannonball = new VarbitRequirement(313, 1);
+		hasCannonball = new Conditions(LogicType.OR, new ItemRequirements(goldCannonball), shotGoldCannonball);
+		hasBaseSchematic = new ItemRequirements(baseSchematic);
+		hasGoldHelmet = new Conditions(true, new ItemRequirements(goldHelmet));
+		hasSchematicEngineer = new ItemRequirements(schematicEngineer);
+		hasSolvedSchematic = new VarbitRequirement(305, 1);
+		has6Ore = new ItemRequirements(goldOre6);
+		inRealm = new ZoneRequirement(realm);
 
 		avatarNearby = new Conditions(LogicType.OR, new NpcCondition(NpcID.ARZINIAN_AVATAR_OF_MAGIC), new NpcCondition(NpcID.ARZINIAN_AVATAR_OF_MAGIC_1234),
 			new NpcCondition(NpcID.ARZINIAN_AVATAR_OF_MAGIC_1235), new NpcCondition(NpcID.ARZINIAN_AVATAR_OF_RANGING), new NpcCondition(NpcID.ARZINIAN_AVATAR_OF_RANGING_1231),
@@ -276,7 +288,7 @@ public class BetweenARock extends BasicQuestHelper
 			"Talk to Rolad at the Ice Mountain entrance to the Dwarven Mine. If you don't have an ammo mould, buy one from Nulodion whilst you're here.", pickaxe);
 		talkToRolad.addDialogStep("I'll be back later.");
 
-		enterDwarvenMine = new ObjectStep(this, ObjectID.TRAPDOOR_11867, new WorldPoint(3019, 3450,0), "Enter the Dwarven Mine.", pickaxe);
+		enterDwarvenMine = new ObjectStep(this, ObjectID.TRAPDOOR_11867, new WorldPoint(3019, 3450, 0), "Enter the Dwarven Mine.", pickaxe);
 
 		searchCart = new DetailedQuestStep(this, "Search the mine carts for a page.");
 
@@ -284,10 +296,9 @@ public class BetweenARock extends BasicQuestHelper
 
 		mineRock = new DetailedQuestStep(this, "Mine low level rocks for a page.", pickaxe);
 
-		goBackUpToRolad = new ObjectStep(this, ObjectID.LADDER_17387, new WorldPoint(3019, 9850, 0), "Go back up to Rolad.", page1, page2, page3);
+		goBackUpToRolad = new ObjectStep(this, ObjectID.LADDER_17387, new WorldPoint(3019, 9850, 0), "Go back up to Rolad.", pages);
 
-		returnToRolad = new NpcStep(this, NpcID.ROLAD, new WorldPoint(3022, 3453, 0),
-			"Talk Rolad again.", page1, page2, page3);
+		returnToRolad = new NpcStep(this, NpcID.ROLAD, new WorldPoint(3022, 3453, 0), "Talk Rolad again.", pages);
 		returnToRolad.addSubSteps(goBackUpToRolad);
 
 		readEntireBook = new DetailedQuestStep(this, "Read the entire dwarven lore book.", dwarvenLoreHighlight);
@@ -313,9 +324,9 @@ public class BetweenARock extends BasicQuestHelper
 		useGoldCannonballOnDondakan = new NpcStep(this, NpcID.DONDAKAN_THE_DWARF, new WorldPoint(2822, 10167, 0), "Use a gold cannon ball on Dondakan.", goldCannonballHighlight);
 		useGoldCannonballOnDondakan.addIcon(ItemID.CANNON_BALL);
 		useGoldCannonballOnDondakan.addDialogStep("Yes, I'm sure this will crack open the rock.");
-		useGoldCannonballOnDondakan.addSubSteps(enterDwarfCave2WithCannonball, enterDwarfCave2WithCannonball, talkToFerrymanWithCannonball);
+		useGoldCannonballOnDondakan.addSubSteps(enterDwarfCaveWithCannonball, enterDwarfCave2WithCannonball, talkToFerrymanWithCannonball);
 
-		talkToDondakanAfterShot = new NpcStep(this, NpcID.DONDAKAN_THE_DWARF, new WorldPoint(2822, 10167, 0), "talk to Dondakan.");
+		talkToDondakanAfterShot = new NpcStep(this, NpcID.DONDAKAN_THE_DWARF, new WorldPoint(2822, 10167, 0), "Talk to Dondakan.");
 		talkToDondakanAfterShot.addDialogStep("So you want to... fire me into the rock?");
 		talkToDondakanAfterShot.addDialogStep("I can't argue with that, shoot me in!");
 
@@ -329,6 +340,8 @@ public class BetweenARock extends BasicQuestHelper
 		talkToEngineerAgain.addSubSteps(travelBackWithFerrymanAgain, talkToBoatmanAgain, travelToKeldagrimAgain);
 
 		useGoldBarOnAnvil = new ObjectStep(this, ObjectID.ANVIL_6150, new WorldPoint(2869, 10202, 0), "Use 3 gold bars on an anvil to make a gold helmet.", goldBars3, hammer);
+		useGoldBarOnAnvil.addDialogStep("Golden helmet."); // For accounts which have already completed the Legend's Quest.
+		useGoldBarOnAnvil.addDialogStep("Yes."); // For accounts which haven't completed the Legend's Quest yet.
 
 		enterKhorvakRoom = new ObjectStep(this, ObjectID.STAIRS_55, new WorldPoint(2821, 3485, 0), "Talk to Khorvak under White Wolf Mountain.");
 
@@ -338,20 +351,31 @@ public class BetweenARock extends BasicQuestHelper
 
 		assembleSchematic = new PuzzleStep(this, schematicHighlight);
 
-		enterDwarfCaveWithHelmet = new ObjectStep(this, ObjectID.TUNNEL_5008, new WorldPoint(2732, 3713, 0), "Prepare to for a fight, then return to Dondakan.", coins5, goldHelmetEquipped, solvedSchematic, pickaxe, combatGear);
-		enterDwarfCave2WithHelmet = new ObjectStep(this, ObjectID.CAVE_ENTRANCE_5973, new WorldPoint(2781, 10161, 0), "Prepare to for a fight, then return to Dondakan.", coins5, goldHelmetEquipped, solvedSchematic, pickaxe, combatGear);
-		talkToFerrymanWithHelmet = new NpcStep(this, NpcID.DWARVEN_FERRYMAN, new WorldPoint(2829, 10129, 0), "Prepare to for a fight, then return to Dondakan.", coins5, goldHelmetEquipped, solvedSchematic, pickaxe, combatGear);
+		enterDwarfCaveWithHelmet = new ObjectStep(this, ObjectID.TUNNEL_5008, new WorldPoint(2732, 3713, 0), "Prepare" +
+			" to for a fight, then return to Dondakan.", coins5, goldHelmetEquipped, solvedSchematic, pickaxe,
+			combatGear, food);
+		enterDwarfCave2WithHelmet = new ObjectStep(this, ObjectID.CAVE_ENTRANCE_5973, new WorldPoint(2781, 10161, 0),
+			"Prepare to for a fight, then return to Dondakan.", coins5, goldHelmetEquipped, solvedSchematic, pickaxe,
+			combatGear, food);
+		talkToFerrymanWithHelmet = new NpcStep(this, NpcID.DWARVEN_FERRYMAN, new WorldPoint(2829, 10129, 0),
+			"Prepare to for a fight, then return to Dondakan.", coins5, goldHelmetEquipped, solvedSchematic, pickaxe,
+			combatGear, food);
 		talkToFerrymanWithHelmet.addDialogStep("Yes please.");
-		talkToDondakanWithHelmet = new NpcStep(this, NpcID.DONDAKAN_THE_DWARF, new WorldPoint(2822, 10167, 0), "Prepare to for a fight, then return to Dondakan.", coins5, goldHelmetEquipped, solvedSchematic, pickaxe, combatGear);
+		talkToDondakanWithHelmet = new NpcStep(this, NpcID.DONDAKAN_THE_DWARF, new WorldPoint(2822, 10167, 0),
+			"Prepare to for a fight, then return to Dondakan.", coins5, goldHelmetEquipped, solvedSchematic, pickaxe,
+			combatGear, food);
 		talkToDondakanWithHelmet.addDialogStep("You may fire when ready!");
-		talkToDondakanForEnd = new NpcStep(this, NpcID.DONDAKAN_THE_DWARF, new WorldPoint(2822, 10167, 0), "Prepare to for a fight, then return to Dondakan.", coins5, goldHelmetEquipped, pickaxe, combatGear);
+		talkToDondakanForEnd = new NpcStep(this, NpcID.DONDAKAN_THE_DWARF, new WorldPoint(2822, 10167, 0),
+			"Prepare to for a fight, then return to Dondakan.", coins5, goldHelmetEquipped, pickaxe, combatGear, food);
 		talkToDondakanForEnd.addDialogStep("Ready as I'll ever be.");
 		talkToDondakanWithHelmet.addSubSteps(enterDwarfCaveWithHelmet, enterDwarfCave2WithHelmet, talkToFerrymanWithHelmet, talkToDondakanForEnd);
 
 		mine6GoldOre = new DetailedQuestStep(this, "Mine 6 gold ore. If you want the Avatar to be level 75 vs 125, get 15.", pickaxe);
 
-		talkToSecondFlame = new ObjectStep(this, ObjectID.WALL_OF_FLAME_5979, new WorldPoint(2373, 4956, 0), "TALK to the central wall of flame.");
-		killAvatar = new NpcStep(this, NpcID.ARZINIAN_AVATAR_OF_MAGIC, new WorldPoint(2375, 4953, 0), "Kill the avatar.");
+		talkToSecondFlame = new ObjectStep(this, ObjectID.WALL_OF_FLAME_5979, new WorldPoint(2373, 4956, 0),
+			"TALK to the central wall of flame.");
+		killAvatar = new NpcStep(this, NpcID.ARZINIAN_AVATAR_OF_MAGIC, new WorldPoint(2375, 4953, 0), "Kill the " +
+			"avatar. Make sure to keep the gold ore in your inventory.");
 		killAvatar.addAlternateNpcs(NpcID.ARZINIAN_AVATAR_OF_MAGIC_1234, NpcID.ARZINIAN_AVATAR_OF_MAGIC_1235,
 			NpcID.ARZINIAN_AVATAR_OF_RANGING, NpcID.ARZINIAN_AVATAR_OF_RANGING_1231, NpcID.ARZINIAN_AVATAR_OF_RANGING_1232,
 			NpcID.ARZINIAN_AVATAR_OF_STRENGTH, NpcID.ARZINIAN_AVATAR_OF_STRENGTH_1228, NpcID.ARZINIAN_AVATAR_OF_STRENGTH_1229);
@@ -360,9 +384,9 @@ public class BetweenARock extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		ArrayList<ItemRequirement> reqs = new ArrayList<>();
+		List<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(pickaxe);
 		reqs.add(goldBars4);
 		reqs.add(hammer);
@@ -373,7 +397,7 @@ public class BetweenARock extends BasicQuestHelper
 
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Scorpion (level 14)");
@@ -382,14 +406,35 @@ public class BetweenARock extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Collections.singletonList(talkToDondakan))));
-		allSteps.add(new PanelDetails("Research", new ArrayList<>(Arrays.asList(talkToEngineer, talkToRolad, enterDwarvenMine, searchCart, killScorpion, mineRock, returnToRolad, readEntireBook)), coins5, pickaxe));
-		allSteps.add(new PanelDetails("Experiment", new ArrayList<>(Arrays.asList(talkToDondakanWithBook, useGoldBarOnDondakan, makeGoldCannonball, useGoldCannonballOnDondakan)), cannonMould, goldBar));
-		allSteps.add(new PanelDetails("Solving the schematic", new ArrayList<>(Arrays.asList(readBookAgain, talkToEngineerAgain, useGoldBarOnAnvil, talkToKhorvak, assembleSchematic)), goldBars3, hammer));
-		allSteps.add(new PanelDetails("Into the hard place", new ArrayList<>(Arrays.asList(talkToDondakanWithHelmet, mine6GoldOre, talkToSecondFlame, killAvatar, finishQuest)), goldHelmet, solvedSchematic, coins5, pickaxe, combatGear));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off",
+			Collections.singletonList(talkToDondakan)));
+		allSteps.add(new PanelDetails("Research",
+			Arrays.asList(talkToEngineer, talkToRolad, enterDwarvenMine, searchCart, killScorpion, mineRock,
+				returnToRolad, readEntireBook), coins5, pickaxe));
+		allSteps.add(new PanelDetails("Experiment",
+			Arrays.asList(talkToDondakanWithBook, useGoldBarOnDondakan, makeGoldCannonball, useGoldCannonballOnDondakan),
+			cannonMould, goldBar));
+		allSteps.add(new PanelDetails("Solving the schematic",
+			Arrays.asList(readBookAgain, talkToEngineerAgain, useGoldBarOnAnvil, talkToKhorvak, assembleSchematic),
+			goldBars3, hammer));
+		allSteps.add(new PanelDetails("Into the hard place",
+			Arrays.asList(talkToDondakanWithHelmet, mine6GoldOre, talkToSecondFlame, killAvatar, finishQuest),
+			goldHelmet, solvedSchematic, coins5, pickaxe, combatGear, food));
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.DWARF_CANNON, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.FISHING_CONTEST, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.DEFENCE, 30));
+		req.add(new SkillRequirement(Skill.MINING, 40, true));
+		req.add(new SkillRequirement(Skill.SMITHING, 50, true));
+		return req;
 	}
 }

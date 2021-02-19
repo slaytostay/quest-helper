@@ -24,30 +24,34 @@
  */
 package com.questhelper.quests.witchshouse;
 
-import com.questhelper.requirements.ItemRequirement;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.player.FreeInventorySlotRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarplayerRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.conditional.ObjectCondition;
+import com.questhelper.requirements.util.LogicType;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.ObjectCondition;
-import com.questhelper.steps.conditional.VarplayerCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import net.runelite.api.InventoryID;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
@@ -59,14 +63,19 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class WitchsHouse extends BasicQuestHelper
 {
-	ItemRequirement cheese, leatherGloves, houseKey, magnet, shedKey, ball, armourAndWeapon;
+	//Items Required
+	ItemRequirement cheese, leatherGloves, houseKey, magnet, shedKey, ball;
 
-	ConditionForStep hasKey, hasMagnet, inHouse, inUpstairsHouse, inDownstairsHouseWest, inDownstairsHouseEast, inDownstairsHouse, inHouseOrGarden,
+	//Items Recommended
+	ItemRequirement armourAndWeapon;
+
+	Requirement hasKey, hasMagnet, inHouse, inUpstairsHouse, inDownstairsHouseWest, inDownstairsHouseEast, inDownstairsHouse, inHouseOrGarden,
 		ratHasMagnet, hasShedKey, inShed, hasBall, experimentNearby;
 
 	QuestStep talkToBoy, getKey, goDownstairs, enterGate, goDownstairsFromTop, openCupboardAndLoot, openCupboardAndLoot2, goBackUpstairs, useCheeseOnHole,
 		enterHouse, searchFountain, enterShed, enterShedWithoutKey, killWitchsExperiment, returnToBoy, pickupBall, grabBall;
 
+	//Zones
 	Zone house, upstairsHouse, downstairsHouseEast, downstairsHouseWest, garden1, garden2, garden3, shed;
 
 	@Override
@@ -132,12 +141,13 @@ public class WitchsHouse extends BasicQuestHelper
 		shedKey.setHighlightInInventory(true);
 		ball = new ItemRequirement("Ball", ItemID.BALL);
 		armourAndWeapon = new ItemRequirement("Combat gear and food for monsters up to level 53", -1, -1);
+		armourAndWeapon.setDisplayItemId(BankSlotIcons.getCombatGear());
 	}
 
 	public void loadZones()
 	{
-		house = new Zone(new WorldPoint(2901, 3466,0), new WorldPoint(2907, 3476, 0));
-		upstairsHouse = new Zone(new WorldPoint(2900, 3466,1), new WorldPoint(2907, 3476, 1));
+		house = new Zone(new WorldPoint(2901, 3466, 0), new WorldPoint(2907, 3476, 0));
+		upstairsHouse = new Zone(new WorldPoint(2900, 3466, 1), new WorldPoint(2907, 3476, 1));
 		downstairsHouseWest = new Zone(new WorldPoint(2897, 9870, 0), new WorldPoint(2902, 9878, 0));
 		downstairsHouseEast = new Zone(new WorldPoint(2903, 9870, 0), new WorldPoint(2909, 9878, 0));
 		garden1 = new Zone(new WorldPoint(2900, 3459, 0), new WorldPoint(2933, 3465, 0));
@@ -148,23 +158,23 @@ public class WitchsHouse extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		hasMagnet = new ItemRequirementCondition(magnet);
-		hasKey = new ItemRequirementCondition(houseKey);
-		inHouse = new ZoneCondition(house);
-		inUpstairsHouse = new ZoneCondition(upstairsHouse);
-		inDownstairsHouseWest = new ZoneCondition(downstairsHouseWest);
-		inDownstairsHouseEast = new ZoneCondition(downstairsHouseEast);
-		inDownstairsHouse = new ZoneCondition(downstairsHouseEast, downstairsHouseWest);
-		inHouseOrGarden = new ZoneCondition(house, garden1, garden2, garden3);
-		ratHasMagnet = new VarplayerCondition(226, 3);
-		hasShedKey = new ItemRequirementCondition(shedKey);
-		inShed = new ZoneCondition(shed);
+		hasMagnet = new ItemRequirements(magnet);
+		hasKey = new ItemRequirements(houseKey);
+		inHouse = new ZoneRequirement(house);
+		inUpstairsHouse = new ZoneRequirement(upstairsHouse);
+		inDownstairsHouseWest = new ZoneRequirement(downstairsHouseWest);
+		inDownstairsHouseEast = new ZoneRequirement(downstairsHouseEast);
+		inDownstairsHouse = new ZoneRequirement(downstairsHouseEast, downstairsHouseWest);
+		inHouseOrGarden = new ZoneRequirement(house, garden1, garden2, garden3);
+		ratHasMagnet = new VarplayerRequirement(226, 3);
+		hasShedKey = new ItemRequirements(shedKey);
+		inShed = new ZoneRequirement(shed);
 		experimentNearby = new Conditions(LogicType.OR,
 			new NpcCondition(NpcID.WITCHS_EXPERIMENT),
 			new NpcCondition(NpcID.WITCHS_EXPERIMENT_SECOND_FORM),
 			new NpcCondition(NpcID.WITCHS_EXPERIMENT_THIRD_FORM),
 			new NpcCondition(NpcID.WITCHS_EXPERIMENT_FOURTH_FORM));
-		hasBall = new ItemRequirementCondition(ball);
+		hasBall = new ItemRequirements(ball);
 	}
 
 	public void setupSteps()
@@ -190,7 +200,7 @@ public class WitchsHouse extends BasicQuestHelper
 
 		grabBall = new DetailedQuestStep(this, new WorldPoint(2936, 3470, 0), "If an experiment hasn't spawned, attempt to pick up the ball once.", ball);
 		killWitchsExperiment = new NpcStep(this, NpcID.WITCHS_EXPERIMENT, new WorldPoint(2935, 3463, 0), "Kill all four forms of the Witch's experiment (levels 19, 30, 42, and 53). You can safe spot the last two forms from the crate in the south of the room.");
-		((NpcStep)killWitchsExperiment).addAlternateNpcs(NpcID.WITCHS_EXPERIMENT_SECOND_FORM, NpcID.WITCHS_EXPERIMENT_THIRD_FORM, NpcID.WITCHS_EXPERIMENT_FOURTH_FORM);
+		((NpcStep) killWitchsExperiment).addAlternateNpcs(NpcID.WITCHS_EXPERIMENT_SECOND_FORM, NpcID.WITCHS_EXPERIMENT_THIRD_FORM, NpcID.WITCHS_EXPERIMENT_FOURTH_FORM);
 		killWitchsExperiment.addSubSteps(grabBall);
 
 		pickupBall = new DetailedQuestStep(this, new WorldPoint(2936, 3470, 0), "Pick up the ball.", ball);
@@ -198,7 +208,7 @@ public class WitchsHouse extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(cheese);
@@ -207,7 +217,7 @@ public class WitchsHouse extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(armourAndWeapon);
@@ -215,19 +225,25 @@ public class WitchsHouse extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Collections.singletonList("Witch's experiment (level 19, 30, 42 and 53)"));
+		return Collections.singletonList("Witch's experiment (level 19, 30, 42 and 53)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRecommended()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Start the quest", new ArrayList<>(Collections.singletonList(talkToBoy)), cheese, leatherGloves, armourAndWeapon));
-		allSteps.add(new PanelDetails("Accessing the garden", new ArrayList<>(Arrays.asList(getKey, enterHouse, goDownstairs, enterGate,
-			openCupboardAndLoot, goBackUpstairs, useCheeseOnHole))));
-		allSteps.add(new PanelDetails("Defeat the witch's experiment", new ArrayList<>(Arrays.asList(searchFountain, enterShed, killWitchsExperiment, pickupBall, returnToBoy))));
+		return Collections.singletonList(new FreeInventorySlotRequirement(InventoryID.INVENTORY, 2));
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Start the quest", Collections.singletonList(talkToBoy), cheese, leatherGloves, armourAndWeapon));
+		allSteps.add(new PanelDetails("Accessing the garden", Arrays.asList(getKey, enterHouse, goDownstairs, enterGate,
+			openCupboardAndLoot, goBackUpstairs, useCheeseOnHole)));
+		allSteps.add(new PanelDetails("Defeat the witch's experiment", Arrays.asList(searchFountain, enterShed, killWitchsExperiment, pickupBall, returnToBoy)));
 		return allSteps;
 	}
 }

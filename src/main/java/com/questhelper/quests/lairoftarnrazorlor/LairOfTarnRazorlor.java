@@ -24,46 +24,54 @@
  */
 package com.questhelper.quests.lairoftarnrazorlor;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
-import com.questhelper.requirements.PrayerRequirement;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.player.PrayerRequirement;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.conditional.ObjectCondition;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ItemStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.ObjectCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.Prayer;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.LAIR_OF_TARN_RAZORLOR
 )
 public class LairOfTarnRazorlor extends BasicQuestHelper
 {
+	//Requirements
 	ItemRequirement combatGear, diary;
+
 	PrayerRequirement protectFromMagic;
 
-	ConditionForStep inHauntedMine, inRoom1, inRoom1PastTrap1, inRoom1PastTrap2, inRoom2, inRoom3, inRoom4, inRoom5, inRoom6P1, inRoom6P2,
+	Requirement inHauntedMine, inRoom1, inRoom1PastTrap1, inRoom1PastTrap2, inRoom2, inRoom3, inRoom4, inRoom5, inRoom6P1, inRoom6P2,
 		onPillar1, onPillar2, onPillar3, onPillar4, onPillar5, onPillar6, atSwitch1, switchPressed, inRoom6PastTrap1, inRoom6PastTrap2,
 		inExtraRoom1, inExtraRoom2, inRoom7, inRoom8, inBossRoom, tarnInSecondForm, killedTarn, inFinalRoom;
 
@@ -72,6 +80,7 @@ public class LairOfTarnRazorlor extends BasicQuestHelper
 		jumpToSwitch, pressSwitch, jumpBackToPillar4, jumpBackToPillar3, jumpToNorthLedge, searchWallRoom6, searchWall2Room6, goThroughRoom6,
 		leaveExtraRoom1, leaveExtraRoom2, goThroughRoom7, enterBossRoom, killTarn1, killTarn2, enterFinalRoom, pickUpDiary;
 
+	//Zones
 	Zone hauntedMine, room1, room1PastTrap1, room1PastTrap2, room2, room3, room4, room5P1, room5P2, room6P1, room6P2, room6P3, pillar1, pillar2, pillar3,
 		pillar4, switch1, pillar5, pillar6, room6PastTrap1, room6PastTrap2P1, room6PastTrap2P2, extraRoom1, extraRoom2, room7, room8, bossRoom, finalRoom;
 
@@ -123,6 +132,7 @@ public class LairOfTarnRazorlor extends BasicQuestHelper
 	public void setupItemRequirements()
 	{
 		combatGear = new ItemRequirement("Combat gear", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 		diary = new ItemRequirement("Tarn's diary", ItemID.TARNS_DIARY);
 		diary.setHighlightInInventory(true);
 		protectFromMagic = new PrayerRequirement("Activate Protect from Magic", Prayer.PROTECT_FROM_MAGIC);
@@ -172,35 +182,35 @@ public class LairOfTarnRazorlor extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inHauntedMine = new ZoneCondition(hauntedMine);
-		inRoom1 = new ZoneCondition(room1);
-		inRoom1PastTrap1 = new ZoneCondition(room1PastTrap1);
-		inRoom1PastTrap2 = new ZoneCondition(room1PastTrap2);
-		inRoom2 = new ZoneCondition(room2);
-		inRoom3 = new ZoneCondition(room3);
-		inRoom4 = new ZoneCondition(room4);
-		inRoom5 = new ZoneCondition(room5P1, room5P2);
-		inRoom6P1 = new ZoneCondition(room6P1);
-		inRoom6P2 = new ZoneCondition(room6P2, room6P3);
-		inRoom7 = new ZoneCondition(room7);
-		onPillar1 = new ZoneCondition(pillar1);
-		onPillar2 = new ZoneCondition(pillar2);
-		onPillar3 = new ZoneCondition(pillar3);
-		onPillar4 = new ZoneCondition(pillar4);
-		onPillar5 = new ZoneCondition(pillar5);
-		onPillar6 = new ZoneCondition(pillar6);
-		atSwitch1 = new ZoneCondition(switch1);
+		inHauntedMine = new ZoneRequirement(hauntedMine);
+		inRoom1 = new ZoneRequirement(room1);
+		inRoom1PastTrap1 = new ZoneRequirement(room1PastTrap1);
+		inRoom1PastTrap2 = new ZoneRequirement(room1PastTrap2);
+		inRoom2 = new ZoneRequirement(room2);
+		inRoom3 = new ZoneRequirement(room3);
+		inRoom4 = new ZoneRequirement(room4);
+		inRoom5 = new ZoneRequirement(room5P1, room5P2);
+		inRoom6P1 = new ZoneRequirement(room6P1);
+		inRoom6P2 = new ZoneRequirement(room6P2, room6P3);
+		inRoom7 = new ZoneRequirement(room7);
+		onPillar1 = new ZoneRequirement(pillar1);
+		onPillar2 = new ZoneRequirement(pillar2);
+		onPillar3 = new ZoneRequirement(pillar3);
+		onPillar4 = new ZoneRequirement(pillar4);
+		onPillar5 = new ZoneRequirement(pillar5);
+		onPillar6 = new ZoneRequirement(pillar6);
+		atSwitch1 = new ZoneRequirement(switch1);
 		switchPressed = new ObjectCondition(ObjectID.FLOOR_20635, new WorldPoint(3138, 4595, 1));
-		inRoom6PastTrap1 = new ZoneCondition(room6PastTrap1);
-		inRoom6PastTrap2 = new ZoneCondition(room6PastTrap2P1, room6PastTrap2P2);
-		inExtraRoom1 = new ZoneCondition(extraRoom1);
-		inExtraRoom2 = new ZoneCondition(extraRoom2);
-		inRoom8 = new ZoneCondition(room8);
-		inBossRoom = new ZoneCondition(bossRoom);
-		inFinalRoom = new ZoneCondition(finalRoom);
+		inRoom6PastTrap1 = new ZoneRequirement(room6PastTrap1);
+		inRoom6PastTrap2 = new ZoneRequirement(room6PastTrap2P1, room6PastTrap2P2);
+		inExtraRoom1 = new ZoneRequirement(extraRoom1);
+		inExtraRoom2 = new ZoneRequirement(extraRoom2);
+		inRoom8 = new ZoneRequirement(room8);
+		inBossRoom = new ZoneRequirement(bossRoom);
+		inFinalRoom = new ZoneRequirement(finalRoom);
 
 		tarnInSecondForm = new NpcCondition(NpcID.TARN);
-		killedTarn = new VarbitCondition(3290, 2, Operation.GREATER_EQUAL);
+		killedTarn = new VarbitRequirement(3290, 2, Operation.GREATER_EQUAL);
 	}
 
 	public void setupSteps()
@@ -209,7 +219,7 @@ public class LairOfTarnRazorlor extends BasicQuestHelper
 		enterLair = new ObjectStep(this, ObjectID.ENTRANCE_15833, new WorldPoint(3424, 9661, 0), "Enter the entrance to the north.");
 
 		searchWallRoom1 = new ObjectStep(this, ObjectID.WALL_20588, new WorldPoint(3196, 4557, 0), "Follow the path west then north, and go through the door you reach.");
-		searchWallRoom1.setLinePoints(new ArrayList<>(Arrays.asList(
+		searchWallRoom1.setLinePoints(Arrays.asList(
 			new WorldPoint(3166, 4547, 0),
 			new WorldPoint(3166, 4550, 0),
 			new WorldPoint(3175, 4550, 0),
@@ -223,16 +233,16 @@ public class LairOfTarnRazorlor extends BasicQuestHelper
 			new WorldPoint(3190, 4555, 0),
 			new WorldPoint(3196, 4555, 0),
 			new WorldPoint(3196, 4556, 0)
-		)));
+		));
 
 		searchWall2Room1 = new ObjectStep(this, ObjectID.WALL_20588, new WorldPoint(3197, 4562, 0), "Follow the path west then north, and go through the door you reach.");
 
-	    goThroughRoom1 = new ObjectStep(this, ObjectID.PASSAGEWAY_20517, new WorldPoint(3195, 4571, 0), "Follow the path west then north, and go through the door you reach.");
-	    goThroughRoom1.addSubSteps(searchWallRoom1, searchWall2Room1);
+		goThroughRoom1 = new ObjectStep(this, ObjectID.PASSAGEWAY_20517, new WorldPoint(3195, 4571, 0), "Follow the path west then north, and go through the door you reach.");
+		goThroughRoom1.addSubSteps(searchWallRoom1, searchWall2Room1);
 
-	    goThroughRoom2 = new ObjectStep(this, ObjectID.PASSAGEWAY_20513, new WorldPoint(3174, 4577, 1), "Continue out the west of this room.");
-	    goThroughRoom2.setLinePoints(new ArrayList<>(Arrays.asList(
-	    	new WorldPoint(3195, 4575, 1),
+		goThroughRoom2 = new ObjectStep(this, ObjectID.PASSAGEWAY_20513, new WorldPoint(3174, 4577, 1), "Continue out the west of this room.");
+		goThroughRoom2.setLinePoints(Arrays.asList(
+			new WorldPoint(3195, 4575, 1),
 			new WorldPoint(3195, 4579, 1),
 			new WorldPoint(3196, 4580, 1),
 			new WorldPoint(3195, 4581, 1),
@@ -243,10 +253,10 @@ public class LairOfTarnRazorlor extends BasicQuestHelper
 			new WorldPoint(3176, 4583, 1),
 			new WorldPoint(3175, 4582, 1),
 			new WorldPoint(3175, 4577, 1)
-		)));
+		));
 
-	    goThroughRoom3 = new ObjectStep(this, ObjectID.PASSAGEWAY_20523, new WorldPoint(3168, 4580, 0), "Go through the north door.");
-	    goThroughRoom4 = new ObjectStep(this, ObjectID.PASSAGEWAY_20525, new WorldPoint(3165, 4589, 0), "Go through the west door.");
+		goThroughRoom3 = new ObjectStep(this, ObjectID.PASSAGEWAY_20523, new WorldPoint(3168, 4580, 0), "Go through the north door.");
+		goThroughRoom4 = new ObjectStep(this, ObjectID.PASSAGEWAY_20525, new WorldPoint(3165, 4589, 0), "Go through the west door.");
 
 		leaveExtraRoom1 = new ObjectStep(this, ObjectID.PASSAGEWAY_20531, new WorldPoint(3168, 4596, 0), "Go into the south door.");
 		leaveExtraRoom2 = new ObjectStep(this, ObjectID.PASSAGEWAY_20529, new WorldPoint(3150, 4598, 0), "Go into the east passageway.");
@@ -254,7 +264,7 @@ public class LairOfTarnRazorlor extends BasicQuestHelper
 		goThroughRoom5 = new ObjectStep(this, ObjectID.PASSAGEWAY_20533, new WorldPoint(3154, 4597, 1), "Go through the north door.");
 		goThroughRoom5.addSubSteps(leaveExtraRoom1, leaveExtraRoom2);
 
-	    jumpToPillar1 = new ObjectStep(this, ObjectID.PILLAR_20543, new WorldPoint(3148, 4595, 1), "Jump across the pillars to the west ledge.");
+		jumpToPillar1 = new ObjectStep(this, ObjectID.PILLAR_20543, new WorldPoint(3148, 4595, 1), "Jump across the pillars to the west ledge.");
 		jumpToPillar2 = new ObjectStep(this, ObjectID.PILLAR_20544, new WorldPoint(3146, 4595, 1), "Jump across the pillars.");
 		jumpToPillar3 = new ObjectStep(this, ObjectID.PILLAR_20545, new WorldPoint(3144, 4595, 1), "Jump across the pillars.");
 		jumpToPillar4 = new ObjectStep(this, ObjectID.PILLAR_20546, new WorldPoint(3142, 4595, 1), "Jump across the pillars.");
@@ -290,24 +300,32 @@ public class LairOfTarnRazorlor extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Collections.singletonList(combatGear));
+		return Collections.singletonList(combatGear);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Collections.singletonList("Tarn (level 69) twice"));
+		return Collections.singletonList("Tarn (level 69) twice");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Traversing the dungeon", new ArrayList<>(Arrays.asList(enterHauntedMine, enterLair, goThroughRoom1, goThroughRoom2, goThroughRoom3,
-			goThroughRoom4, goThroughRoom5, jumpToPillar1, pressSwitch, jumpToNorthLedge, goThroughRoom6, goThroughRoom7, enterBossRoom, killTarn1, killTarn2, enterFinalRoom, pickUpDiary)), combatGear));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.HAUNTED_MINE, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.SLAYER, 40));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Traversing the dungeon", Arrays.asList(enterHauntedMine, enterLair, goThroughRoom1, goThroughRoom2, goThroughRoom3,
+			goThroughRoom4, goThroughRoom5, jumpToPillar1, pressSwitch, jumpToNorthLedge, goThroughRoom6, goThroughRoom7, enterBossRoom, killTarn1, killTarn2, enterFinalRoom, pickUpDiary), combatGear));
 		return allSteps;
 	}
 }
-

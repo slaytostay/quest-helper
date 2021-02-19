@@ -29,27 +29,31 @@ import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.QuestVarbits;
 import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.requirements.ItemRequirements;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.quest.QuestPointRequirement;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ItemStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.Operation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import net.runelite.api.Client;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
@@ -67,7 +71,7 @@ public class RFDSirAmikVarze extends BasicQuestHelper
 		antifirePotion, radimusNotes, bruleeWithEgg, baseBrulee, uncookedBrulee, finishedBrulee, finishedBruleeHighlighted,
 		milkyMixture, cornflourMixture, evilEgg, token, cinnamon, pestleAndMortarHighlighted, tokenHighlighted;
 
-	ConditionForStep inDiningRoom, talkedToWom, inEvilChickenLair, inZanaris, hasEgg, hasEggAndToken, tokenNearby, eggNearby, hasToken,
+	Requirement inDiningRoom, talkedToWom, inEvilChickenLair, inZanaris, hasEgg, hasEggAndToken, tokenNearby, eggNearby, hasToken,
 		hasMilkyMixture, hasCornflourMixture, hasBruleeWithEgg, hasBaseBrulee, hasUncookedBrulee, hasCompleteBrulee, hasCinnamon;
 
 	QuestStep enterDiningRoom, inspectAmik, enterKitchen, talkToCook, enterDiningRoomAgain, useBruleeOnVarze, talkToWom, useMilkOnCream,
@@ -76,6 +80,7 @@ public class RFDSirAmikVarze extends BasicQuestHelper
 
 	ConditionalStep tokenAndEggSteps;
 
+	//Zones
 	Zone diningRoom, zanaris, evilChickenLair;
 
 	int evilChickenLevel = 19;
@@ -133,15 +138,14 @@ public class RFDSirAmikVarze extends BasicQuestHelper
 		potOfCream = new ItemRequirement("Pot of cream", ItemID.POT_OF_CREAM);
 		potOfCream.setHighlightInInventory(true);
 		cornflour = new ItemRequirement("Pot of cornflour", ItemID.POT_OF_CORNFLOUR);
-		cornflour.setTip("You can make this by grinding a sweetcorn in a windmill and collecting it with a pot");
+		cornflour.setTooltip("You can make this by grinding a sweetcorn in a windmill and collecting it with a pot");
 		cornflour.setHighlightInInventory(true);
 
 		pot = new ItemRequirement("Pot", ItemID.POT);
 		sweetcorn = new ItemRequirement("Sweetcorn", ItemID.SWEETCORN);
 
 		axe = new ItemRequirement("Any axe", ItemCollections.getAxes());
-		machete = new ItemRequirement("Any machete", ItemID.MACHETE);
-		machete.addAlternates(ItemID.RED_TOPAZ_MACHETE, ItemID.OPAL_MACHETE, ItemID.JADE_MACHETE);
+		machete = new ItemRequirement("Any machete", ItemCollections.getMachete());
 		radimusNotes = new ItemRequirement("Radimus notes", ItemID.RADIMUS_NOTES);
 		radimusNotes.addAlternates(ItemID.RADIMUS_NOTES_715);
 		if (QuestHelperQuest.LEGENDS_QUEST.getState(client) == QuestState.FINISHED)
@@ -155,26 +159,28 @@ public class RFDSirAmikVarze extends BasicQuestHelper
 			macheteAndRadimus.addAlternates(ItemID.RED_TOPAZ_MACHETE, ItemID.OPAL_MACHETE, ItemID.JADE_MACHETE);
 		}
 		vanillaPod = new ItemRequirement("Vanilla pod", ItemID.VANILLA_POD);
-		vanillaPod.setTip("You can get a pod from the Khazari Jungle. Bring an axe and machete to get in");
+		vanillaPod.setTooltip("You can get a pod from the Khazari Jungle. Bring an axe and machete to get in");
 		vanillaPod.setHighlightInInventory(true);
 
 		dramenStaffOrLunar = new ItemRequirement("Dramen/lunar staff", ItemID.DRAMEN_STAFF, 1, true);
 		dramenStaffOrLunar.addAlternates(ItemID.LUNAR_STAFF);
+		dramenStaffOrLunar.setDisplayMatchedItemName(true);
 
 		dramenBranch = new ItemRequirement("Dramen branch", ItemID.DRAMEN_BRANCH);
 		dramenBranch.setHighlightInInventory(true);
-		dramenBranch.setTip("You can get one from the dramen tree under Entrana");
+		dramenBranch.setTooltip("You can get one from the dramen tree under Entrana");
 		pestleAndMortar = new ItemRequirement("Pestle and mortar", ItemID.PESTLE_AND_MORTAR);
 		pestleAndMortarHighlighted = new ItemRequirement("Pestle and mortar", ItemID.PESTLE_AND_MORTAR);
 		pestleAndMortarHighlighted.setHighlightInInventory(true);
 
 		iceGloves = new ItemRequirement("Ice gloves", ItemID.ICE_GLOVES, 1, true);
-		iceGloves.setTip("Although optional, you'll take a lot of damage if you're not wearing them");
+		iceGloves.setTooltip("Although optional, you'll take a lot of damage if you're not wearing them");
 		rawChicken = new ItemRequirement("Raw chicken", ItemID.RAW_CHICKEN);
 		rawChicken.setHighlightInInventory(true);
 		antidragonShield = new ItemRequirement("Anti-dragon shield", ItemID.ANTIDRAGON_SHIELD);
 		antifirePotion = new ItemRequirement("Antifire potion", ItemID.ANTIFIRE_POTION4);
 		combatGear = new ItemRequirement("Combat gear", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 
 		milkyMixture = new ItemRequirement("Milky mixture", ItemID.MILKY_MIXTURE);
 		milkyMixture.setHighlightInInventory(true);
@@ -212,27 +218,27 @@ public class RFDSirAmikVarze extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inDiningRoom = new ZoneCondition(diningRoom);
+		inDiningRoom = new ZoneRequirement(diningRoom);
 		// 1911 0->1->2->3->4->5->6 status of brulee
 		// 1912 0->1 picked up token
 		// 1913 0->1 evil chicken killed
-		talkedToWom = new VarbitCondition(1919, 1, Operation.GREATER_EQUAL);
+		talkedToWom = new VarbitRequirement(1919, 1, Operation.GREATER_EQUAL);
 		// 1919 = 2 when entered black dragon lair once
 
-		inEvilChickenLair = new ZoneCondition(evilChickenLair);
-		inZanaris = new ZoneCondition(zanaris);
-		hasEgg = new ItemRequirementCondition(evilEgg);
-		hasToken = new ItemRequirementCondition(token);
+		inEvilChickenLair = new ZoneRequirement(evilChickenLair);
+		inZanaris = new ZoneRequirement(zanaris);
+		hasEgg = new ItemRequirements(evilEgg);
+		hasToken = new ItemRequirements(token);
 		hasEggAndToken = new Conditions(hasEgg, hasToken);
-		hasCornflourMixture = new ItemRequirementCondition(cornflourMixture);
-		hasMilkyMixture = new ItemRequirementCondition(milkyMixture);
-		tokenNearby = new ItemCondition(token);
-		eggNearby = new ItemCondition(evilEgg);
-		hasBruleeWithEgg = new ItemRequirementCondition(bruleeWithEgg);
-		hasBaseBrulee = new ItemRequirementCondition(baseBrulee);
-		hasUncookedBrulee = new ItemRequirementCondition(uncookedBrulee);
-		hasCompleteBrulee = new ItemRequirementCondition(finishedBrulee);
-		hasCinnamon = new ItemRequirementCondition(cinnamon);
+		hasCornflourMixture = new ItemRequirements(cornflourMixture);
+		hasMilkyMixture = new ItemRequirements(milkyMixture);
+		tokenNearby = new ItemOnTileRequirement(token);
+		eggNearby = new ItemOnTileRequirement(evilEgg);
+		hasBruleeWithEgg = new ItemRequirements(bruleeWithEgg);
+		hasBaseBrulee = new ItemRequirements(baseBrulee);
+		hasUncookedBrulee = new ItemRequirements(uncookedBrulee);
+		hasCompleteBrulee = new ItemRequirements(finishedBrulee);
+		hasCinnamon = new ItemRequirements(cinnamon);
 	}
 
 	public void setupSteps()
@@ -309,35 +315,69 @@ public class RFDSirAmikVarze extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(axe, macheteAndRadimus, dramenStaffOrLunar, rawChicken, bucketOfMilk, potOfCream, cornflour, pestleAndMortar, iceGloves));
+		return Arrays.asList(axe, macheteAndRadimus, dramenStaffOrLunar, rawChicken, bucketOfMilk,
+			potOfCream, cornflour, dramenBranch, vanillaPod, pestleAndMortar, iceGloves);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(combatGear, antidragonShield, antifirePotion));
+		return Arrays.asList(combatGear, antidragonShield, antifirePotion);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("Evil Chicken (level " + evilChickenLevel + ")", "Black dragon (level 227)"));
+		return Arrays.asList("Evil Chicken (level " + evilChickenLevel + ")", "Black dragon (level 227)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(inspectAmik, talkToCook, talkToWom))));
-		PanelDetails tokenAndEggPanel = new PanelDetails("Get token and egg", new ArrayList<>(Arrays.asList(enterZanaris, useChickenOnShrine, killEvilChicken, pickUpEgg, killBlackDragon, pickUpToken)),
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestPointRequirement(107));
+		req.add(new QuestRequirement(QuestHelperQuest.FAMILY_CREST, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.HEROES_QUEST, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.SHILO_VILLAGE, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.UNDERGROUND_PASS, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.WATERFALL_QUEST, QuestState.FINISHED));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(inspectAmik, talkToCook, talkToWom)));
+		PanelDetails tokenAndEggPanel = new PanelDetails("Get token and egg", Arrays.asList(enterZanaris, useChickenOnShrine,
+			killEvilChicken, pickUpEgg, killBlackDragon, pickUpToken),
 			dramenStaffOrLunar, rawChicken, combatGear, antidragonShield, antifirePotion);
 		tokenAndEggPanel.setLockingStep(tokenAndEggSteps);
 		allSteps.add(tokenAndEggPanel);
-		allSteps.add(new PanelDetails("Making the brulee", new ArrayList<>(Arrays.asList(useMilkOnCream, useCornflourOnMilky, addPodToCornflourMixture, useEggOnBrulee, grindBranch, useCinnamonOnBrulee, rubToken, useBruleeOnVarze)), bucketOfMilk, potOfCream, cornflourMixture, pestleAndMortar, dramenBranch, vanillaPod, evilEgg, token));
+		allSteps.add(new PanelDetails("Making the brulee", Arrays.asList(useMilkOnCream, useCornflourOnMilky, addPodToCornflourMixture,
+			useEggOnBrulee, grindBranch, useCinnamonOnBrulee, rubToken, useBruleeOnVarze),
+			bucketOfMilk, potOfCream, cornflourMixture, pestleAndMortar, dramenBranch, vanillaPod, evilEgg, token));
 
 		return allSteps;
+	}
+
+	@Override
+	public QuestState getState(Client client)
+	{
+		int questState = client.getVarbitValue(QuestVarbits.QUEST_RECIPE_FOR_DISASTER_SIR_AMIK_VARZE.getId());
+		if (questState == 0)
+		{
+			return QuestState.NOT_STARTED;
+		}
+
+		if (questState < 20)
+		{
+			return QuestState.IN_PROGRESS;
+		}
+
+		return QuestState.FINISHED;
 	}
 
 	@Override

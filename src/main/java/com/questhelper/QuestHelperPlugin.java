@@ -32,54 +32,70 @@ import com.google.inject.Binder;
 import com.google.inject.CreationException;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.google.inject.Provides;
+import com.questhelper.banktab.QuestBankTab;
+import com.questhelper.banktab.QuestHelperBankTagService;
+import com.questhelper.panel.QuestHelperPanel;
+import com.questhelper.questhelpers.Quest;
+import com.questhelper.questhelpers.QuestHelper;
+import com.questhelper.steps.QuestStep;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.swing.SwingUtilities;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.InventoryID;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
+import net.runelite.api.Player;
+import net.runelite.api.QuestState;
+import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.RuneLite;
 import net.runelite.client.callback.ClientThread;
+import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.SpriteManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-import com.questhelper.panel.QuestHelperPanel;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.questhelpers.QuestHelper;
-import com.questhelper.steps.QuestStep;
+import net.runelite.client.plugins.bank.BankSearch;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
-import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
 
 @PluginDescriptor(
 	name = "Quest Helper",
-	description = "Helps you with your quests"
+	description = "Helps you with questing",
+	tags = { "quest", "helper", "overlay" }
 )
 @Slf4j
 public class QuestHelperPlugin extends Plugin
 {
-
 	private static final int RESIZABLE_VIEWPORT_BOTTOM_LINE_GROUP_ID = 164;
 	private static final int QUESTTAB_GROUP_ID = 629;
 
@@ -108,18 +124,32 @@ public class QuestHelperPlugin extends Plugin
 
 	private static final String MENUOP_RFD_START = "Start Quest Helper (Starting off)";
 	private static final String MENUOP_RFD_SKRACH_UGLOGWEE = "Start Quest Helper (Skrach Uglogwee)";
+	private static final String MENUOP_RFD_GOBLINS = "Start Quest Helper (Wartface & Bentnoze)";
+	private static final String MENUOP_RFD_EVIL_DAVE = "Start Quest Helper (Evil Dave)";
+	private static final String MENUOP_RFD_DWARF = "Start Quest Helper (Dwarf)";
 	private static final String MENUOP_RFD_PIRATE_PETE = "Start Quest Helper (Pirate Pete)";
 	private static final String MENUOP_RFD_LUMBRIDGE_GUIDE = "Start Quest Helper (Lumbridge Guide)";
 	private static final String MENUOP_RFD_SIR_AMIK_VARZE = "Start Quest Helper (Sir Amik Varze)";
 	private static final String MENUOP_RFD_MONKEY_AMBASSADOR = "Start Quest Helper (Monkey Ambassador)";
 	private static final String MENUOP_RFD_FINALE = "Start Quest Helper (Finale)";
 
+	private static final Zone PHOENIX_START_ZONE = new Zone(new WorldPoint(3204, 3488, 0), new WorldPoint(3221, 3501, 0));
+
+	private final BankItems bankItems = new BankItems();
+
+	@Getter
+	private QuestHelperBankTagService bankTagService;
+
+	private QuestBankTab bankTagsMain;
+
+	@Getter
 	@Inject
 	private Client client;
 
 	@Inject
 	private ClientToolbar clientToolbar;
 
+	@Getter
 	@Inject
 	private ClientThread clientThread;
 
@@ -139,7 +169,31 @@ public class QuestHelperPlugin extends Plugin
 	private QuestHelperWorldOverlay questHelperWorldOverlay;
 
 	@Getter
+	@Inject
+	private BankSearch bankSearch;
+
+	@Getter
+	@Inject
+	private ItemManager itemManager;
+
+	@Getter
+	@Inject
+	ChatMessageManager chatMessageManager;
+
+	@Inject
+	private QuestHelperDebugOverlay questHelperDebugOverlay;
+
+	@Getter
+	@Inject
+	private QuestHelperConfig config;
+
+	@Getter
 	private QuestHelper selectedQuest = null;
+
+	@Getter
+	@Inject
+	@Named("developerMode")
+	private boolean developerMode;
 
 	@Setter
 	private QuestHelper sidebarSelectedQuest = null;
@@ -151,21 +205,41 @@ public class QuestHelperPlugin extends Plugin
 	@Inject
 	SpriteManager spriteManager;
 
+	@Getter
+	@Inject
+	ConfigManager configManager;
+
 	private QuestHelperPanel panel;
 
 	private NavigationButton navButton;
 
 	private boolean loadQuestList;
 
+	@Provides
+	QuestHelperConfig getConfig(ConfigManager configManager)
+	{
+		return configManager.getConfig(QuestHelperConfig.class);
+	}
+
 	@Override
 	protected void startUp() throws IOException
 	{
+		bankTagService = new QuestHelperBankTagService(this);
+		bankTagsMain = new QuestBankTab(this);
+		bankTagsMain.startUp();
+		injector.injectMembers(bankTagsMain);
+		eventBus.register(bankTagsMain);
+
 		quests = scanAndInstantiate(getClass().getClassLoader());
 		overlayManager.add(questHelperOverlay);
 		overlayManager.add(questHelperWorldOverlay);
 		overlayManager.add(questHelperWidgetOverlay);
+		if (isDeveloperMode())
+		{
+			overlayManager.add(questHelperDebugOverlay);
+		}
 
-		final BufferedImage icon = ImageUtil.getResourceStreamFromClass(getClass(), "/quest_icon.png");
+		final BufferedImage icon = Icon.QUEST_ICON.getImage();
 
 		panel = new QuestHelperPanel(this);
 		navButton = NavigationButton.builder()
@@ -186,12 +260,19 @@ public class QuestHelperPlugin extends Plugin
 	@Override
 	protected void shutDown()
 	{
+		eventBus.unregister(bankTagsMain);
 		overlayManager.remove(questHelperOverlay);
 		overlayManager.remove(questHelperWorldOverlay);
 		overlayManager.remove(questHelperWidgetOverlay);
+		if (isDeveloperMode())
+		{
+			overlayManager.remove(questHelperDebugOverlay);
+		}
 		clientToolbar.removeNavigation(navButton);
+		shutDownQuest(false);
+		bankTagService = null;
+		bankTagsMain = null;
 		quests = null;
-		shutDownQuest();
 	}
 
 	@Subscribe
@@ -224,16 +305,31 @@ public class QuestHelperPlugin extends Plugin
 	}
 
 	@Subscribe
+	public void onItemContainerChanged(ItemContainerChanged event)
+	{
+		if (event.getItemContainer() == client.getItemContainer(InventoryID.BANK))
+		{
+			bankItems.setItems(null);
+			bankItems.setItems(event.getItemContainer().getItems());
+		}
+		if (event.getItemContainer() == client.getItemContainer(InventoryID.INVENTORY))
+		{
+			clientThread.invokeLater(() -> panel.updateItemRequirements(client, bankItems));
+		}
+	}
+
+	@Subscribe
 	public void onGameStateChanged(final GameStateChanged event)
 	{
 		final GameState state = event.getGameState();
 
 		if (state == GameState.LOGIN_SCREEN)
 		{
-			panel.refresh(new ArrayList<>(), true);
+			panel.refresh(Collections.emptyList(), true, new HashMap<>());
+			bankItems.setItems(null);
 			if (selectedQuest != null && selectedQuest.getCurrentStep() != null)
 			{
-				shutDownQuest();
+				shutDownQuest(true);
 			}
 		}
 
@@ -251,11 +347,31 @@ public class QuestHelperPlugin extends Plugin
 			return;
 		}
 
-		if (selectedQuest != null
-			&& selectedQuest.updateQuest()
-			&& selectedQuest.getCurrentStep() == null)
+		if (selectedQuest == null)
 		{
-			shutDownQuest();
+			return;
+		}
+
+		if (selectedQuest.updateQuest() && selectedQuest.getCurrentStep() == null)
+		{
+			shutDownQuest(true);
+		}
+
+		clientThread.invokeLater(() -> {
+			if ((selectedQuest != null) && selectedQuest.isCompleted())
+			{
+				shutDownQuest(true);
+			}
+		});
+	}
+
+	private final Collection<String> configEvents = Arrays.asList("orderListBy", "filterListBy", "questDifficulty", "showCompletedQuests");
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+		if (event.getGroup().equals("questhelper") && configEvents.contains(event.getKey()))
+		{
+			clientThread.invokeLater(this::updateQuestList);
 		}
 	}
 
@@ -263,8 +379,19 @@ public class QuestHelperPlugin extends Plugin
 	{
 		if (client.getGameState() == GameState.LOGGED_IN)
 		{
-			List<QuestHelper> questHelpers = quests.values().stream().filter(quest -> !quest.isCompleted()).collect(Collectors.toList());
-			SwingUtilities.invokeLater(() -> panel.refresh(questHelpers, false));
+			List<QuestHelper> filteredQuests = quests.values()
+				.stream()
+				.filter(config.filterListBy())
+				.filter(config.difficulty())
+				.filter(Quest::showCompletedQuests)
+				.sorted(config.orderListBy())
+				.collect(Collectors.toList());
+			Map<QuestHelperQuest, QuestState> completedQuests = quests.values()
+				.stream()
+				.collect(Collectors.toMap(QuestHelper::getQuest, q -> q.getState(client)));
+			SwingUtilities.invokeLater(() -> {
+				panel.refresh(filteredQuests, false, completedQuests);
+			});
 		}
 	}
 
@@ -282,7 +409,7 @@ public class QuestHelperPlugin extends Plugin
 					break;
 				case MENUOP_STOPHELPER:
 					event.consume();
-					shutDownQuest();
+					shutDownQuest(true);
 					break;
 				case MENUOP_PHOENIXGANG:
 					event.consume();
@@ -295,6 +422,19 @@ public class QuestHelperPlugin extends Plugin
 				case MENUOP_RFD_START:
 					event.consume();
 					startUpQuest(quests.get(QuestHelperQuest.RECIPE_FOR_DISASTER_START.getName()));
+					break;
+
+				case MENUOP_RFD_DWARF:
+					event.consume();
+					startUpQuest(quests.get(QuestHelperQuest.RECIPE_FOR_DISASTER_DWARF.getName()));
+					break;
+				case MENUOP_RFD_EVIL_DAVE:
+					event.consume();
+					startUpQuest(quests.get(QuestHelperQuest.RECIPE_FOR_DISASTER_EVIL_DAVE.getName()));
+					break;
+				case MENUOP_RFD_GOBLINS:
+					event.consume();
+					startUpQuest(quests.get(QuestHelperQuest.RECIPE_FOR_DISASTER_WARTFACE_AND_BENTNOZE.getName()));
 					break;
 				case MENUOP_RFD_PIRATE_PETE:
 					event.consume();
@@ -387,6 +527,21 @@ public class QuestHelperPlugin extends Plugin
 						{
 							menuEntries = addNewEntry(menuEntries, MENUOP_RFD_SKRACH_UGLOGWEE, event.getTarget(), widgetIndex, widgetID);
 						}
+						if (!quests.get(QuestHelperQuest.RECIPE_FOR_DISASTER_WARTFACE_AND_BENTNOZE.getName()).isCompleted())
+						{
+							menuEntries = addNewEntry(menuEntries, MENUOP_RFD_GOBLINS, event.getTarget(), widgetIndex,
+								widgetID);
+						}
+						if (!quests.get(QuestHelperQuest.RECIPE_FOR_DISASTER_EVIL_DAVE.getName()).isCompleted())
+						{
+							menuEntries = addNewEntry(menuEntries, MENUOP_RFD_EVIL_DAVE, event.getTarget(), widgetIndex,
+								widgetID);
+						}
+						if (!quests.get(QuestHelperQuest.RECIPE_FOR_DISASTER_DWARF.getName()).isCompleted())
+						{
+							menuEntries = addNewEntry(menuEntries, MENUOP_RFD_DWARF, event.getTarget(), widgetIndex,
+								widgetID);
+						}
 						if (!quests.get(QuestHelperQuest.RECIPE_FOR_DISASTER_SIR_AMIK_VARZE.getName()).isCompleted())
 						{
 							menuEntries = addNewEntry(menuEntries, MENUOP_RFD_SIR_AMIK_VARZE, event.getTarget(), widgetIndex, widgetID);
@@ -427,6 +582,49 @@ public class QuestHelperPlugin extends Plugin
 		}
 	}
 
+	@Subscribe
+	public void onChatMessage(ChatMessage chatMessage)
+	{
+		if (config.autoStartQuests() && chatMessage.getType() == ChatMessageType.GAMEMESSAGE)
+		{
+			if (selectedQuest == null && chatMessage.getMessage().contains("You've started a new quest"))
+			{
+				String questName = chatMessage.getMessage().substring(chatMessage.getMessage().indexOf(">") + 1);
+				questName = questName.substring(0, questName.indexOf("<"));
+				if (questName.equals("Shield of Arrav"))
+				{
+					Player player = client.getLocalPlayer();
+					if (player == null)
+					{
+						return;
+					}
+					WorldPoint location = player.getWorldLocation();
+
+					if (PHOENIX_START_ZONE.contains(location))
+					{
+						startUpQuest(quests.get(QuestHelperQuest.SHIELD_OF_ARRAV_PHOENIX_GANG.getName()));
+					}
+					else
+					{
+						startUpQuest(quests.get(QuestHelperQuest.SHIELD_OF_ARRAV_BLACK_ARM_GANG.getName()));
+					}
+				}
+				else if (questName.equals("Recipe for Disaster"))
+				{
+					startUpQuest(quests.get(QuestHelperQuest.RECIPE_FOR_DISASTER_START.getName()));
+				}
+				else
+				{
+					QuestHelper questHelper = quests.get(questName);
+					if (questHelper != null)
+					{
+						startUpQuest(questHelper);
+					}
+				}
+			}
+		}
+	}
+
 	private MenuEntry[] addNewEntry(MenuEntry[] menuEntries, String newEntry, String target, int widgetIndex, int widgetID) {
 		menuEntries = Arrays.copyOf(menuEntries, menuEntries.length + 1);
 
@@ -449,21 +647,27 @@ public class QuestHelperPlugin extends Plugin
 			return;
 		}
 
-		shutDownQuest();
+		shutDownQuest(true);
 
 		if (!questHelper.isCompleted())
 		{
 			selectedQuest = questHelper;
 			eventBus.register(selectedQuest);
-			selectedQuest.startUp();
+			if (isDeveloperMode())
+			{
+				selectedQuest.debugStartup(config);
+			}
+			selectedQuest.startUp(config);
 			if (selectedQuest.getCurrentStep() == null)
 			{
-				shutDownQuest();
+				shutDownQuest(false);
 				return;
 			}
+			bankTagsMain.startUp();
 			SwingUtilities.invokeLater(() -> {
 				panel.removeQuest();
 				panel.addQuest(questHelper, true);
+				clientThread.invokeLater(() -> panel.updateItemRequirements(client, bankItems));
 			});
 		}
 		else
@@ -478,18 +682,26 @@ public class QuestHelperPlugin extends Plugin
 		if (selectedQuest != null)
 		{
 			selectedQuest.shutDown();
+			bankTagsMain.shutDown();
 			SwingUtilities.invokeLater(() -> panel.removeQuest());
 			eventBus.unregister(selectedQuest);
 			selectedQuest = null;
 		}
 	}
 
-	private void shutDownQuest()
+	private void shutDownQuest(boolean shouldUpdateList)
 	{
 		if (selectedQuest != null)
 		{
 			selectedQuest.shutDown();
-			updateQuestList();
+			if (shouldUpdateList)
+			{
+				updateQuestList();
+			}
+			if (bankTagsMain != null)
+			{
+				bankTagsMain.shutDown();
+			}
 			SwingUtilities.invokeLater(() -> panel.removeQuest());
 			eventBus.unregister(selectedQuest);
 			selectedQuest = null;
@@ -565,6 +777,7 @@ public class QuestHelperPlugin extends Plugin
 			questInjector.injectMembers(questHelper);
 			questHelper.setInjector(questInjector);
 			questHelper.setQuest(quest);
+			questHelper.setConfig(config);
 		}
 		catch (InstantiationException | IllegalAccessException | CreationException ex)
 		{

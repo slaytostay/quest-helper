@@ -24,7 +24,7 @@
  */
 package com.questhelper.quests.swansong;
 
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.questhelpers.QuestHelper;
 import com.questhelper.steps.DetailedOwnerStep;
 import com.questhelper.steps.DetailedQuestStep;
@@ -104,7 +104,7 @@ public class FixWall extends DetailedOwnerStep
 		ironSheets = new ItemRequirement("Iron sheet", ItemID.IRON_SHEET, 5);
 		ironBars = new ItemRequirement("Iron bars", ItemID.IRON_BAR, 5);
 		hammer = new ItemRequirement("Hammer", ItemID.HAMMER);
-		hammer.setTip("Franklin will give you one");
+		hammer.setTooltip("Franklin will give you one");
 		ironBars.setHighlightInInventory(true);
 		ironSheets.setHighlightInInventory(true);
 

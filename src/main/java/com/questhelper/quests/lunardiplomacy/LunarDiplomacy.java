@@ -25,55 +25,65 @@
 package com.questhelper.quests.lunardiplomacy;
 
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedOwnerStep;
+import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.DigStep;
 import com.questhelper.steps.ItemStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.DetailedQuestStep;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.LUNAR_DIPLOMACY
 )
 public class LunarDiplomacy extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement sealOfPassage, bullseyeLantern, bullseyeLanternLit, emeraldLantern, emeraldLanternLit, emeraldLens,
 		bullseyeLanternHighlighted, tinderboxHighlighted, emeraldLensHighlighted, emeraldLanternLitHighlighted, suqahTooth,
 		groundTooth, marrentilPotion, guamPotion, guamMarrentilPotion, guamMarrentilPotionHighlighted, sleepPotion, specialVial,
 		specialVialHighlighted, waterVial, guam, marrentill, pestle, airTalisman, waterTalisman, earthTalisman, fireTalisman,
 		dramenStaff, dramenStaffHighlighted, lunarStaffP1, lunarStaffP1Highlighted, lunarStaffP2, lunarStaffP2Highlighted,
-		lunarStaffP3, lunarStaffP3Highlighted, lunarStaff, pickaxe, hammer, needle, thread, combatGear, coins400, spade, lunarOre,
+		lunarStaffP3, lunarStaffP3Highlighted, lunarStaff, pickaxe, hammer, needle, thread, coins400, spade, lunarOre,
 		lunarBar, tiara, helm, amulet, ring, cape, torso, gloves, boots, legs, suqahHide4, kindling, helmEquipped, bodyEquipped,
 		legsEquipped, bootsEquipped, glovesEquipped, cloakEquipped, amuletEquipped, ringEquipped, lunarStaffEquipped, soakedKindling,
-		sleepPotionHighlighted, soakedKindlingHighlighted, combatRunes;
+		sleepPotionHighlighted, soakedKindlingHighlighted, sealOfPassageEquipped;
 
-	ConditionForStep atBaseOfStairs, onCoveF1, onBoatF0, onBoatF1, onBoatF2, onBoatF3, hasLitBullseye, hasBullseye,
+	//Items Recommended
+	ItemRequirement combatRunes, combatGear;
+
+	Requirement atBaseOfStairs, onCoveF1, onBoatF0, onBoatF1, onBoatF2, onBoatF3, hasLitBullseye, hasBullseye,
 		hasEmeraldLantern, revealedCannon, revealedChart, revealedChest, revealedPillar, revealedCrate, hasEmeraldLanternLit,
 		onBoatLunar, onLunarDock, onLunarIsle, inYagaHouse, toothNearby, hasTooth, hasGuamPotion, hasMarrentillPotion,
 		hasGuamAndMarrentilPotion, hasGroundTooth, hasSleepPotion, hasSpecialVial, hasWaterVial, hasStaffP1, hasStaffP2, hasStaffP3,
@@ -107,6 +117,7 @@ public class LunarDiplomacy extends BasicQuestHelper
 	ConditionalStep returnToMakePotion, returnToTalkToYaga, enteringTheIsland, boardingTheBoat, setSail, returnToOneWithPotion, returnWithStaff, makingHelm,
 		gettingRing, gettingCape, gettingAmulet, gettingClothes;
 
+	//Zones
 	Zone baseOfStairs, coveF1, boatF0, boatF1, boatF2, boatF3, boatLunar1, boatLunar2, lunarDock, lunarIsle, yagaHouse, airAltar,
 		waterAltar, earthAltar, fireAltar, lunarMine, centreOfDream, chanceDream, numbersDream, treeDream, memoryDream, raceDream,
 		mimicDream, fightArena;
@@ -295,7 +306,10 @@ public class LunarDiplomacy extends BasicQuestHelper
 	public void setupItemRequirements()
 	{
 		sealOfPassage = new ItemRequirement("Seal of passage", ItemID.SEAL_OF_PASSAGE);
-		sealOfPassage.setTip("You can get another from Brundt");
+		sealOfPassage.setTooltip("You can get another from Brundt");
+
+		sealOfPassageEquipped = new ItemRequirement("Seal of passage", ItemID.SEAL_OF_PASSAGE, 1, true);
+		sealOfPassageEquipped.setTooltip("You can get another from Brundt");
 
 		bullseyeLantern = new ItemRequirement("Bullseye lantern", ItemID.BULLSEYE_LANTERN);
 		bullseyeLantern.addAlternates(ItemID.SAPPHIRE_LANTERN_4701);
@@ -315,10 +329,10 @@ public class LunarDiplomacy extends BasicQuestHelper
 		emeraldLanternLitHighlighted.setHighlightInInventory(true);
 
 		emeraldLens = new ItemRequirement("Emerald lens", ItemID.EMERALD_LENS);
-		emeraldLens.setTip("You can get another from the Cabin boy");
+		emeraldLens.setTooltip("You can get another from the Cabin boy");
 
 		emeraldLensHighlighted = new ItemRequirement("Emerald lens", ItemID.EMERALD_LENS);
-		emeraldLensHighlighted.setTip("You can get another from the Cabin boy");
+		emeraldLensHighlighted.setTooltip("You can get another from the Cabin boy");
 		emeraldLensHighlighted.setHighlightInInventory(true);
 
 		tinderboxHighlighted = new ItemRequirement("Tinderbox", ItemID.TINDERBOX);
@@ -335,15 +349,15 @@ public class LunarDiplomacy extends BasicQuestHelper
 		groundTooth.setHighlightInInventory(true);
 
 		specialVial = new ItemRequirement("Empty vial", ItemID.EMPTY_VIAL);
-		specialVial.setTip("You can get another from Baba Yaga");
+		specialVial.setTooltip("You can get another from Baba Yaga");
 
 		specialVialHighlighted = new ItemRequirement("Empty vial", ItemID.EMPTY_VIAL);
 		specialVialHighlighted.setHighlightInInventory(true);
-		specialVialHighlighted.setTip("You can get another from Baba Yaga");
+		specialVialHighlighted.setTooltip("You can get another from Baba Yaga");
 
 		waterVial = new ItemRequirement("Empty vial", ItemID.VIAL_OF_WATER_9086);
 		waterVial.setHighlightInInventory(true);
-		waterVial.setTip("You can get another from Baba Yaga");
+		waterVial.setTooltip("You can get another from Baba Yaga");
 
 		guamPotion = new ItemRequirement("Guam vial", ItemID.GUAM_VIAL);
 		guamPotion.setHighlightInInventory(true);
@@ -374,9 +388,9 @@ public class LunarDiplomacy extends BasicQuestHelper
 		waterTalisman.addAlternates(ItemID.WATER_TIARA, ItemID.ELEMENTAL_TALISMAN);
 
 		dramenStaff = new ItemRequirement("Dramen staff", ItemID.DRAMEN_STAFF);
-		dramenStaff.setTip("You can get another from under Entrana");
+		dramenStaff.setTooltip("You can get another from under Entrana");
 		dramenStaffHighlighted = new ItemRequirement("Dramen staff", ItemID.DRAMEN_STAFF);
-		dramenStaffHighlighted.setTip("You can get another from under Entrana");
+		dramenStaffHighlighted.setTooltip("You can get another from under Entrana");
 		dramenStaffHighlighted.setHighlightInInventory(true);
 
 		lunarStaffP1 = new ItemRequirement("Lunar staff - pt1", ItemID.LUNAR_STAFF__PT1);
@@ -398,9 +412,11 @@ public class LunarDiplomacy extends BasicQuestHelper
 		needle = new ItemRequirement("Needle", ItemID.NEEDLE);
 		thread = new ItemRequirement("Thread", ItemID.THREAD);
 		combatGear = new ItemRequirement("Combat gear", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 		coins400 = new ItemRequirement("Coins", ItemID.COINS_995, 400);
 
 		combatRunes = new ItemRequirement("Combat runes", -1, -1);
+		combatRunes.setDisplayItemId(ItemID.DEATH_RUNE);
 
 		spade = new ItemRequirement("Spade", ItemID.SPADE);
 
@@ -418,7 +434,7 @@ public class LunarDiplomacy extends BasicQuestHelper
 		boots = new ItemRequirement("Lunar boots", ItemID.LUNAR_BOOTS);
 		legs = new ItemRequirement("Lunar legs", ItemID.LUNAR_LEGS);
 		kindling = new ItemRequirement("Kindling", ItemID.KINDLING);
-		kindling.setTip("You can get any of these items from the Oneiromancer");
+		kindling.setTooltip("You can get any of these items from the Oneiromancer");
 		kindling.setHighlightInInventory(true);
 		soakedKindling = new ItemRequirement("Soaked kindling", ItemID.SOAKED_KINDLING);
 		soakedKindlingHighlighted = new ItemRequirement("Soaked kindling", ItemID.SOAKED_KINDLING);
@@ -471,98 +487,98 @@ public class LunarDiplomacy extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		atBaseOfStairs = new ZoneCondition(baseOfStairs);
-		onCoveF1 = new ZoneCondition(coveF1);
+		atBaseOfStairs = new ZoneRequirement(baseOfStairs);
+		onCoveF1 = new ZoneRequirement(coveF1);
 
-		onBoatF0 = new ZoneCondition(boatF0);
-		onBoatF1 = new ZoneCondition(boatF1);
-		onBoatF2 = new ZoneCondition(boatF2);
-		onBoatF3 = new ZoneCondition(boatF3);
+		onBoatF0 = new ZoneRequirement(boatF0);
+		onBoatF1 = new ZoneRequirement(boatF1);
+		onBoatF2 = new ZoneRequirement(boatF2);
+		onBoatF3 = new ZoneRequirement(boatF3);
 
-		onBoatLunar = new ZoneCondition(boatLunar1, boatLunar2);
-		onLunarDock = new ZoneCondition(lunarDock);
-		onLunarIsle = new ZoneCondition(lunarIsle);
-		inLunarMine = new ZoneCondition(lunarMine);
-		inYagaHouse = new ZoneCondition(yagaHouse);
+		onBoatLunar = new ZoneRequirement(boatLunar1, boatLunar2);
+		onLunarDock = new ZoneRequirement(lunarDock);
+		onLunarIsle = new ZoneRequirement(lunarIsle);
+		inLunarMine = new ZoneRequirement(lunarMine);
+		inYagaHouse = new ZoneRequirement(yagaHouse);
 
-		inAirAltar = new ZoneCondition(airAltar);
-		inEarthAltar = new ZoneCondition(earthAltar);
-		inFireAltar = new ZoneCondition(fireAltar);
-		inWaterAltar = new ZoneCondition(waterAltar);
+		inAirAltar = new ZoneRequirement(airAltar);
+		inEarthAltar = new ZoneRequirement(earthAltar);
+		inFireAltar = new ZoneRequirement(fireAltar);
+		inWaterAltar = new ZoneRequirement(waterAltar);
 
-		inFightArena = new ZoneCondition(fightArena);
+		inFightArena = new ZoneRequirement(fightArena);
 
-		hasLitBullseye = new ItemRequirementCondition(bullseyeLanternLit);
-		hasBullseye = new ItemRequirementCondition(bullseyeLantern);
-		hasEmeraldLantern = new ItemRequirementCondition(emeraldLantern);
-		hasEmeraldLanternLit = new ItemRequirementCondition(emeraldLanternLit);
+		hasLitBullseye = new ItemRequirements(bullseyeLanternLit);
+		hasBullseye = new ItemRequirements(bullseyeLantern);
+		hasEmeraldLantern = new ItemRequirements(emeraldLantern);
+		hasEmeraldLanternLit = new ItemRequirements(emeraldLanternLit);
 
-		revealedPillar = new VarbitCondition(2431, 2);
-		revealedCannon = new VarbitCondition(2432, 2);
-		revealedCrate = new VarbitCondition(2433, 2);
-		revealedChart = new VarbitCondition(2434, 2);
-		revealedChest = new VarbitCondition(2435, 2);
+		revealedPillar = new VarbitRequirement(2431, 2);
+		revealedCannon = new VarbitRequirement(2432, 2);
+		revealedCrate = new VarbitRequirement(2433, 2);
+		revealedChart = new VarbitRequirement(2434, 2);
+		revealedChest = new VarbitRequirement(2435, 2);
 
-		hasSpecialVial = new ItemRequirementCondition(specialVial);
-		hasWaterVial = new ItemRequirementCondition(waterVial);
-		hasGuamPotion = new ItemRequirementCondition(guamPotion);
-		hasMarrentillPotion = new ItemRequirementCondition(marrentilPotion);
-		hasGuamAndMarrentilPotion = new ItemRequirementCondition(guamMarrentilPotion);
-		hasTooth = new ItemRequirementCondition(suqahTooth);
-		hasGroundTooth = new ItemRequirementCondition(groundTooth);
-		hasSleepPotion = new ItemRequirementCondition(sleepPotion);
-		hasTiara = new ItemRequirementCondition(tiara);
+		hasSpecialVial = new ItemRequirements(specialVial);
+		hasWaterVial = new ItemRequirements(waterVial);
+		hasGuamPotion = new ItemRequirements(guamPotion);
+		hasMarrentillPotion = new ItemRequirements(marrentilPotion);
+		hasGuamAndMarrentilPotion = new ItemRequirements(guamMarrentilPotion);
+		hasTooth = new ItemRequirements(suqahTooth);
+		hasGroundTooth = new ItemRequirements(groundTooth);
+		hasSleepPotion = new ItemRequirements(sleepPotion);
+		hasTiara = new ItemRequirements(tiara);
 
-		toothNearby = new ItemCondition(suqahTooth);
+		toothNearby = new ItemOnTileRequirement(suqahTooth);
 
-		hasStaffP1 = new ItemRequirementCondition(lunarStaffP1);
-		hasStaffP2 = new ItemRequirementCondition(lunarStaffP2);
-		hasStaffP3 = new ItemRequirementCondition(lunarStaffP3);
-		hasLunarStaff = new ItemRequirementCondition(lunarStaff);
+		hasStaffP1 = new ItemRequirements(lunarStaffP1);
+		hasStaffP2 = new ItemRequirements(lunarStaffP2);
+		hasStaffP3 = new ItemRequirements(lunarStaffP3);
+		hasLunarStaff = new ItemRequirements(lunarStaff);
 
-		hasOre = new ItemRequirementCondition(lunarOre);
-		hasBar = new ItemRequirementCondition(lunarBar);
+		hasOre = new ItemRequirements(lunarOre);
+		hasBar = new ItemRequirements(lunarBar);
 
-		talkedToSelene = new VarbitCondition(2445, 1);
-		talkedToMeteora = new VarbitCondition(2446, 1);
-		talkedToRimae = new VarbitCondition(2447, 1);
+		talkedToSelene = new VarbitRequirement(2445, 1);
+		talkedToMeteora = new VarbitRequirement(2446, 1);
+		talkedToRimae = new VarbitRequirement(2447, 1);
 
-		tiaraNearby = new ItemCondition(tiara);
+		tiaraNearby = new ItemOnTileRequirement(tiara);
 
-		hadHelm = new Conditions(LogicType.OR, new ItemRequirementCondition(helm), new VarbitCondition(2436, 1));
-		hadCape = new Conditions(LogicType.OR, new ItemRequirementCondition(cape), new VarbitCondition(2437, 1));
-		hadAmulet = new Conditions(LogicType.OR, new ItemRequirementCondition(amulet), new VarbitCondition(2438, 1));
-		hadTorso = new Conditions(LogicType.OR, new ItemRequirementCondition(torso), new VarbitCondition(2439, 1));
-		hadGloves = new Conditions(LogicType.OR, new ItemRequirementCondition(gloves), new VarbitCondition(2441, 1));
-		hadBoots = new Conditions(LogicType.OR, new ItemRequirementCondition(boots), new VarbitCondition(2440, 1));
-		hadLegs = new Conditions(LogicType.OR, new ItemRequirementCondition(legs), new VarbitCondition(2442, 1));
-		hadRing = new Conditions(LogicType.OR, new ItemRequirementCondition(ring), new VarbitCondition(2443, 1));
+		hadHelm = new Conditions(LogicType.OR, new ItemRequirements(helm), new VarbitRequirement(2436, 1));
+		hadCape = new Conditions(LogicType.OR, new ItemRequirements(cape), new VarbitRequirement(2437, 1));
+		hadAmulet = new Conditions(LogicType.OR, new ItemRequirements(amulet), new VarbitRequirement(2438, 1));
+		hadTorso = new Conditions(LogicType.OR, new ItemRequirements(torso), new VarbitRequirement(2439, 1));
+		hadGloves = new Conditions(LogicType.OR, new ItemRequirements(gloves), new VarbitRequirement(2441, 1));
+		hadBoots = new Conditions(LogicType.OR, new ItemRequirements(boots), new VarbitRequirement(2440, 1));
+		hadLegs = new Conditions(LogicType.OR, new ItemRequirements(legs), new VarbitRequirement(2442, 1));
+		hadRing = new Conditions(LogicType.OR, new ItemRequirements(ring), new VarbitRequirement(2443, 1));
 		hadClothes = new Conditions(hadBoots, hadTorso, hadGloves, hadLegs);
-		hasSoakedKindling = new ItemRequirementCondition(soakedKindling);
+		hasSoakedKindling = new ItemRequirements(soakedKindling);
 
-		litBrazier = new VarbitCondition(2430, 1);
+		litBrazier = new VarbitRequirement(2430, 1);
 
-		inCentreOfDream = new ZoneCondition(centreOfDream);
-		inChanceDream = new ZoneCondition(chanceDream);
-		inNumbersDream = new ZoneCondition(numbersDream);
-		inTreeDream = new ZoneCondition(treeDream);
-		inMemoryDream = new ZoneCondition(memoryDream);
-		inRaceDream = new ZoneCondition(raceDream);
-		inMimicDream = new ZoneCondition(mimicDream);
+		inCentreOfDream = new ZoneRequirement(centreOfDream);
+		inChanceDream = new ZoneRequirement(chanceDream);
+		inNumbersDream = new ZoneRequirement(numbersDream);
+		inTreeDream = new ZoneRequirement(treeDream);
+		inMemoryDream = new ZoneRequirement(memoryDream);
+		inRaceDream = new ZoneRequirement(raceDream);
+		inMimicDream = new ZoneRequirement(mimicDream);
 
-		doingTreeChallenge = new VarbitCondition(3184, 1);
-		startedRaceChallenge = new VarbitCondition(2424, 1);
+		doingTreeChallenge = new VarbitRequirement(3184, 1);
+		startedRaceChallenge = new VarbitRequirement(2424, 1);
 
-		startedNumberChallenge = new VarbitCondition(2416, 1);
+		startedNumberChallenge = new VarbitRequirement(2416, 1);
 
-		needToTalkAtMiddle = new VarbitCondition(2429, 1);
+		needToTalkAtMiddle = new VarbitRequirement(2429, 1);
 
-		finishedMimic = new VarbitCondition(2405, 5, Operation.GREATER_EQUAL);
-		finishedNumbers = new VarbitCondition(2406, 6, Operation.GREATER_EQUAL);
-		finishedTree = new VarbitCondition(2407, 1, Operation.GREATER_EQUAL);
-		finishedMemory = new VarbitCondition(2408, 1, Operation.GREATER_EQUAL);
-		finishedRace = new VarbitCondition(2409, 1, Operation.GREATER_EQUAL);
-		finishedChance = new VarbitCondition(2410, 5, Operation.GREATER_EQUAL);
+		finishedMimic = new VarbitRequirement(2405, 5, Operation.GREATER_EQUAL);
+		finishedNumbers = new VarbitRequirement(2406, 6, Operation.GREATER_EQUAL);
+		finishedTree = new VarbitRequirement(2407, 1, Operation.GREATER_EQUAL);
+		finishedMemory = new VarbitRequirement(2408, 1, Operation.GREATER_EQUAL);
+		finishedRace = new VarbitRequirement(2409, 1, Operation.GREATER_EQUAL);
+		finishedChance = new VarbitRequirement(2410, 5, Operation.GREATER_EQUAL);
 	}
 
 	public void setupSteps()
@@ -583,7 +599,8 @@ public class LunarDiplomacy extends BasicQuestHelper
 		boardShip = new ObjectStep(this, ObjectID.LADDER_16959, new WorldPoint(2214, 3801, 1), "Climb up to the ship.");
 		climbLadder.addSubSteps(travelWithLokar, boardShip);
 
-		talkToBentley = new NpcStep(this, NpcID.CAPTAIN_BENTLEY, new WorldPoint(2222, 3796, 2), "Talk to Captain Bentley.");
+		talkToBentley = new NpcStep(this, NpcID.CAPTAIN_BENTLEY, new WorldPoint(2222, 3796, 2), "Talk to Captain " +
+			"Bentley.", sealOfPassageEquipped);
 		talkToBentley.addDialogStep("Can we sail to Lunar Isle now?");
 
 		climbDownSouthStairs = new ObjectStep(this, ObjectID.STAIRS_16947, new WorldPoint(2222, 3792, 2), "Go down to talk to 'Birds-Eye' Jack.");
@@ -693,7 +710,7 @@ public class LunarDiplomacy extends BasicQuestHelper
 
 		addToothToPotion = new DetailedQuestStep(this, "Add the ground tooth to the guam-marr potion.", groundTooth, guamMarrentilPotionHighlighted);
 
-		killSuqahForTooth = new NpcStep(this, NpcID.SUQAH, "Kill the Suqah outside the town for a . You'll also need 4 hides for later, so pick them up.", true);
+		killSuqahForTooth = new NpcStep(this, NpcID.SUQAH, "Kill the Suqah outside the town for a tooth. You'll also need 4 hides for later, so pick them up.", true);
 		pickUpTooth = new ItemStep(this, "Pick up the suqah tooth.", suqahTooth);
 
 		bringPotionToOneiromancer = new NpcStep(this, NpcID.ONEIROMANCER, new WorldPoint(2151, 3867, 0), "Return to the Oneiromancer with the waking sleep vial.", sealOfPassage, sleepPotion);
@@ -864,74 +881,95 @@ public class LunarDiplomacy extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(bullseyeLantern, tinderboxHighlighted, guam, marrentill, dramenStaff, airTalisman, earthTalisman,
-			fireTalisman, waterTalisman, pickaxe, pestle, hammer, thread, needle, spade));
+		return Arrays.asList(bullseyeLantern, tinderboxHighlighted, guam, marrentill, dramenStaff, airTalisman, earthTalisman,
+			fireTalisman, waterTalisman, pickaxe, pestle, hammer, thread, needle, spade);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(combatGear, combatRunes));
+		return Arrays.asList(combatGear, combatRunes);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("Multiple Suqah (level 111)", "Me (level 79)"));
+		return Arrays.asList("Multiple Suqah (level 111)", "Me (level 79)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Investigating", new ArrayList<>(Arrays.asList(talkToLokar, talkToBrundt, talkToLokarAgain, climbLadder, talkToBentley)), bullseyeLantern, tinderboxHighlighted));
-		allSteps.add(new PanelDetails("The curse", new ArrayList<>(Arrays.asList(climbDownSouthStairs, climbUpSouthStairs, goUpToShultz, goDownToBurns1, goUpToLee1,
-			goDownToDavey, goUpToCabinBoy, replaceLens, lightLantern, goUpToCannon1, goDownToChart, useLanternOnChest, useLanternOnPillar, useLanternOnCrate, talkToBentleyToSail)), bullseyeLantern, tinderboxHighlighted));
-		allSteps.add(new PanelDetails("Starting diplomacy", new ArrayList<>(Arrays.asList(
-			enterTown, talkToOneiromancer, returnToTalkToYaga, fillVial, addGuam, addMarrentil, returnToMakePotion, grindTooth, addToothToPotion, returnToOneWithPotion)),
-			guam, marrentill));
-		allSteps.add(new PanelDetails("Making the staff", new ArrayList<>(Arrays.asList(
-			enterAirAltar, enterFireAltar, enterWaterAltar, enterEarthAltar, returnWithStaff)),
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.THE_FREMENNIK_TRIALS, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.LOST_CITY, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.RUNE_MYSTERIES, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.SHILO_VILLAGE, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.HERBLORE, 5));
+		req.add(new SkillRequirement(Skill.CRAFTING, 61));
+		req.add(new SkillRequirement(Skill.DEFENCE, 40));
+		req.add(new SkillRequirement(Skill.FIREMAKING, 49));
+		req.add(new SkillRequirement(Skill.MAGIC, 65));
+		req.add(new SkillRequirement(Skill.MINING, 60));
+		req.add(new SkillRequirement(Skill.WOODCUTTING, 55));
+		req.add(new ItemRequirement("Access to the following altars: \nAir, Earth, Fire, Water", -1, -1));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Investigating", Arrays.asList(talkToLokar, talkToBrundt, talkToLokarAgain, climbLadder, talkToBentley),
+			bullseyeLantern, tinderboxHighlighted));
+		allSteps.add(new PanelDetails("The curse", Arrays.asList(climbDownSouthStairs, climbUpSouthStairs, goUpToShultz, goDownToBurns1, goUpToLee1,
+			goDownToDavey, goUpToCabinBoy, replaceLens, lightLantern, goUpToCannon1, goDownToChart, useLanternOnChest, useLanternOnPillar, useLanternOnCrate,
+			talkToBentleyToSail), bullseyeLantern, tinderboxHighlighted));
+		allSteps.add(new PanelDetails("Starting diplomacy", Arrays.asList(
+			enterTown, talkToOneiromancer, returnToTalkToYaga, fillVial, addGuam, addMarrentil, returnToMakePotion, grindTooth,
+			addToothToPotion, returnToOneWithPotion), guam, marrentill, pestle, sealOfPassage));
+		allSteps.add(new PanelDetails("Making the staff", Arrays.asList(
+			enterAirAltar, enterFireAltar, enterWaterAltar, enterEarthAltar, returnWithStaff),
 			dramenStaff, airTalisman, fireTalisman, waterTalisman, earthTalisman));
 
-		PanelDetails makingHelmPanel = new PanelDetails("Making the helmet", new ArrayList<>(Arrays.asList(
-			enterMine, mineOre, smeltBar, makeHelmet)), pickaxe, hammer);
+		PanelDetails makingHelmPanel = new PanelDetails("Making the helmet", Arrays.asList(
+			enterMine, mineOre, smeltBar, makeHelmet), pickaxe, hammer);
 		makingHelmPanel.setLockingStep(makingHelm);
 		allSteps.add(makingHelmPanel);
 
-		PanelDetails gettingCapePanel = new PanelDetails("Getting the cape", new ArrayList<>(Collections.singletonList(talkToPauline)));
+		PanelDetails gettingCapePanel = new PanelDetails("Getting the cape", Collections.singletonList(talkToPauline));
 		gettingCapePanel.setLockingStep(gettingCape);
 		allSteps.add(gettingCapePanel);
 
-		PanelDetails gettingAmuletPanel = new PanelDetails("Getting the amulet", new ArrayList<>(Arrays.asList(
-			talkToMeteora, killSuqahForTiara, returnTiaraToMeteora)), combatGear);
+		PanelDetails gettingAmuletPanel = new PanelDetails("Getting the amulet", Arrays.asList(
+			talkToMeteora, killSuqahForTiara, returnTiaraToMeteora), combatGear);
 		gettingAmuletPanel.setLockingStep(gettingAmulet);
 		allSteps.add(gettingAmuletPanel);
 
-		PanelDetails gettingRingPanel = new PanelDetails("Getting the ring", new ArrayList<>(Arrays.asList(
-			talkToSelene, digForRing)), spade);
+		PanelDetails gettingRingPanel = new PanelDetails("Getting the ring", Arrays.asList(
+			talkToSelene, digForRing), spade);
 		gettingRingPanel.setLockingStep(gettingRing);
 		allSteps.add(gettingRingPanel);
 
-		PanelDetails gettingClothingPanel = new PanelDetails("Making the clothing", new ArrayList<>(Collections.singletonList(
-			makeClothes)), coins400, needle, thread);
+		PanelDetails gettingClothingPanel = new PanelDetails("Making the clothing", Collections.singletonList(
+			makeClothes), coins400, needle, thread);
 		gettingClothingPanel.setLockingStep(gettingClothes);
 		allSteps.add(gettingClothingPanel);
 
-		allSteps.add(new PanelDetails("Return to Oneiromancer", new ArrayList<>(Collections.singletonList(
-			bringItemsToOneiromancer))));
+		allSteps.add(new PanelDetails("Return to Oneiromancer", Collections.singletonList(
+			bringItemsToOneiromancer)));
 
-		allSteps.add(new PanelDetails("Entering the Dreamland", new ArrayList<>(Arrays.asList(
-			useVialOnKindling, lightBrazier, useKindlingOnBrazier, talkToEthereal))));
-		allSteps.add(new PanelDetails("Racing challenge", new ArrayList<>(Arrays.asList(goToRace, startRace, doRaceChallenge))));
-		allSteps.add(new PanelDetails("Number challenge", new ArrayList<>(Arrays.asList(goToNumbers, doNumberChallenge))));
-		allSteps.add(new PanelDetails("Mimic challenge", new ArrayList<>(Arrays.asList(goToMimic, doMimicChallenge))));
-		allSteps.add(new PanelDetails("Chance challenge", new ArrayList<>(Arrays.asList(goToChance, doChanceChallenge))));
-		allSteps.add(new PanelDetails("Memory challenge", new ArrayList<>(Arrays.asList(goToMemory, doMemoryChallenge))));
-		allSteps.add(new PanelDetails("Tree challenge", new ArrayList<>(Arrays.asList(goToTrees, doTreeChallenge))));
-		allSteps.add(new PanelDetails("Final challenge", new ArrayList<>(Arrays.asList(talkWithEtherealToFight, fightMe, leaveLecturn, finishQuest))));
+		allSteps.add(new PanelDetails("Entering the Dreamland", Arrays.asList(
+			useVialOnKindling, lightBrazier, useKindlingOnBrazier, talkToEthereal)));
+		allSteps.add(new PanelDetails("Racing challenge", Arrays.asList(goToRace, startRace, doRaceChallenge)));
+		allSteps.add(new PanelDetails("Number challenge", Arrays.asList(goToNumbers, doNumberChallenge)));
+		allSteps.add(new PanelDetails("Mimic challenge", Arrays.asList(goToMimic, doMimicChallenge)));
+		allSteps.add(new PanelDetails("Chance challenge", Arrays.asList(goToChance, doChanceChallenge)));
+		allSteps.add(new PanelDetails("Memory challenge", Arrays.asList(goToMemory, doMemoryChallenge)));
+		allSteps.add(new PanelDetails("Tree challenge", Arrays.asList(goToTrees, doTreeChallenge)));
+		allSteps.add(new PanelDetails("Final challenge", Arrays.asList(talkWithEtherealToFight, fightMe, leaveLecturn, finishQuest)));
 		return allSteps;
 	}
 }

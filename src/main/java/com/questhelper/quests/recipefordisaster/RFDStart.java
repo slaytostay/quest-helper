@@ -29,21 +29,27 @@ import com.questhelper.QuestHelperQuest;
 import com.questhelper.QuestVarbits;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import net.runelite.api.Client;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -51,9 +57,10 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class RFDStart extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement eyeOfNewt, greenmansAle, rottenTomato, fruitBlast, ashes, ashesHighlighted, fruitBlastHighlighted, dirtyBlast;
 
-	ConditionForStep hasDirtyBlast;
+	Requirement hasDirtyBlast;
 
 	QuestStep talkToCook, useAshesOnFruitBlast, talkToCookAgain, enterDiningRoom;
 
@@ -64,8 +71,6 @@ public class RFDStart extends BasicQuestHelper
 		setupConditions();
 		setupSteps();
 		Map<Integer, QuestStep> steps = new HashMap<>();
-
-		int tmp = QuestVarbits.QUEST_RECIPE_FOR_DISASTER.getId();
 
 		steps.put(0, talkToCook);
 
@@ -94,7 +99,7 @@ public class RFDStart extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		hasDirtyBlast = new ItemRequirementCondition(dirtyBlast);
+		hasDirtyBlast = new ItemRequirements(dirtyBlast);
 		// 4606 0->1
 
 		// 1850 = 2->3
@@ -105,6 +110,10 @@ public class RFDStart extends BasicQuestHelper
 	{
 		talkToCook = new NpcStep(this, NpcID.COOK_4626, new WorldPoint(3209, 3215, 0),
 			"Talk to the Lumbridge Cook.", eyeOfNewt, greenmansAle, rottenTomato, ashes, fruitBlast);
+		talkToCook.addDialogStep("Do you have any other quests for me?");
+		talkToCook.addDialogSteps("Angry! It makes me angry!", "I don't really care to be honest.");
+		talkToCook.addDialogStep("What seems to be the problem?");
+		talkToCook.addDialogStep("YES");
 
 		useAshesOnFruitBlast = new DetailedQuestStep(this, "Use ashes on the fruit blast.", ashesHighlighted, fruitBlastHighlighted);
 
@@ -115,17 +124,37 @@ public class RFDStart extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(eyeOfNewt, greenmansAle, rottenTomato, ashes, fruitBlast));
+		return Arrays.asList(eyeOfNewt, greenmansAle, rottenTomato, ashes, fruitBlast);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Help the Cook", new ArrayList<>(Arrays.asList(talkToCook, useAshesOnFruitBlast, talkToCookAgain, enterDiningRoom)), eyeOfNewt, greenmansAle, rottenTomato, ashes, fruitBlast));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.COOKS_ASSISTANT, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.COOKING, 10));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Help the Cook", Arrays.asList(talkToCook, useAshesOnFruitBlast, talkToCookAgain, enterDiningRoom), eyeOfNewt, greenmansAle, rottenTomato, ashes, fruitBlast));
 		return allSteps;
+	}
+
+	@Override
+	public QuestState getState(Client client)
+	{
+		int questState = client.getVarbitValue(QuestVarbits.QUEST_RECIPE_FOR_DISASTER.getId());
+		if (questState >= 3)
+		{
+			return QuestState.FINISHED;
+		}
+		return getQuest().getState(client);
 	}
 
 	@Override

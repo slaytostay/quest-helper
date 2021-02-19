@@ -24,22 +24,23 @@
  */
 package com.questhelper.quests.witchspotion;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
@@ -50,9 +51,10 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class WitchsPotion extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement ratTail, onion, burntMeat, eyeOfNewt;
 
-	ConditionForStep hasRatTail;
+	Requirement hasRatTail;
 
 	QuestStep talkToWitch, killRat, returnToWitch, drinkPotion;
 
@@ -80,16 +82,16 @@ public class WitchsPotion extends BasicQuestHelper
 	{
 		ratTail = new ItemRequirement("Rat's tail", ItemID.RATS_TAIL);
 		onion = new ItemRequirement("Onion", ItemID.ONION);
-		onion.setTip("You can pick one from the field north of Rimmington");
+		onion.setTooltip("You can pick one from the field north of Rimmington");
 		burntMeat = new ItemRequirement("Burnt meat", ItemID.BURNT_MEAT);
-		burntMeat.setTip("You can use cooked meat on a fire/range to burn it");
+		burntMeat.setTooltip("You can use cooked meat on a fire/range to burn it");
 		eyeOfNewt = new ItemRequirement("Eye of newt", ItemID.EYE_OF_NEWT);
-		eyeOfNewt.setTip("You can buy one from Betty in Port Sarim for 3gp");
+		eyeOfNewt.setTooltip("You can buy one from Betty in Port Sarim for 3gp");
 	}
 
 	public void setupConditions()
 	{
-		hasRatTail = new ItemRequirementCondition(ratTail);
+		hasRatTail = new ItemRequirements(ratTail);
 	}
 
 	public void setupSteps()
@@ -108,7 +110,7 @@ public class WitchsPotion extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(onion);
@@ -118,12 +120,12 @@ public class WitchsPotion extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Collections.singletonList(talkToWitch))));
-		allSteps.add(new PanelDetails("Make the potion", new ArrayList<>(Arrays.asList(killRat, returnToWitch))));
+		allSteps.add(new PanelDetails("Starting off", Collections.singletonList(talkToWitch)));
+		allSteps.add(new PanelDetails("Make the potion", Arrays.asList(killRat, returnToWitch)));
 		return allSteps;
 	}
 }

@@ -27,38 +27,51 @@ package com.questhelper.quests.tribaltotem;
 
 import com.google.common.collect.ImmutableMap;
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.ObjectCondition;
+import com.questhelper.requirements.WidgetTextRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.*;
-
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
 
 @QuestDescriptor(
         quest = QuestHelperQuest.TRIBAL_TOTEM
 )
 public class TribalTotem extends BasicQuestHelper
 {
-    ItemRequirement coins, amuletOfGlory, ardougneTeleports, addressLabel, totem;
+    //Items Required
+    ItemRequirement addressLabel, totem;
+
+    //Items Recommended
+    ItemRequirement coins, amuletOfGlory, ardougneTeleports;
 
     QuestStep talkToKangaiMau, investigateCrate, useLabel, talkToEmployee, talkToCromperty, enterPassword, solvePassword, climbStairs, searchChest, leaveHouse, talkToKangaiMauAgain;
 
-    ConditionForStep hasLabel, inEntrance, inMiddleRoom, openedLockWidget, inStairway, investigatedStairs, isUpstairs, chestOpened, hasTotem;
+    Requirement hasLabel, inEntrance, inMiddleRoom, openedLockWidget, inStairway, investigatedStairs, isUpstairs, chestOpened, hasTotem;
 
+    //Zones
     Zone houseGroundFloorEntrance, houseGroundFloorMiddleRoom, houseGroundFloor, houseFirstFloor;
 
     @Override
@@ -91,7 +104,7 @@ public class TribalTotem extends BasicQuestHelper
 
     public void setupItemRequirements()
     {
-        coins = new ItemRequirement("Coins or more for boat trips", ItemID.COINS, 90);
+        coins = new ItemRequirement("Coins or more for boat trips", ItemID.COINS_995, 90);
         amuletOfGlory = new ItemRequirement("Amulet of glory", ItemCollections.getAmuletOfGlories());
         ardougneTeleports = new ItemRequirement("Ardougne teleports", ItemID.ARDOUGNE_TELEPORT);
         addressLabel = new ItemRequirement("Address label", ItemID.ADDRESS_LABEL);
@@ -100,7 +113,7 @@ public class TribalTotem extends BasicQuestHelper
     }
 
     @Override
-    public ArrayList<ItemRequirement> getItemRecommended()
+    public List<ItemRequirement> getItemRecommended()
     {
         ArrayList<ItemRequirement> reqs = new ArrayList<>();
         reqs.add(coins);
@@ -119,15 +132,15 @@ public class TribalTotem extends BasicQuestHelper
 
     public void setupConditions()
     {
-        hasLabel = new ItemRequirementCondition(addressLabel);
-        inEntrance = new ZoneCondition(houseGroundFloorEntrance);
-        inMiddleRoom = new ZoneCondition(houseGroundFloorMiddleRoom);
-        openedLockWidget = new WidgetTextCondition(369, 54,"Combination Lock Door");
-        inStairway = new ZoneCondition(houseGroundFloor);
-        investigatedStairs = new WidgetTextCondition(229, 1, "Your trained senses as a thief enable you to see that there is a trap<br>in these stairs. You make a note of its location for future reference<br>when using these stairs.");
-        isUpstairs = new ZoneCondition(houseFirstFloor);
+        hasLabel = new ItemRequirements(addressLabel);
+        inEntrance = new ZoneRequirement(houseGroundFloorEntrance);
+        inMiddleRoom = new ZoneRequirement(houseGroundFloorMiddleRoom);
+        openedLockWidget = new WidgetTextRequirement(369, 54,"Combination Lock Door");
+        inStairway = new ZoneRequirement(houseGroundFloor);
+        investigatedStairs = new WidgetTextRequirement(229, 1, "Your trained senses as a thief enable you to see that there is a trap<br>in these stairs. You make a note of its location for future reference<br>when using these stairs.");
+        isUpstairs = new ZoneRequirement(houseFirstFloor);
         chestOpened = new ObjectCondition(ObjectID.CHEST_2710);
-        hasTotem = new ItemRequirementCondition(totem);
+        hasTotem = new ItemRequirements(totem);
     }
 
     public void setupSteps()
@@ -155,12 +168,18 @@ public class TribalTotem extends BasicQuestHelper
         talkToKangaiMauAgain = new NpcStep(this, NpcID.KANGAI_MAU, new WorldPoint(2794, 3182, 0), "Return to Kangai Mau in Brimhaven.", totem);
     }
 
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		return Collections.singletonList(new SkillRequirement(Skill.THIEVING, 21, true));
+	}
+
     @Override
-    public ArrayList<PanelDetails> getPanels()
+    public List<PanelDetails> getPanels()
     {
-        ArrayList<PanelDetails> allSteps = new ArrayList<>();
+        List<PanelDetails> allSteps = new ArrayList<>();
         allSteps.add(new PanelDetails("Retrieving the totem",
-                new ArrayList<>(Arrays.asList(talkToKangaiMau, investigateCrate, useLabel, talkToEmployee, talkToCromperty, enterPassword, solvePassword, climbStairs, searchChest, talkToKangaiMauAgain))));
+                Arrays.asList(talkToKangaiMau, investigateCrate, useLabel, talkToEmployee, talkToCromperty, enterPassword, solvePassword, climbStairs, searchChest, talkToKangaiMauAgain)));
         return allSteps;
     }
 }

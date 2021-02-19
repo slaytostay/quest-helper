@@ -24,45 +24,55 @@
  */
 package com.questhelper.quests.daddyshome;
 
+import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.conditional.Conditions;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.DADDYS_HOME
 )
 public class DaddysHome extends BasicQuestHelper
 {
-	ItemRequirement plank10, nails20, bolt5, hammer, saw, waxwoodLog3, waxwoodPlank3, bolt2, bolt3, nails2, nails4, plank, plank3, plank2, lumberyardTeleport, varrockTeleport3;
+	//Items Required
+	ItemRequirement plank10, nails20, bolt5, hammer, saw, waxwoodLog3, waxwoodPlank3, bolt2,
+		bolt3, nails2, nails4, plank, plank3, plank2;
 
-	ConditionForStep removedChair, removedTable, removedTable2, removedStool, removedStool2, removedCampbed,
-			removedCarpet, hasLogs, hasPlanks, repairedCampbed, repairedCarpet, repairedStool, repairedTable,
-			repairedChair, repairedStool2, repairedTable2;
+	//Items Recommended
+	ItemRequirement lumberyardTeleport, varrockTeleport3;
 
-	DetailedQuestStep talkToMarlo, talkToYarlo, removeChair, removeCarpet, removeStool,
-			removeStool2, removeTable, removeTable2, removeCampbed, talkToYarloAgain, searchCrate,
-			talkToOperator, buildChair, buildCarpet, buildStool, buildStool2, buildTable, buildTable2, buildCampbed,
-			talkToYarloOnceMore, talkToMarloToFinish;
+	Requirement removedChair, removedTable, removedTable2, removedStool, removedStool2, removedCampbed,
+		removedCarpet, hasLogs, hasPlanks, repairedCampbed, repairedCarpet, repairedStool, repairedTable,
+		repairedChair, repairedStool2, repairedTable2;
+
+	//NPC Steps
+	DetailedQuestStep talkToMarlo, talkToYarlo, talkToYarloAgain, talkToOperator, talkToYarloOnceMore, talkToMarloToFinish;
+
+	//Object/items Steps
+	DetailedQuestStep removeChair, removeCarpet, removeStool, removeStool2, removeTable,
+		removeTable2, removeCampbed, searchCrate, buildChair, buildCarpet, buildStool,
+		buildStool2, buildTable, buildTable2, buildCampbed;
 
 	@Override
 	public Map<Integer, QuestStep> loadSteps()
@@ -116,8 +126,7 @@ public class DaddysHome extends BasicQuestHelper
 	{
 		plank10 = new ItemRequirement("Plank", ItemID.PLANK, 10);
 		bolt5 = new ItemRequirement("Bolt of cloth", ItemID.BOLT_OF_CLOTH, 5);
-		nails20 = new ItemRequirement("Nails (bring more in case you fail with some)", ItemID.BRONZE_NAILS, 14);
-		nails20.addAlternates(ItemID.IRON_NAILS, ItemID.STEEL_NAILS, ItemID.MITHRIL_NAILS, ItemID.ADAMANTITE_NAILS, ItemID.RUNE_NAILS);
+		nails20 = new ItemRequirement("Nails (bring more in case you fail with some)", ItemCollections.getNails(), 14);
 		hammer = new ItemRequirement("Hammer", ItemID.HAMMER);
 		saw = new ItemRequirement("Saw", ItemID.SAW);
 		waxwoodLog3 = new ItemRequirement("Waxwood log", ItemID.WAXWOOD_LOG, 3);
@@ -125,10 +134,8 @@ public class DaddysHome extends BasicQuestHelper
 
 		bolt2 = new ItemRequirement("Bolt of cloth", ItemID.BOLT_OF_CLOTH, 2);
 		bolt3 = new ItemRequirement("Bolt of cloth", ItemID.BOLT_OF_CLOTH, 3);
-		nails2 = new ItemRequirement("Nails", ItemID.BRONZE_NAILS, 2);
-		nails2.addAlternates(ItemID.IRON_NAILS, ItemID.STEEL_NAILS, ItemID.MITHRIL_NAILS, ItemID.ADAMANTITE_NAILS, ItemID.RUNE_NAILS);
-		nails4 = new ItemRequirement("Nails", ItemID.BRONZE_NAILS, 4);
-		nails4.addAlternates(ItemID.IRON_NAILS, ItemID.STEEL_NAILS, ItemID.MITHRIL_NAILS, ItemID.ADAMANTITE_NAILS, ItemID.RUNE_NAILS);
+		nails2 = new ItemRequirement("Nails", ItemCollections.getNails(), 2);
+		nails4 = new ItemRequirement("Nails", ItemCollections.getNails(), 4);
 		plank = new ItemRequirement("Plank", ItemID.PLANK);
 		plank3 = new ItemRequirement("Plank", ItemID.PLANK, 3);
 		plank2 = new ItemRequirement("Plank", ItemID.PLANK, 2);
@@ -139,26 +146,26 @@ public class DaddysHome extends BasicQuestHelper
 	public void setupConditions()
 	{
 
-		removedCampbed = new VarbitCondition(10568, 2);
-		removedCarpet = new VarbitCondition(10569, 2);
-		removedStool = new VarbitCondition(10564, 2);
+		removedCampbed = new VarbitRequirement(10568, 2);
+		removedCarpet = new VarbitRequirement(10569, 2);
+		removedStool = new VarbitRequirement(10564, 2);
 
-		removedTable = new VarbitCondition(10567, 2);
-		removedChair = new VarbitCondition(10565, 2);
-		removedStool2 = new VarbitCondition(10563, 2);
-		removedTable2 = new VarbitCondition(10566, 2);
+		removedTable = new VarbitRequirement(10567, 2);
+		removedChair = new VarbitRequirement(10565, 2);
+		removedStool2 = new VarbitRequirement(10563, 2);
+		removedTable2 = new VarbitRequirement(10566, 2);
 
-		repairedCampbed = new VarbitCondition(10568, 3);
-		repairedCarpet = new VarbitCondition(10569, 3);
-		repairedStool = new VarbitCondition(10564, 3);
+		repairedCampbed = new VarbitRequirement(10568, 3);
+		repairedCarpet = new VarbitRequirement(10569, 3);
+		repairedStool = new VarbitRequirement(10564, 3);
 
-		repairedTable = new VarbitCondition(10567, 3);
-		repairedChair = new VarbitCondition(10565, 3);
-		repairedStool2 = new VarbitCondition(10563, 3);
-		repairedTable2 = new VarbitCondition(10566, 3);
+		repairedTable = new VarbitRequirement(10567, 3);
+		repairedChair = new VarbitRequirement(10565, 3);
+		repairedStool2 = new VarbitRequirement(10563, 3);
+		repairedTable2 = new VarbitRequirement(10566, 3);
 
-		hasPlanks = new ItemRequirementCondition(waxwoodPlank3);
-		hasLogs = new ItemRequirementCondition(waxwoodLog3);
+		hasPlanks = new ItemRequirements(waxwoodPlank3);
+		hasLogs = new ItemRequirements(waxwoodLog3);
 	}
 
 	public void setupSteps()
@@ -199,22 +206,22 @@ public class DaddysHome extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(plank10, nails20, bolt5, saw, hammer));
+		return Arrays.asList(plank10, nails20, bolt5, saw, hammer);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(lumberyardTeleport, varrockTeleport3));
+		return Arrays.asList(lumberyardTeleport, varrockTeleport3);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Helping Yarlo & Marlo", new ArrayList<>(Arrays.asList(talkToMarlo, talkToYarlo, removeCampbed, talkToYarloAgain, buildCarpet, searchCrate, talkToOperator, buildCampbed, talkToYarloOnceMore, talkToMarloToFinish)), plank10, nails20, bolt5, hammer, saw));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Helping Yarlo & Marlo", Arrays.asList(talkToMarlo, talkToYarlo, removeCampbed, talkToYarloAgain, buildCarpet, searchCrate, talkToOperator, buildCampbed, talkToYarloOnceMore, talkToMarloToFinish), plank10, nails20, bolt5, hammer, saw));
 		return allSteps;
 	}
 }

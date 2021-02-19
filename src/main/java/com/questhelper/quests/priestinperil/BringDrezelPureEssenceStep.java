@@ -1,9 +1,8 @@
 package com.questhelper.quests.priestinperil;
 
 import com.questhelper.questhelpers.QuestHelper;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.steps.NpcStep;
-import java.util.ArrayList;
 import java.util.Collections;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
@@ -31,7 +30,7 @@ public class BringDrezelPureEssenceStep extends NpcStep
 	{
 		int numEssence = 60 - client.getVarpValue(302);
 		essence.setQuantity(numEssence);
-		this.setRequirements(new ArrayList<>(Collections.singletonList(essence)));
+		this.setRequirements(Collections.singletonList(essence));
 		this.setText("Bring Drezel " + numEssence  + " UNNOTED rune/pure essence in the underground of the Salve Temple.");
 	}
 }

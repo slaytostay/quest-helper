@@ -24,7 +24,7 @@
  */
 package com.questhelper.quests.swansong;
 
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.questhelpers.QuestHelper;
 import com.questhelper.steps.DetailedOwnerStep;
 import com.questhelper.steps.DetailedQuestStep;
@@ -57,7 +57,7 @@ public class FishMonkfish extends DetailedOwnerStep
 	public FishMonkfish(QuestHelper questHelper)
 	{
 		super(questHelper);
-		smallNet.setTip("You can get one from Arnold");
+		smallNet.setTooltip("You can get one from Arnold");
 	}
 
 	@Subscribe

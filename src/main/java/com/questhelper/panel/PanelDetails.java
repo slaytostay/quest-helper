@@ -24,48 +24,63 @@
  */
 package com.questhelper.panel;
 
+import com.questhelper.questhelpers.QuestUtil;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Collection;
+import java.util.Objects;
 import lombok.Getter;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.steps.QuestStep;
 
-public class PanelDetails {
+public class PanelDetails
+{
 	@Getter
 	String header;
 
 	@Getter
-	private ArrayList<QuestStep> steps;
+	private final List<QuestStep> steps;
 
 	@Getter
 	private QuestStep lockingQuestSteps;
 
 	@Getter
-	private ArrayList<ItemRequirement> itemRequirements;
+	private List<Requirement> requirements;
 
 	@Getter
-	private ArrayList<Integer> vars;
+	private List<Integer> vars;
 
-	public PanelDetails(String header) {
+	public PanelDetails(String header)
+	{
 		this.header = header;
 		this.steps = new ArrayList<>();
 	}
 
-	public PanelDetails(String header, QuestStep... steps) {
+	public PanelDetails(String header, QuestStep... steps)
+	{
 		this.header = header;
-		this.steps = new ArrayList<>(Arrays.asList(steps));
-		this.itemRequirements = new ArrayList<>();
+		this.steps = QuestUtil.toArrayList(steps);
+		this.requirements = new ArrayList<>();
 	}
 
-	public PanelDetails(String header, ArrayList<QuestStep> steps, ItemRequirement... itemRequirements) {
+	public PanelDetails(String header, List<QuestStep> steps, Requirement... requirements)
+	{
 		this.header = header;
 		this.steps = steps;
-		this.itemRequirements = new ArrayList<>(Arrays.asList(itemRequirements));
+		this.requirements = Arrays.asList(requirements);
+	}
+
+	public PanelDetails(String header, List<QuestStep> steps, List<Requirement> requirements)
+	{
+		this.header = header;
+		this.steps = steps;
+		this.requirements = requirements;
 	}
 
 	public void setVars(Integer... vars)
 	{
-		this.vars = new ArrayList<>(Arrays.asList(vars));
+		this.vars = Arrays.asList(vars);
 	}
 
 	public void setLockingStep(QuestStep lockingStep)
@@ -73,7 +88,33 @@ public class PanelDetails {
 		this.lockingQuestSteps = lockingStep;
 	}
 
-	public void addSteps(QuestStep... steps) {
+	public void addSteps(QuestStep... steps)
+	{
 		this.steps.addAll(Arrays.asList(steps));
+	}
+
+	public boolean contains(QuestStep currentStep)
+	{
+		if (getSteps().contains(currentStep))
+		{
+			return true;
+		}
+		else
+		{
+			return getSteps().stream()
+				    .filter(Objects::nonNull)
+					.map(QuestStep::getSubsteps)
+					.flatMap(Collection::stream)
+					.anyMatch(step -> containsSubStep(currentStep, step));
+		}
+	}
+
+	private boolean containsSubStep(QuestStep currentStep, QuestStep check)
+	{
+		if (currentStep.getSubsteps().contains(check) || currentStep == check)
+		{
+			return true;
+		}
+		return currentStep.getSubsteps().stream().anyMatch(step -> containsSubStep(step, check));
 	}
 }

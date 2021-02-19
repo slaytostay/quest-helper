@@ -24,36 +24,40 @@
  */
 package com.questhelper.quests.mourningsendpartii;
 
+import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.WidgetTextRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.WidgetTextCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import net.runelite.api.widgets.WidgetInfo;
 
 @QuestDescriptor(
@@ -61,15 +65,16 @@ import net.runelite.api.widgets.WidgetInfo;
 )
 public class MourningsEndPartII extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement deathTalisman, deathTalismanHeader, mournersOutfit, gasMask, mournerTop, mournerTrousers, mournerBoots, mournerGloves, mournerCloak, chisel, rope, ropeHighlight, prayerPotions, food, newKey, edernsJournal,
 		blackenedCrystal, newlyMadeCrystal, newlyIfOneTrip, deathTalismanNote, mirror, yellowCrystal, cyanCrystal, blueCrystal, fracturedCrystal, fracturedCrystal2, chargedCrystal, chargedCrystalHighlight, newlyMadeCrystalHighlight;
 
-	ConditionForStep inMournerBasement, inMournerHQ, inCave, inTempleF0, inTempleF1, inTempleF2, inTempleF2NorthRoom, hasEdernsJournal, inCaveOrF0, inTempleStairSquare, inNorthF2, inSouthF2,
+	Requirement inMournerBasement, inMournerHQ, inCave, inTempleF0, inTempleF1, inTempleF2, inTempleF2NorthRoom, hasEdernsJournal, inCaveOrF0, inTempleStairSquare, inNorthF2, inSouthF2,
 		hasBlackenedCrystal, knowToUseCrystal, inBlueRoom, inCyanRoom, solvedPuzzle1, solvedPuzzle2, solvedPuzzle3, solvedPuzzle4, solvedPuzzle5, dispenserEmpty, inYellowRoom, usedRope,
 		placedBlueCrystalInJumpRoom, blueCrystalNotPlaced, inCentralArea, inDeathAltarArea, inBehindBarrierCentralArea, enteredDeathArea, hasDeathTalisman, inIbanRoom, inPassF1, inPassF0,
-		inWellEntrance, receivedList, inDeathAltar, hasChargedCrystal;
+		inWellEntrance, receivedList, inDeathAltar, hasChargedCrystal, hasMirror;
 
-	ConditionForStep f0r4c0SB,
+	Requirement f0r4c0SB,
 		f0r1c2SG, f0r1c2U,
 		f0r0c2EG,
 		f0r0c4NB,
@@ -81,7 +86,7 @@ public class MourningsEndPartII extends BasicQuestHelper
 		f0r1c4U,
 		redAtAltar, redAtDoor;
 
-	ConditionForStep f1r0c3EY,
+	Requirement f1r0c3EY,
 		f1r1c3SY,
 		startColumnN,
 		f1r3c2NC, f1r3c2NY,
@@ -90,7 +95,7 @@ public class MourningsEndPartII extends BasicQuestHelper
 		f1r4c2EC, f1r4c2EY,
 		f1r4c3EG, f1r4c3UC, f1r4c3UY;
 
-	ConditionForStep f2r4c0DB, f2r4c0SR,
+	Requirement f2r4c0DB, f2r4c0SR,
 		f2r4c3WY, f2r4c3WC,
 		f2r0c0DR,
 		f2r2c0ER, f2r2c0SNotRed,
@@ -127,6 +132,7 @@ public class MourningsEndPartII extends BasicQuestHelper
 
 	QuestStep useRope, goDownToEnd, goUpFromMiddleToSouth;
 
+	//Zones
 	Zone mournerHQ, mournerHQ2, mournerBasement, cave, templeF0, templeF1, northTempleF2, southTempleF2, northRoomF2, templeStairSquare, blueRoom, yellowRoom1, yellowRoom2, cyanRoom1,
 		cyanRoom2, deathAltarArea, centralArea, centralAreaBehindBarrier, ibanRoom, wellEntrance, passF1, passF0, deathAltar;
 
@@ -169,8 +175,8 @@ public class MourningsEndPartII extends BasicQuestHelper
 		puzzle1.addStep(new Conditions(inTempleF1, f1r1c3SY), puzzle1Pillar5);
 		puzzle1.addStep(new Conditions(inTempleF1, dispenserEmpty, f1r3c3S), puzzle1Pillar4);
 		puzzle1.addStep(new Conditions(inTempleF1, dispenserEmpty, f1r3c4W), puzzle1Pillar3);
-		puzzle1.addStep(new Conditions(inTempleF1, dispenserEmpty, startColumnN), puzzle1Pillar2);
-		puzzle1.addStep(new Conditions(inTempleF1, dispenserEmpty), puzzle1Pillar1);
+		puzzle1.addStep(new Conditions(inTempleF1, dispenserEmpty, hasMirror, startColumnN), puzzle1Pillar2);
+		puzzle1.addStep(new Conditions(inTempleF1, dispenserEmpty, hasMirror), puzzle1Pillar1);
 		puzzle1.addStep(inTempleF1, pullDispenser1);
 		puzzle1.addStep(inTempleF2, genericGoDownToFloor1);
 		puzzle1.addStep(inTempleF0, goUpStairsTempleC1);
@@ -402,57 +408,58 @@ public class MourningsEndPartII extends BasicQuestHelper
 		deathTalismanHeader = new ItemRequirement("Death talisman or 50 items asked of you by a dwarf", ItemID.DEATH_TALISMAN);
 		deathTalismanNote = new ItemRequirement("Death talisman, or if you're an ironman you can earn one later", ItemID.DEATH_TALISMAN);
 
-		mournersOutfit = new ItemRequirement("Full Mourner's outfit", -1, -1);
 		mournerBoots = new ItemRequirement("Mourner boots", ItemID.MOURNER_BOOTS, 1, true);
 		gasMask = new ItemRequirement("Gas mask", ItemID.GAS_MASK, 1, true);
 		mournerGloves = new ItemRequirement("Mourner gloves", ItemID.MOURNER_GLOVES, 1, true);
 		mournerCloak = new ItemRequirement("Mourner cloak", ItemID.MOURNER_CLOAK, 1, true);
 		mournerTop = new ItemRequirement("Mourner top", ItemID.MOURNER_TOP, 1, true);
 		mournerTrousers = new ItemRequirement("Mourner trousers", ItemID.MOURNER_TROUSERS, 1, true);
+		mournersOutfit = new ItemRequirements("Full mourners' outfit", gasMask, mournerTop, mournerTrousers, mournerCloak, mournerBoots, mournerGloves);
 
 		rope = new ItemRequirement("Rope", ItemID.ROPE);
 		ropeHighlight = new ItemRequirement("Rope", ItemID.ROPE);
 		ropeHighlight.setHighlightInInventory(true);
 
 		chisel = new ItemRequirement("Chisel", ItemID.CHISEL);
-		prayerPotions = new ItemRequirement("Prayer potions for Protect from Melee", -1, -1);
-		food = new ItemRequirement("Food", -1, -1);
+		prayerPotions = new ItemRequirement("Prayer potions for Protect from Melee",
+			ItemCollections.getPrayerPotions(), -1);
+		food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
 
 		newKey = new ItemRequirement("New key", ItemID.NEW_KEY);
-		newKey.setTip("You can get another from Essyllt's desk");
+		newKey.setTooltip("You can get another from Essyllt's desk");
 
 		edernsJournal = new ItemRequirement("Edern's journal", ItemID.EDERNS_JOURNAL);
 		blackenedCrystal = new ItemRequirement("Blackened crystal", ItemID.BLACKENED_CRYSTAL);
 
 		newlyMadeCrystal = new ItemRequirement("Newly made crystal", ItemID.NEWLY_MADE_CRYSTAL);
-		newlyMadeCrystal.setTip("You can get another from Arianwyn in Llyeta");
+		newlyMadeCrystal.setTooltip("You can get another from Arianwyn in Llyeta");
 
 		newlyMadeCrystalHighlight = new ItemRequirement("Newly made crystal", ItemID.NEWLY_MADE_CRYSTAL);
-		newlyMadeCrystalHighlight.setTip("You can get another from Arianwyn in Llyeta");
+		newlyMadeCrystalHighlight.setTooltip("You can get another from Arianwyn in Llyeta");
 		newlyMadeCrystalHighlight.setHighlightInInventory(true);
-
 
 		newlyIfOneTrip = new ItemRequirement("Newly made crystal (if already have death talisman)", ItemID.NEWLY_MADE_CRYSTAL);
 
 		mirror = new ItemRequirement("Hand mirror", ItemID.HAND_MIRROR);
-		mirror.setTip("If you've misplaced a mirror, you can pull the crystal dispenser to reset the puzzle");
+		mirror.setTooltip("If you've misplaced a mirror, you can pull the crystal dispenser in the east of the middle " +
+			"floor to reset the puzzle");
 		mirror.setHighlightInInventory(true);
 
 		yellowCrystal = new ItemRequirement("Yellow crystal", ItemID.YELLOW_CRYSTAL);
-		yellowCrystal.setTip("Check the crystal dispenser if you've lost this");
+		yellowCrystal.setTooltip("Check the crystal dispenser if you've lost this");
 		yellowCrystal.setHighlightInInventory(true);
 		cyanCrystal = new ItemRequirement("Cyan crystal", ItemID.CYAN_CRYSTAL);
-		cyanCrystal.setTip("Check the crystal dispenser if you've lost this");
+		cyanCrystal.setTooltip("Check the crystal dispenser if you've lost this");
 		cyanCrystal.setHighlightInInventory(true);
 		blueCrystal = new ItemRequirement("Blue crystal", ItemID.BLUE_CRYSTAL);
-		blueCrystal.setTip("Check the crystal dispenser if you've lost this");
+		blueCrystal.setTooltip("Check the crystal dispenser if you've lost this");
 		blueCrystal.setHighlightInInventory(true);
 		fracturedCrystal = new ItemRequirement("Fractured crystal", ItemID.FRACTURED_CRYSTAL);
 		fracturedCrystal.setHighlightInInventory(true);
-		fracturedCrystal.setTip("Check the crystal dispenser if you've lost this");
+		fracturedCrystal.setTooltip("Check the crystal dispenser if you've lost this");
 		fracturedCrystal2 = new ItemRequirement("Fractured crystal", ItemID.FRACTURED_CRYSTAL_6647);
 		fracturedCrystal2.setHighlightInInventory(true);
-		fracturedCrystal2.setTip("Check the crystal dispenser if you've lost this");
+		fracturedCrystal2.setTooltip("Check the crystal dispenser if you've lost this");
 		chargedCrystal = new ItemRequirement("Newly made crystal", ItemID.NEWLY_MADE_CRYSTAL_6652);
 		chargedCrystalHighlight = new ItemRequirement("Newly made crystal", ItemID.NEWLY_MADE_CRYSTAL_6652);
 		chargedCrystalHighlight.setHighlightInInventory(true);
@@ -460,58 +467,60 @@ public class MourningsEndPartII extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inMournerBasement = new ZoneCondition(mournerBasement);
-		inMournerHQ = new ZoneCondition(mournerHQ, mournerHQ2);
-		inCave = new ZoneCondition(cave);
+		inMournerBasement = new ZoneRequirement(mournerBasement);
+		inMournerHQ = new ZoneRequirement(mournerHQ, mournerHQ2);
+		inCave = new ZoneRequirement(cave);
 
-		inTempleF0 = new ZoneCondition(templeF0);
-		inTempleF1 = new ZoneCondition(templeF1);
-		inTempleF2 = new ZoneCondition(northTempleF2, southTempleF2);
-		inTempleF2NorthRoom = new ZoneCondition(northRoomF2);
+		inTempleF0 = new ZoneRequirement(templeF0);
+		inTempleF1 = new ZoneRequirement(templeF1);
+		inTempleF2 = new ZoneRequirement(northTempleF2, southTempleF2);
+		inTempleF2NorthRoom = new ZoneRequirement(northRoomF2);
 
-		inCaveOrF0 = new ZoneCondition(cave, templeF0);
-		inTempleStairSquare = new ZoneCondition(templeStairSquare);
+		inCaveOrF0 = new ZoneRequirement(cave, templeF0);
+		inTempleStairSquare = new ZoneRequirement(templeStairSquare);
 
-		inBlueRoom = new ZoneCondition(blueRoom);
-		inYellowRoom = new ZoneCondition(yellowRoom1, yellowRoom2);
-		inCyanRoom = new ZoneCondition(cyanRoom1, cyanRoom2);
+		inBlueRoom = new ZoneRequirement(blueRoom);
+		inYellowRoom = new ZoneRequirement(yellowRoom1, yellowRoom2);
+		inCyanRoom = new ZoneRequirement(cyanRoom1, cyanRoom2);
 
-		inNorthF2 = new ZoneCondition(northTempleF2);
-		inSouthF2 = new ZoneCondition(southTempleF2);
+		inNorthF2 = new ZoneRequirement(northTempleF2);
+		inSouthF2 = new ZoneRequirement(southTempleF2);
 
-		inCentralArea = new ZoneCondition(centralArea);
-		inDeathAltarArea = new ZoneCondition(deathAltarArea);
+		inCentralArea = new ZoneRequirement(centralArea);
+		inDeathAltarArea = new ZoneRequirement(deathAltarArea);
 
-		inPassF0 = new ZoneCondition(passF0);
-		inPassF1 = new ZoneCondition(passF1);
+		inPassF0 = new ZoneRequirement(passF0);
+		inPassF1 = new ZoneRequirement(passF1);
 
-		inIbanRoom = new ZoneCondition(ibanRoom);
-		inWellEntrance = new ZoneCondition(wellEntrance);
+		inIbanRoom = new ZoneRequirement(ibanRoom);
+		inWellEntrance = new ZoneRequirement(wellEntrance);
 
-		hasEdernsJournal = new ItemRequirementCondition(edernsJournal);
-		hasBlackenedCrystal = new ItemRequirementCondition(blackenedCrystal);
-		hasDeathTalisman = new ItemRequirementCondition(deathTalisman);
-		hasChargedCrystal = new ItemRequirementCondition(chargedCrystal);
+		hasEdernsJournal = new ItemRequirements(edernsJournal);
+		hasBlackenedCrystal = new ItemRequirements(blackenedCrystal);
+		hasDeathTalisman = new ItemRequirements(deathTalisman);
+		hasChargedCrystal = new ItemRequirements(chargedCrystal);
 
-		inBehindBarrierCentralArea = new ZoneCondition(centralAreaBehindBarrier);
+		inBehindBarrierCentralArea = new ZoneRequirement(centralAreaBehindBarrier);
 
-		inDeathAltar = new ZoneCondition(deathAltar);
+		inDeathAltar = new ZoneRequirement(deathAltar);
 
-		dispenserEmpty = new VarbitCondition(1106, 0);
+		dispenserEmpty = new VarbitRequirement(1106, 0);
 
-		usedRope = new VarbitCondition(1328, 1);
+		hasMirror = new ItemRequirements(mirror);
 
-		knowToUseCrystal = new VarbitCondition(1104, 1);
+		usedRope = new VarbitRequirement(1328, 1);
 
-		solvedPuzzle1 = new VarbitCondition(1113, 1);
-		solvedPuzzle2 = new VarbitCondition(1114, 1);
-		solvedPuzzle3 = new VarbitCondition(1116, 1);
-		solvedPuzzle4 = new VarbitCondition(1115, 1);
-		solvedPuzzle5 = new VarbitCondition(1117, 1);
+		knowToUseCrystal = new VarbitRequirement(1104, 1);
 
-		enteredDeathArea = new VarbitCondition(1330, 1);
+		solvedPuzzle1 = new VarbitRequirement(1113, 1);
+		solvedPuzzle2 = new VarbitRequirement(1114, 1);
+		solvedPuzzle3 = new VarbitRequirement(1116, 1);
+		solvedPuzzle4 = new VarbitRequirement(1115, 1);
+		solvedPuzzle5 = new VarbitRequirement(1117, 1);
 
-		receivedList = new VarbitCondition(1327, 1);
+		enteredDeathArea = new VarbitRequirement(1330, 1);
+
+		receivedList = new VarbitRequirement(1327, 1);
 
 		final int RED = 1;
 		final int YELLOW = 2;
@@ -521,58 +530,58 @@ public class MourningsEndPartII extends BasicQuestHelper
 		final int WHITE = 7;
 
 		// Floor 0
-		f0r3c4W = new VarbitCondition(1169, WHITE);
-		f0r3c3F = new Conditions(new VarbitCondition(1170, WHITE), new VarbitCondition(1167, WHITE));
-		f0r4c3U = new VarbitCondition(1183, WHITE);
-		f0r1c3F = new Conditions(new VarbitCondition(1173, WHITE), new VarbitCondition(1171, WHITE));
-		f0r1c2U = new VarbitCondition(1221, GREEN);
-		f0r1c4U = new VarbitCondition(1189, WHITE);
-		f0r4c0SB = new VarbitCondition(1164, BLUE);
-		f0r1c2SG = new VarbitCondition(1172, GREEN);
-		f0r0c2EG = new VarbitCondition(1177, GREEN);
-		f0r0c4NB = new VarbitCondition(1179, BLUE);
+		f0r3c4W = new VarbitRequirement(1169, WHITE);
+		f0r3c3F = new Conditions(new VarbitRequirement(1170, WHITE), new VarbitRequirement(1167, WHITE));
+		f0r4c3U = new VarbitRequirement(1183, WHITE);
+		f0r1c3F = new Conditions(new VarbitRequirement(1173, WHITE), new VarbitRequirement(1171, WHITE));
+		f0r1c2U = new VarbitRequirement(1221, GREEN);
+		f0r1c4U = new VarbitRequirement(1189, WHITE);
+		f0r4c0SB = new VarbitRequirement(1164, BLUE);
+		f0r1c2SG = new VarbitRequirement(1172, GREEN);
+		f0r0c2EG = new VarbitRequirement(1177, GREEN);
+		f0r0c4NB = new VarbitRequirement(1179, BLUE);
 
 		// Floor 1
-		f1r0c3EY = new VarbitCondition(1209, YELLOW);
-		f1r1c3SY = new VarbitCondition(1207, YELLOW);
-		f1r3c2NC = new VarbitCondition(1196, CYAN);
-		f1r3c2NY = new VarbitCondition(1196, YELLOW);
-		f1r3c3WC = new VarbitCondition(1199, CYAN);
-		f1r3c3WY = new VarbitCondition(1199, YELLOW);
-		f1r3c3S = new VarbitCondition(1202, WHITE);
-		f1r3c3U = new VarbitCondition(1217, WHITE);
-		f1r3c4W = new VarbitCondition(1201, WHITE);
-		f1r3c4D = new VarbitCondition(1186, WHITE);
-		f1r4c2EC = new VarbitCondition(1195, CYAN);
-		f1r4c2EY = new VarbitCondition(1195, YELLOW);
-		f1r4c3EG = new VarbitCondition(1197, GREEN);
-		f1r4c3UC = new VarbitCondition(1215, CYAN);
-		f1r4c3UY = new VarbitCondition(1215, YELLOW);
-		startColumnN = new VarbitCondition(1203, WHITE);
-		redAtDoor = new VarbitCondition(1249, RED);
-		redAtAltar = new VarbitCondition(1250, RED);
+		f1r0c3EY = new VarbitRequirement(1209, YELLOW);
+		f1r1c3SY = new VarbitRequirement(1207, YELLOW);
+		f1r3c2NC = new VarbitRequirement(1196, CYAN);
+		f1r3c2NY = new VarbitRequirement(1196, YELLOW);
+		f1r3c3WC = new VarbitRequirement(1199, CYAN);
+		f1r3c3WY = new VarbitRequirement(1199, YELLOW);
+		f1r3c3S = new VarbitRequirement(1202, WHITE);
+		f1r3c3U = new VarbitRequirement(1217, WHITE);
+		f1r3c4W = new VarbitRequirement(1201, WHITE);
+		f1r3c4D = new VarbitRequirement(1186, WHITE);
+		f1r4c2EC = new VarbitRequirement(1195, CYAN);
+		f1r4c2EY = new VarbitRequirement(1195, YELLOW);
+		f1r4c3EG = new VarbitRequirement(1197, GREEN);
+		f1r4c3UC = new VarbitRequirement(1215, CYAN);
+		f1r4c3UY = new VarbitRequirement(1215, YELLOW);
+		startColumnN = new VarbitRequirement(1203, WHITE);
+		redAtDoor = new VarbitRequirement(1249, RED);
+		redAtAltar = new VarbitRequirement(1250, RED);
 
 		// Floor 2
-		f2r0c0DR = new VarbitCondition(1190, RED);
-		f2r2c0SNotRed = new VarbitCondition(1240, RED, Operation.NOT_EQUAL);
-		f2r3c3S = new VarbitCondition(1238, WHITE);
-		f2r4c3WC = new VarbitCondition(1230, CYAN);
-		f2r4c3WY = new VarbitCondition(1230, YELLOW);
-		f2r4c0DB = new VarbitCondition(1181, BLUE);
-		f2r4c0SR = new VarbitCondition(1229, RED);
-		f2r1c3F = new Conditions(new VarbitCondition(1244, WHITE), new VarbitCondition(1241, 7), new VarbitCondition(1245, WHITE));
-		f2r1c2D = new VarbitCondition(1221, WHITE);
-		f2r0c3E = new VarbitCondition(1247, WHITE);
-		f2r1c2LG = new VarbitCondition(1243, GREEN);
-		f2r1c4L = new VarbitCondition(1244, WHITE);
-		f2r1c3N = new VarbitCondition(1238, WHITE);
-		f2r3c3W = new VarbitCondition(1234, WHITE);
-		f2r3c2WB = new VarbitCondition(1235, BLUE);
-		f2r2c0ER = new VarbitCondition(1239, RED);
-		f2r0c4D = new VarbitCondition(1193, BLUE);
-		blueCrystalNotPlaced = new VarbitCondition(1193, WHITE);
-		placedBlueCrystalInJumpRoom = new Conditions(true, LogicType.OR, f2r0c4D, new Conditions(LogicType.AND, inBlueRoom, new WidgetTextCondition(WidgetInfo.DIALOG_SPRITE_TEXT, "You place the blue crystal in the pillar.")));
-		cyanDoorOpen = new VarbitCondition(1176, RED);
+		f2r0c0DR = new VarbitRequirement(1190, RED);
+		f2r2c0SNotRed = new VarbitRequirement(1240, RED, Operation.NOT_EQUAL);
+		f2r3c3S = new VarbitRequirement(1238, WHITE);
+		f2r4c3WC = new VarbitRequirement(1230, CYAN);
+		f2r4c3WY = new VarbitRequirement(1230, YELLOW);
+		f2r4c0DB = new VarbitRequirement(1181, BLUE);
+		f2r4c0SR = new VarbitRequirement(1229, RED);
+		f2r1c3F = new Conditions(new VarbitRequirement(1244, WHITE), new VarbitRequirement(1241, 7), new VarbitRequirement(1245, WHITE));
+		f2r1c2D = new VarbitRequirement(1221, WHITE);
+		f2r0c3E = new VarbitRequirement(1247, WHITE);
+		f2r1c2LG = new VarbitRequirement(1243, GREEN);
+		f2r1c4L = new VarbitRequirement(1244, WHITE);
+		f2r1c3N = new VarbitRequirement(1238, WHITE);
+		f2r3c3W = new VarbitRequirement(1234, WHITE);
+		f2r3c2WB = new VarbitRequirement(1235, BLUE);
+		f2r2c0ER = new VarbitRequirement(1239, RED);
+		f2r0c4D = new VarbitRequirement(1193, BLUE);
+		blueCrystalNotPlaced = new VarbitRequirement(1193, WHITE);
+		placedBlueCrystalInJumpRoom = new Conditions(true, LogicType.OR, f2r0c4D, new Conditions(LogicType.AND, inBlueRoom, new WidgetTextRequirement(WidgetInfo.DIALOG_SPRITE_TEXT, "You place the blue crystal in the pillar.")));
+		cyanDoorOpen = new VarbitRequirement(1176, RED);
 	}
 
 	public void loadZones()
@@ -968,55 +977,63 @@ public class MourningsEndPartII extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(mournersOutfit, chisel, deathTalismanHeader, rope));
+		return Arrays.asList(mournersOutfit, chisel, deathTalismanHeader, rope);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(prayerPotions, food));
+		return Arrays.asList(prayerPotions, food);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Collections.singletonList("Able to survive Shadows (level 73) continually attacking you"));
+		return Collections.singletonList("Able to survive Shadows (level 73) continually attacking you");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.MOURNINGS_END_PART_I, QuestState.FINISHED));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
 		allSteps.add(new PanelDetails("Starting off",
 			new ArrayList<>(Collections.singletonList(talkToArianwyn))));
 
 		allSteps.add(new PanelDetails("Explore the caves",
-			new ArrayList<>(Arrays.asList(talkToEssyllt, enterCave, searchCorpse, goUpStairsTemple, goUpSouthLadder, goToMiddleFromSouth, goUpFromMiddleToNorth, useChisel, bringCrystalToArianwyn,
-				talkToElunedAfterGivingCrystal, talkToArianwynAfterGivingCrystal)), chisel));
+			Arrays.asList(talkToEssyllt, enterCave, searchCorpse, goUpStairsTemple, goUpSouthLadder, goToMiddleFromSouth, goUpFromMiddleToNorth, useChisel, bringCrystalToArianwyn,
+				talkToElunedAfterGivingCrystal, talkToArianwynAfterGivingCrystal), chisel));
 
-		allSteps.add(new PanelDetails("Return to the Temple", new ArrayList<>(Collections.singletonList(enterTempleOfLight)), rope, mournersOutfit, deathTalismanNote, newlyIfOneTrip));
+		allSteps.add(new PanelDetails("Return to the Temple", Collections.singletonList(enterTempleOfLight), rope, mournersOutfit, deathTalismanNote, newlyIfOneTrip));
 
-		allSteps.add(new PanelDetails("Puzzle 1", new ArrayList<>(Arrays.asList(goUpStairsTempleC1, pullDispenser1, puzzle1Pillar1, puzzle1Pillar2, puzzle1Pillar3, puzzle1Pillar4, puzzle1Pillar5, climbWallSupport, searchBlueChest))));
-		allSteps.add(new PanelDetails("Puzzle 2", new ArrayList<>(Arrays.asList(pullDispenser2, puzzle2Pillar1, puzzle2Pillar2, puzzle2Pillar3, puzzle2Pillar4, puzzle2Pillar5, puzzle2Pillar6, searchMagentaChest))));
-		allSteps.add(new PanelDetails("Puzzle 3", new ArrayList<>(Arrays.asList(puzzle3Pillar6RemoveYellow, goUpLadderNorthForPuzzle3, puzzle3Pillar7, goDownFromF2NorthRoomPuzzle3, goUpToFloor2Puzzle3,
-			puzzle3Pillar8, goDownFromF2Puzzle3, goDownFromF1Puzzle3, enterNorthWestRoomPuzzle3, puzzle3Pillar9, searchYellowChest))));
+		allSteps.add(new PanelDetails("Puzzle 1", Arrays.asList(goUpStairsTempleC1, pullDispenser1, puzzle1Pillar1, puzzle1Pillar2, puzzle1Pillar3, puzzle1Pillar4, puzzle1Pillar5, climbWallSupport, searchBlueChest)));
+		allSteps.add(new PanelDetails("Puzzle 2", Arrays.asList(pullDispenser2, puzzle2Pillar1, puzzle2Pillar2, puzzle2Pillar3, puzzle2Pillar4, puzzle2Pillar5, puzzle2Pillar6, searchMagentaChest)));
+		allSteps.add(new PanelDetails("Puzzle 3", Arrays.asList(puzzle3Pillar6RemoveYellow, goUpLadderNorthForPuzzle3, puzzle3Pillar7, goDownFromF2NorthRoomPuzzle3, goUpToFloor2Puzzle3,
+			puzzle3Pillar8, goDownFromF2Puzzle3, goDownFromF1Puzzle3, enterNorthWestRoomPuzzle3, puzzle3Pillar9, searchYellowChest)));
 
-		allSteps.add(new PanelDetails("Puzzle 4", new ArrayList<>(Arrays.asList(goUpToFirstFloorPuzzle4, puzzle4Pillar3RemoveCyan, goUpToFloor2Puzzle4, puzzle4Pillar8, puzzle4Pillar9, goDownFromF2Puzzle4, useRope, goDownRope, searchCyanChest)), rope));
+		allSteps.add(new PanelDetails("Puzzle 4", Arrays.asList(goUpToFirstFloorPuzzle4, puzzle4Pillar3RemoveCyan, goUpToFloor2Puzzle4, puzzle4Pillar8, puzzle4Pillar9, goDownFromF2Puzzle4, useRope, goDownRope, searchCyanChest), rope));
 
-		PanelDetails placeBlueCrystalPanel = new PanelDetails("Puzzle 5 P1", new ArrayList<>(Arrays.asList(climbUpRope, pullDispenser5, puzzle5Pillar1, puzzle5Pillar2, puzzle5Pillar3, puzzle5Pillar4, puzzle5Pillar5, climbWallSupportPuzzle5, puzzle5Pillar6)));
+		PanelDetails placeBlueCrystalPanel = new PanelDetails("Puzzle 5 P1", Arrays.asList(climbUpRope, pullDispenser5, puzzle5Pillar1, puzzle5Pillar2, puzzle5Pillar3, puzzle5Pillar4, puzzle5Pillar5, climbWallSupportPuzzle5, puzzle5Pillar6));
 		placeBlueCrystalPanel.setLockingStep(puzzle5PlaceBlue);
 		allSteps.add(placeBlueCrystalPanel);
-		allSteps.add(new PanelDetails("Puzzle 5 P2", new ArrayList<>(Arrays.asList(puzzle5Pillar5RemoveMirror, puzzle5Pillar3RotateUp, goUpToFloor2Puzzle5, goDownToMiddleFromSouthPuzzle5,
+		allSteps.add(new PanelDetails("Puzzle 5 P2", Arrays.asList(puzzle5Pillar5RemoveMirror, puzzle5Pillar3RotateUp, goUpToFloor2Puzzle5, goDownToMiddleFromSouthPuzzle5,
 			goUpFromMiddleToNorthPuzzle5, puzzle5Pillar7, goDownToMiddleFromNorthPuzzle5, puzzle5Pillar8, puzzle5Pillar9, puzzle5Pillar10, puzzle5Pillar11, goDownFromF2Puzzle5,
-			goDownFromF1Puzzle5, puzzle5Pillar12, puzzle5Pillar13, puzzle5Pillar14, searchMagentaYellowChest))));
+			goDownFromF1Puzzle5, puzzle5Pillar12, puzzle5Pillar13, puzzle5Pillar14, searchMagentaYellowChest)));
 
-		allSteps.add(new PanelDetails("Reach the Death Altar", new ArrayList<>(Arrays.asList(goUpToF1Puzzle6, puzzle6Pillar1, puzzle6Pillar2, goDownFromF1Puzzle6, puzzle6Pillar3, puzzle6Pillar4,
+		allSteps.add(new PanelDetails("Reach the Death Altar", Arrays.asList(goUpToF1Puzzle6, puzzle6Pillar1, puzzle6Pillar2, goDownFromF1Puzzle6, puzzle6Pillar3, puzzle6Pillar4,
 			puzzle6Pillar5, puzzle6Pillar6, puzzle6Pillar7, puzzle6Pillar8, goUpToF1Puzzle6, puzzle6Pillar9, goUpNorthLadderToF2Puzzle6, puzzle6Pillar10, goDownNorthLadderToF1Puzzle6, goUpToFloor2Puzzle6,
-			puzzle6Pillar11, puzzle6Pillar12, puzzle6Pillar13, goDownToMiddleFromSouthPuzzle6, goUpFromMiddleToNorthPuzzle6, puzzle6Pillar14, puzzle6Pillar15, puzzle6Pillar16, puzzle6Pillar17, goDownToCentre, turnKeyMirror))));
+			puzzle6Pillar11, puzzle6Pillar12, puzzle6Pillar13, goDownToMiddleFromSouthPuzzle6, goUpFromMiddleToNorthPuzzle6, puzzle6Pillar14, puzzle6Pillar15, puzzle6Pillar16, puzzle6Pillar17, goDownToCentre, turnKeyMirror)));
 
-		allSteps.add(new PanelDetails("Repair the defences", new ArrayList<>(Arrays.asList(enterDeathAltarBarrier, getDeathTalisman, enterDeathAltar, useCrystalOnAltar, leaveDeathAltar, returnToArianwyn)), deathTalisman, newlyMadeCrystal));
+		allSteps.add(new PanelDetails("Repair the defences", Arrays.asList(enterDeathAltarBarrier, getDeathTalisman, enterDeathAltar, useCrystalOnAltar, leaveDeathAltar, returnToArianwyn), deathTalisman, newlyMadeCrystal));
 
 		return allSteps;
 	}

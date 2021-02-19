@@ -24,51 +24,58 @@
  */
 package com.questhelper.quests.misthalinmystery;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
-import com.questhelper.steps.conditional.Operation;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.WidgetTextRequirement;
+import com.questhelper.requirements.util.Operation;
+import com.questhelper.steps.ConditionalStep;
+import com.questhelper.steps.DetailedQuestStep;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
+import com.questhelper.steps.WidgetStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.*;
-
-import java.util.HashMap;
-import java.util.Map;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.WidgetTextCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.MISTHALIN_MYSTERY
 )
 public class MisthalinMystery extends BasicQuestHelper
 {
-	private ItemRequirement bucket, manorKey, knife, notes1, rubyKey, tinderbox, notes2, emeraldKey, notes3, sapphireKey, killersKnife, killersKnifeEquipped;
+	//Requirements
+	ItemRequirement bucket, manorKey, knife, notes1, rubyKey, tinderbox, notes2, emeraldKey, notes3, sapphireKey, killersKnife, killersKnifeEquipped;
 
-	private Zone island, outside1, outside2, outside3, bossRoom;
+	Requirement onIsland, hasBucket, hasManorKey, hasKnife, hasNotes1, hasRubyKey, hasTinderbox, litCandle1, litCandle2, litCandle3, inOutsideArea, hasNotes2,
+		inPianoWidget, playedD, playedE, playedA, playedAnyKey, hasEmeraldKey, hasNotes3, inGemWidget, selectedSaphire, selectedDiamond, selectedZenyte, selectedEmerald, selectedOnyx,
+		selectAnyGem, hasSapphireKey, inBossRoom, hasKillersKnife;
 
-	private ConditionForStep onIsland, hasBucket, hasManorKey, hasKnife, hasNotes1, hasRubyKey, hasTinderbox, litCandle1, litCandle2, litCandle3, litCandle4, inOutsideArea, hasNotes2,
-	inPianoWidget, playedD, playedE, playedA, playedAnyKey, hasEmeraldKey, hasNotes3, inGemWidget, selectedSaphire, selectedDiamond, selectedZenyte, selectedEmerald, selectedOnyx,
-	selectedRuby, selectAnyGem, hasSapphireKey, inBossRoom, hasKillersKnife;
-
-	private QuestStep talkToAbigale, takeTheBoat, takeTheBucket, searchTheBarrel, useBucketOnBarrel, searchTheBarrelForKey, openManorDoor,
+	QuestStep talkToAbigale, takeTheBoat, takeTheBucket, searchTheBarrel, useBucketOnBarrel, searchTheBarrelForKey, openManorDoor,
 		takeKnife, tryToOpenPinkKnobDoor, takeNote1, readNotes1, useKnifeOnPainting, searchPainting, goThroughRubyDoor, takeTinderbox, lightCandle1, lightCandle2,
 		lightCandle3, lightCandle4, lightBarrel, leaveExplosionRoom, climbWall, observeThroughTree, takeNote2, readNotes2, playPiano, playD, playE, playA, playDAgain, restartPiano,
 		searchThePiano, returnOverBrokenWall, openEmeraldDoor, enterBandosGodswordRoomStep, takeNote3, readNotes3, useKnifeOnFireplace, searchFireplace, clickSapphire, clickDiamond,
 		clickZenyte, clickEmerald, clickOnyx, clickRuby, restartGems, searchFireplaceForSapphireKey, goThroughSapphireDoor, reflectKnives, continueThroughSapphireDoor, pickUpKillersKnife,
 		fightAbigale, leaveSapphireRoom, talkToMandy;
+
+	//Zones
+	private Zone island, outside1, outside2, outside3, bossRoom;
 
 	@Override
 	public Map<Integer, QuestStep> loadSteps()
@@ -218,7 +225,8 @@ public class MisthalinMystery extends BasicQuestHelper
 		return steps;
 	}
 
-	public void setupZones() {
+	public void setupZones()
+	{
 		island = new Zone(new WorldPoint(1600, 4800, 0), new WorldPoint(1679, 4845, 0));
 		outside1 = new Zone(new WorldPoint(1648, 4825, 0), new WorldPoint(1654, 4852, 0));
 		outside2 = new Zone(new WorldPoint(1634, 4840, 0), new WorldPoint(1648, 4852, 0));
@@ -226,47 +234,49 @@ public class MisthalinMystery extends BasicQuestHelper
 		bossRoom = new Zone(new WorldPoint(1619, 4825, 0), new WorldPoint(1627, 4834, 0));
 	}
 
-	public void setupConditions() {
-		onIsland = new ZoneCondition(island);
-		hasBucket = new ItemRequirementCondition(bucket);
-		hasManorKey = new ItemRequirementCondition(manorKey);
-		hasKnife = new ItemRequirementCondition(knife);
-		hasNotes1 = new ItemRequirementCondition(notes1);
-		hasRubyKey = new ItemRequirementCondition(rubyKey);
-		hasTinderbox = new ItemRequirementCondition(tinderbox);
-		inOutsideArea = new ZoneCondition(outside1, outside2, outside3);
-		hasNotes2 = new ItemRequirementCondition(notes2);
-		playedD = new Conditions(new VarbitCondition(4044, 1), new VarbitCondition(4049, 1));
-		playedE = new Conditions(new VarbitCondition(4045, 1), new VarbitCondition(4049, 2));
-		playedA = new Conditions(new VarbitCondition(4046, 1), new VarbitCondition(4049, 3));
-		playedAnyKey = new VarbitCondition(4049, 1, Operation.GREATER_EQUAL);
-		inPianoWidget = new WidgetTextCondition(554, 20, "C");
-		hasEmeraldKey = new ItemRequirementCondition(emeraldKey);
-		hasNotes3 = new ItemRequirementCondition(notes3);
-		inGemWidget = new WidgetTextCondition(555, 1, 1, "Gemstone switch panel");
-		selectedSaphire = new Conditions(new VarbitCondition(4051, 1), new VarbitCondition(4050, 1));
-		selectedDiamond = new Conditions(new VarbitCondition(4052, 1), new VarbitCondition(4050, 2));
-		selectedZenyte = new Conditions(new VarbitCondition(4053, 1), new VarbitCondition(4050, 3));
-		selectedEmerald = new Conditions(new VarbitCondition(4054, 1), new VarbitCondition(4050, 4));
-		selectedOnyx = new Conditions(new VarbitCondition(4055, 1), new VarbitCondition(4050, 5));
-		selectedRuby = new Conditions(new VarbitCondition(4056, 1), new VarbitCondition(4050, 6));
-		selectAnyGem = new VarbitCondition(4050, 1, Operation.GREATER_EQUAL);
-		hasSapphireKey = new ItemRequirementCondition(sapphireKey);
-		inBossRoom = new ZoneCondition(bossRoom);
-		hasKillersKnife = new ItemRequirementCondition(killersKnife);
+	public void setupConditions()
+	{
+		onIsland = new ZoneRequirement(island);
+		hasBucket = new ItemRequirements(bucket);
+		hasManorKey = new ItemRequirements(manorKey);
+		hasKnife = new ItemRequirements(knife);
+		hasNotes1 = new ItemRequirements(notes1);
+		hasRubyKey = new ItemRequirements(rubyKey);
+		hasTinderbox = new ItemRequirements(tinderbox);
+		inOutsideArea = new ZoneRequirement(outside1, outside2, outside3);
+		hasNotes2 = new ItemRequirements(notes2);
+
+		litCandle1 = new VarbitRequirement(4042, 1);
+		litCandle2 = new VarbitRequirement(4041, 1);
+		litCandle3 = new VarbitRequirement(4039, 1);
+
+		playedD = new Conditions(new VarbitRequirement(4044, 1), new VarbitRequirement(4049, 1));
+		playedE = new Conditions(new VarbitRequirement(4045, 1), new VarbitRequirement(4049, 2));
+		playedA = new Conditions(new VarbitRequirement(4046, 1), new VarbitRequirement(4049, 3));
+		playedAnyKey = new VarbitRequirement(4049, 1, Operation.GREATER_EQUAL);
+		inPianoWidget = new WidgetTextRequirement(554, 20, "C");
+		hasEmeraldKey = new ItemRequirements(emeraldKey);
+		hasNotes3 = new ItemRequirements(notes3);
+		inGemWidget = new WidgetTextRequirement(555, 1, 1, "Gemstone switch panel");
+		selectedSaphire = new Conditions(new VarbitRequirement(4051, 1), new VarbitRequirement(4050, 1));
+		selectedDiamond = new Conditions(new VarbitRequirement(4052, 1), new VarbitRequirement(4050, 2));
+		selectedZenyte = new Conditions(new VarbitRequirement(4053, 1), new VarbitRequirement(4050, 3));
+		selectedEmerald = new Conditions(new VarbitRequirement(4054, 1), new VarbitRequirement(4050, 4));
+		selectedOnyx = new Conditions(new VarbitRequirement(4055, 1), new VarbitRequirement(4050, 5));
+		selectAnyGem = new VarbitRequirement(4050, 1, Operation.GREATER_EQUAL);
+		hasSapphireKey = new ItemRequirements(sapphireKey);
+		inBossRoom = new ZoneRequirement(bossRoom);
+		hasKillersKnife = new ItemRequirements(killersKnife);
 	}
 
-	public void setupItemRequirements() {
+	public void setupItemRequirements()
+	{
 		bucket = new ItemRequirement("Bucket", ItemID.BUCKET);
 		manorKey = new ItemRequirement("Manor key", ItemID.MANOR_KEY_21052);
 		knife = new ItemRequirement("Knife", ItemID.KNIFE);
 		notes1 = new ItemRequirement("Notes", ItemID.NOTES_21056);
 		rubyKey = new ItemRequirement("Ruby key", ItemID.RUBY_KEY_21053);
 		tinderbox = new ItemRequirement("Tinderbox", ItemID.TINDERBOX);
-		litCandle1 = new VarbitCondition(4042, 1);
-		litCandle2 = new VarbitCondition(4041, 1);
-		litCandle3 = new VarbitCondition(4039, 1);
-		litCandle4 = new VarbitCondition(4040, 1);
 		notes2 = new ItemRequirement("Notes", ItemID.NOTES_21057);
 		emeraldKey = new ItemRequirement("Emerald key", ItemID.EMERALD_KEY_21054);
 		notes3 = new ItemRequirement("Notes", ItemID.NOTES_21058);
@@ -275,12 +285,13 @@ public class MisthalinMystery extends BasicQuestHelper
 		killersKnifeEquipped = new ItemRequirement("Killer's knife", ItemID.KILLERS_KNIFE_21059, 1, true);
 	}
 
-	public void setupSteps() {
+	public void setupSteps()
+	{
 		talkToAbigale = new NpcStep(this, NpcID.ABIGALE, new WorldPoint(3237, 3155, 0), "Talk to Abigale in the south east corner of Lumbridge Swamp.");
 		talkToAbigale.addDialogStep("What has happened here?");
 		talkToAbigale.addDialogStep("What do you want me to do?");
 		takeTheBoat = new ObjectStep(this, ObjectID.ROWBOAT_30108, new WorldPoint(3240, 3140, 0), "Board the rowboat south of Abigale.");
-		takeTheBucket = new ObjectStep(this, ObjectID.BUCKET_30147, new WorldPoint(1619,4816,0), "Pick up the bucket near the fountain.", bucket);
+		takeTheBucket = new ObjectStep(this, ObjectID.BUCKET_30147, new WorldPoint(1619, 4816, 0), "Pick up the bucket near the fountain.", bucket);
 		searchTheBarrel = new ObjectStep(this, NullObjectID.NULL_29649, new WorldPoint(1615, 4829, 0), "Search the barrel of rainwater north of the fountain to trigger a cutscene.", bucket);
 		useBucketOnBarrel = new ObjectStep(this, NullObjectID.NULL_29649, new WorldPoint(1615, 4829, 0), "Use the bucket on the barrel of rainwater.", bucket);
 		searchTheBarrelForKey = new ObjectStep(this, NullObjectID.NULL_29649, new WorldPoint(1615, 4829, 0), "Search the barrel of rainwater for the manor key.");
@@ -321,7 +332,7 @@ public class MisthalinMystery extends BasicQuestHelper
 		playDAgain = new WidgetStep(this, "Play the D key again.", 554, 21);
 		restartPiano = new DetailedQuestStep(this, "Unfortunately you've played an incorrect key. Restart.");
 
-		searchThePiano = new ObjectStep(this, NullObjectID.NULL_29658,  new WorldPoint(1647, 4842, 0), "Search the piano for the emerald key.");
+		searchThePiano = new ObjectStep(this, NullObjectID.NULL_29658, new WorldPoint(1647, 4842, 0), "Search the piano for the emerald key.");
 
 		returnOverBrokenWall = new ObjectStep(this, NullObjectID.NULL_29657, new WorldPoint(1648, 4829, 0),
 			"Climb back over the damaged wall into the manor.", emeraldKey);
@@ -335,7 +346,7 @@ public class MisthalinMystery extends BasicQuestHelper
 		useKnifeOnFireplace = new ObjectStep(this, NullObjectID.NULL_29659, new WorldPoint(1647, 4836, 0), "Use a knife on the unlit fireplace in the eastern room.", knife);
 		useKnifeOnFireplace.addIcon(ItemID.KNIFE);
 
-		searchFireplace =  new ObjectStep(this, NullObjectID.NULL_29659, new WorldPoint(1647, 4836, 0), "Search the fireplace.");
+		searchFireplace = new ObjectStep(this, NullObjectID.NULL_29659, new WorldPoint(1647, 4836, 0), "Search the fireplace.");
 
 		restartGems = new DetailedQuestStep(this, "You've clicked a gem in the wrong order. Try restarting.");
 
@@ -367,24 +378,18 @@ public class MisthalinMystery extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<ItemRequirement> reqs = new ArrayList<>();
-		return reqs;
-	}
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-	@Override
-	public ArrayList<PanelDetails> getPanels() {
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-
-		allSteps.add(new PanelDetails("Talk to Abigale", new ArrayList<>(Collections.singletonList(talkToAbigale))));
-		allSteps.add(new PanelDetails("Enter the manor", new ArrayList<>(Arrays.asList(takeTheBoat, takeTheBucket, searchTheBarrel, useBucketOnBarrel, searchTheBarrelForKey, openManorDoor))));
-		allSteps.add(new PanelDetails("Solve the first puzzle", new ArrayList<>(Arrays.asList(takeKnife, tryToOpenPinkKnobDoor, takeNote1, readNotes1, useKnifeOnPainting, searchPainting, goThroughRubyDoor))));
-		allSteps.add(new PanelDetails("Solve the second puzzle", new ArrayList<>(Arrays.asList(takeTinderbox, lightCandle1, lightBarrel, leaveExplosionRoom, climbWall))));
-		allSteps.add(new PanelDetails("Solve the third puzzle", new ArrayList<>(Arrays.asList(observeThroughTree, takeNote2, readNotes2, playPiano, playD, playE, playA, playDAgain, searchThePiano))));
-		allSteps.add(new PanelDetails("Witness another murder", new ArrayList<>(Arrays.asList(returnOverBrokenWall, openEmeraldDoor, enterBandosGodswordRoomStep))));
-		allSteps.add(new PanelDetails("Solve the fourth puzzle", new ArrayList<>(Arrays.asList(takeNote3, readNotes3, useKnifeOnFireplace, searchFireplace, clickSapphire, clickDiamond, clickZenyte, clickEmerald, clickOnyx, clickRuby, searchFireplaceForSapphireKey))));
-		allSteps.add(new PanelDetails("Confront the killer", new ArrayList<>(Arrays.asList(goThroughSapphireDoor, reflectKnives, pickUpKillersKnife, fightAbigale, leaveSapphireRoom, talkToMandy))));
+		allSteps.add(new PanelDetails("Talk to Abigale", Collections.singletonList(talkToAbigale)));
+		allSteps.add(new PanelDetails("Enter the manor", Arrays.asList(takeTheBoat, takeTheBucket, searchTheBarrel, useBucketOnBarrel, searchTheBarrelForKey, openManorDoor)));
+		allSteps.add(new PanelDetails("Solve the first puzzle", Arrays.asList(takeKnife, tryToOpenPinkKnobDoor, takeNote1, readNotes1, useKnifeOnPainting, searchPainting, goThroughRubyDoor)));
+		allSteps.add(new PanelDetails("Solve the second puzzle", Arrays.asList(takeTinderbox, lightCandle1, lightBarrel, leaveExplosionRoom, climbWall)));
+		allSteps.add(new PanelDetails("Solve the third puzzle", Arrays.asList(observeThroughTree, takeNote2, readNotes2, playPiano, playD, playE, playA, playDAgain, searchThePiano)));
+		allSteps.add(new PanelDetails("Witness another murder", Arrays.asList(returnOverBrokenWall, openEmeraldDoor, enterBandosGodswordRoomStep)));
+		allSteps.add(new PanelDetails("Solve the fourth puzzle", Arrays.asList(takeNote3, readNotes3, useKnifeOnFireplace, searchFireplace, clickSapphire, clickDiamond, clickZenyte, clickEmerald, clickOnyx, clickRuby, searchFireplaceForSapphireKey)));
+		allSteps.add(new PanelDetails("Confront the killer", Arrays.asList(goThroughSapphireDoor, reflectKnives, pickUpKillersKnife, fightAbigale, leaveSapphireRoom, talkToMandy)));
 		return allSteps;
 	}
 }

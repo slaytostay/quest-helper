@@ -31,28 +31,33 @@ import com.questhelper.QuestVarbits;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.requirements.ItemRequirements;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ItemStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import net.runelite.api.Client;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -63,13 +68,14 @@ public class RFDSkrachUglogwee extends BasicQuestHelper
 	ItemRequirement rawJubbly, cookedJubbly, axeHighlighted, ironSpit, log, tinderbox, pickaxe, ogreBellows, ballOfWool, ogreBowAndArrows,
 		ogreBow, ogreArrows, chompy, chompySpitted, ogreBellowsFilled, toad, toadReady, rock, cookedJubblyHighlighted;
 
-	ConditionForStep inDiningRoom, hasSpitChompy, hasToad, hasRock, hasBalloonToad, hasRawJubbly, hasCookedJubbly, jubblyNearby,
+	Requirement inDiningRoom, hasSpitChompy, hasToad, hasRock, hasBalloonToad, hasRawJubbly, hasCookedJubbly, jubblyNearby,
 		jubblyCarcassNearby, hasFilledBellows, rawJubblyOnFloor;
 
 	QuestStep enterDiningRoom, inspectSkrach, talkToRantz, talkToRantzOnCoast, useAxeOnTree, useAxeOnTreeAgain, talkToRantzOnCoastAgain,
 		useSpitOnChompy, lightFire, talkToRantzAfterReturn, getToad, getRock, useBellowOnToadInInv, dropBalloonToad, killJubbly, lootJubbly,
 		fillUpBellows, cookJubbly, enterDiningRoomAgain, useJubblyOnSkrach, pickUpRawJubbly;
 
+	//Zones
 	Zone diningRoom;
 
 	@Override
@@ -173,17 +179,17 @@ public class RFDSkrachUglogwee extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inDiningRoom = new ZoneCondition(diningRoom);
-		hasSpitChompy = new ItemRequirementCondition(chompySpitted);
-		hasToad = new ItemRequirementCondition(toad);
-		hasBalloonToad = new Conditions(true, new ItemRequirementCondition(toadReady));
-		hasRawJubbly = new ItemRequirementCondition(rawJubbly);
-		hasCookedJubbly = new ItemRequirementCondition(cookedJubbly);
-		hasRock = new ItemRequirementCondition(rock);
+		inDiningRoom = new ZoneRequirement(diningRoom);
+		hasSpitChompy = new ItemRequirements(chompySpitted);
+		hasToad = new ItemRequirements(toad);
+		hasBalloonToad = new Conditions(true, new ItemRequirements(toadReady));
+		hasRawJubbly = new ItemRequirements(rawJubbly);
+		hasCookedJubbly = new ItemRequirements(cookedJubbly);
+		hasRock = new ItemRequirements(rock);
 		jubblyNearby = new NpcCondition(NpcID.JUBBLY_BIRD);
 		jubblyCarcassNearby = new NpcCondition(NpcID.JUBBLY_BIRD_4864);
-		hasFilledBellows = new ItemRequirementCondition(ogreBellowsFilled);
-		rawJubblyOnFloor = new ItemCondition(rawJubbly);
+		hasFilledBellows = new ItemRequirements(ogreBellowsFilled);
+		rawJubblyOnFloor = new ItemOnTileRequirement(rawJubbly);
 	}
 
 	public void setupSteps()
@@ -216,7 +222,7 @@ public class RFDSkrachUglogwee extends BasicQuestHelper
 		killJubbly = new NpcStep(this, NpcID.JUBBLY_BIRD, "Kill then pluck jubbly.", ogreBowAndArrows);
 		pickUpRawJubbly = new ItemStep(this, "Pick up the raw jubbly.", rawJubbly);
 		lootJubbly = new NpcStep(this, NpcID.JUBBLY_BIRD_4864, "Pluck the jubbly's carcass.");
-		cookJubbly = new ObjectStep(this, NullObjectID.NULL_6895, new WorldPoint(2631, 2990, 0),"Cook the raw jubbly on Rantz's spit.", rawJubbly);
+		cookJubbly = new ObjectStep(this, NullObjectID.NULL_6895, new WorldPoint(2631, 2990, 0), "Cook the raw jubbly on Rantz's spit.", rawJubbly);
 		cookJubbly.addIcon(ItemID.RAW_JUBBLY);
 
 		enterDiningRoomAgain = new ObjectStep(this, ObjectID.DOOR_12348, new WorldPoint(3207, 3217, 0), "Go give the jubbly to Skrach Uglogwee to finish the quest.", cookedJubbly);
@@ -226,28 +232,57 @@ public class RFDSkrachUglogwee extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(axeHighlighted, chompy, ironSpit, log, tinderbox, pickaxe, ogreBellows, ballOfWool, ogreBowAndArrows));
+		return Arrays.asList(axeHighlighted, chompy, ironSpit, log, tinderbox, pickaxe, ogreBellows, ballOfWool, ogreBowAndArrows);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("Jubbly (level 9)"));
+		return Arrays.asList("Jubbly (level 9)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(inspectSkrach))));
-		allSteps.add(new PanelDetails("Help Rantz", new ArrayList<>(Arrays.asList(talkToRantz, talkToRantzOnCoast, useAxeOnTree, useAxeOnTreeAgain,
-			talkToRantzOnCoastAgain, useSpitOnChompy, lightFire, talkToRantzAfterReturn)), axeHighlighted, log, tinderbox, chompy, ironSpit, ogreBowAndArrows, pickaxe, ogreBellowsFilled, ballOfWool));
-		allSteps.add(new PanelDetails("Save Skrach", new ArrayList<>(Arrays.asList(getToad, getRock, useBellowOnToadInInv, dropBalloonToad, killJubbly, lootJubbly, pickUpRawJubbly, cookJubbly,
-			useJubblyOnSkrach)), ogreBowAndArrows, pickaxe, ogreBellowsFilled, ballOfWool));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new SkillRequirement(Skill.COOKING, 41, true));
+		req.add(new SkillRequirement(Skill.FIREMAKING, 20, true));
+		req.add(new QuestRequirement(QuestHelperQuest.BIG_CHOMPY_BIRD_HUNTING, QuestState.FINISHED));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(inspectSkrach)));
+		allSteps.add(new PanelDetails("Help Rantz", Arrays.asList(talkToRantz, talkToRantzOnCoast, useAxeOnTree, useAxeOnTreeAgain,
+			talkToRantzOnCoastAgain, useSpitOnChompy, lightFire, talkToRantzAfterReturn),
+			axeHighlighted, log, tinderbox, chompy, ironSpit, ogreBowAndArrows, pickaxe, ogreBellows, ballOfWool));
+		allSteps.add(new PanelDetails("Save Skrach", Arrays.asList(getToad, getRock, useBellowOnToadInInv,
+			dropBalloonToad, killJubbly, lootJubbly, pickUpRawJubbly, cookJubbly, useJubblyOnSkrach),
+			ogreBowAndArrows, pickaxe, ogreBellows, ballOfWool));
 
 		return allSteps;
+	}
+
+	@Override
+	public QuestState getState(Client client)
+	{
+		int questState = client.getVarbitValue(QuestVarbits.QUEST_RECIPE_FOR_DISASTER_SKRACH_UGLOGWEE.getId());
+		if (questState == 0)
+		{
+			return QuestState.NOT_STARTED;
+		}
+
+		if (questState < 170)
+		{
+			return QuestState.IN_PROGRESS;
+		}
+
+		return QuestState.FINISHED;
 	}
 
 	@Override

@@ -24,24 +24,34 @@
  */
 package com.questhelper.quests.enchantedkey;
 
+import com.questhelper.ItemCollections;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
 import com.questhelper.steps.QuestStep;
 import com.questhelper.QuestDescriptor;
+import net.runelite.api.QuestState;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.ENCHANTED_KEY
 )
 public class EnchantedKey extends BasicQuestHelper
 {
-	ItemRequirement spade, key, varrockTeleports, ardougneTeleports, rellekkaTeleports, lumbridgeTeleports, passage;
+	//Items Required
+	ItemRequirement spade, key;
+
+	//Items Recommended
+	ItemRequirement rellekkaTeleports, varrockTeleports, ardougneTeleports, lumbridgeTeleports, passage;
 
 	QuestStep solvePuzzle;
 
@@ -69,8 +79,7 @@ public class EnchantedKey extends BasicQuestHelper
 		ardougneTeleports = new ItemRequirement("Ardougne teleports", ItemID.ARDOUGNE_TELEPORT);
 		rellekkaTeleports = new ItemRequirement("Rellekka teleport", ItemID.RELLEKKA_TELEPORT);
 		lumbridgeTeleports = new ItemRequirement("Lumbridge teleports", ItemID.LUMBRIDGE_TELEPORT);
-		passage = new ItemRequirement("Necklace of passage", ItemID.NECKLACE_OF_PASSAGE5);
-		passage.addAlternates(ItemID.NECKLACE_OF_PASSAGE1, ItemID.NECKLACE_OF_PASSAGE2, ItemID.NECKLACE_OF_PASSAGE3, ItemID.NECKLACE_OF_PASSAGE4);
+		passage = new ItemRequirement("Necklace of passage", ItemCollections.getNecklaceOfPassages());
 	}
 
 	private void setupSteps()
@@ -79,22 +88,30 @@ public class EnchantedKey extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(key, spade));
+		return Arrays.asList(key, spade);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(rellekkaTeleports, varrockTeleports, ardougneTeleports, lumbridgeTeleports, passage));
+		return Arrays.asList(rellekkaTeleports, varrockTeleports, ardougneTeleports, lumbridgeTeleports, passage);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Dig for treasure", new ArrayList<>(Arrays.asList(solvePuzzle)), key, spade));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Dig for treasure", Collections.singletonList(solvePuzzle), key, spade));
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.MAKING_HISTORY, QuestState.FINISHED));
+		return req;
 	}
 }

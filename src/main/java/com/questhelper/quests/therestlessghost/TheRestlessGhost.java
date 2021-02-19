@@ -24,44 +24,52 @@
  */
 package com.questhelper.quests.therestlessghost;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.conditional.ObjectCondition;
+import com.questhelper.steps.ConditionalStep;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.*;
-
-import java.util.HashMap;
-import java.util.Map;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.ObjectCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.THE_RESTLESS_GHOST
 )
 public class TheRestlessGhost extends BasicQuestHelper
 {
-	private ItemRequirement lumbridgeTeleports, ghostspeakAmulet, skull, passage;
+	//Items Required
+	private ItemRequirement ghostspeakAmulet, skull;
 
-	private Zone basement;
+	//Items Recommended
+	private ItemRequirement lumbridgeTeleports, passage;
 
-	private ConditionForStep ghostSpawned, coffinOpened, inBasement, hasSkull;
+	private Requirement ghostSpawned, coffinOpened, inBasement, hasSkull;
 
 	private QuestStep talkToAereck, talkToUrhney, speakToGhost, openCoffin, searchCoffin, enterWizardsTowerBasement, searchAltarAndRun, exitWizardsTowerBasement,
 		openCoffinToPutSkullIn, putSkullInCoffin;
+
+	//Zones
+	private Zone basement;
 
 	@Override
 	public Map<Integer, QuestStep> loadSteps()
@@ -103,17 +111,17 @@ public class TheRestlessGhost extends BasicQuestHelper
 	{
 		ghostSpawned = new NpcCondition(NpcID.RESTLESS_GHOST);
 		coffinOpened = new ObjectCondition(NullObjectID.NULL_15061);
-		inBasement = new ZoneCondition(basement);
-		hasSkull = new VarbitCondition(2130, 1);
+		inBasement = new ZoneRequirement(basement);
+		hasSkull = new VarbitRequirement(2130, 1);
 	}
 
 	public void setupItemRequirements()
 	{
-		lumbridgeTeleports = new ItemRequirement("Lumbridge teleports", ItemID.LUMBRIDGE_TELEPORT, -1);
+		lumbridgeTeleports = new ItemRequirement("Lumbridge teleports", ItemID.LUMBRIDGE_TELEPORT, 2);
 		ghostspeakAmulet = new ItemRequirement("Ghostspeak amulet", ItemID.GHOSTSPEAK_AMULET, 1, true);
-		ghostspeakAmulet.setTip("If you've lost it you can get another from Father Urhney in his hut in the south east of Lumbridge Swamp");
+		ghostspeakAmulet.setTooltip("If you've lost it you can get another from Father Urhney in his hut in the south east of Lumbridge Swamp");
 		skull = new ItemRequirement("Ghost's skull", ItemID.GHOSTS_SKULL);
-		skull.setTip("Check your bank if you don't have this item on you.");
+		skull.setTooltip("Check your bank if you don't have this item on you.");
 		passage = new ItemRequirement("Necklace of passage", ItemID.NECKLACE_OF_PASSAGE5);
 		passage.addAlternates(ItemID.NECKLACE_OF_PASSAGE1, ItemID.NECKLACE_OF_PASSAGE2, ItemID.NECKLACE_OF_PASSAGE3, ItemID.NECKLACE_OF_PASSAGE4);
 	}
@@ -154,7 +162,7 @@ public class TheRestlessGhost extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> recommended = new ArrayList<>();
 		recommended.add(lumbridgeTeleports);
@@ -163,20 +171,20 @@ public class TheRestlessGhost extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-		allSteps.add(new PanelDetails("Talk to Father Aereck", new ArrayList<>(Collections.singletonList(talkToAereck))));
-		allSteps.add(new PanelDetails("Get a ghostspeak amulet", new ArrayList<>(Collections.singletonList(talkToUrhney))));
-		allSteps.add(new PanelDetails("Talk to the ghost", new ArrayList<>(Arrays.asList(openCoffin, speakToGhost))));
-		allSteps.add(new PanelDetails("Return the ghost's skull", new ArrayList<>(Arrays.asList(enterWizardsTowerBasement, searchAltarAndRun, exitWizardsTowerBasement, openCoffinToPutSkullIn, putSkullInCoffin))));
+		allSteps.add(new PanelDetails("Talk to Father Aereck", Collections.singletonList(talkToAereck)));
+		allSteps.add(new PanelDetails("Get a ghostspeak amulet", Collections.singletonList(talkToUrhney)));
+		allSteps.add(new PanelDetails("Talk to the ghost", Arrays.asList(openCoffin, speakToGhost)));
+		allSteps.add(new PanelDetails("Return the ghost's skull", Arrays.asList(enterWizardsTowerBasement, searchAltarAndRun, exitWizardsTowerBasement, openCoffinToPutSkullIn, putSkullInCoffin)));
 		return allSteps;
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("A skeleton (level 13) you can run away from"));
+		return Collections.singletonList("A skeleton (level 13) you can run away from");
 	}
 }

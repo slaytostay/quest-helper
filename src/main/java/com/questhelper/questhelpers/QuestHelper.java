@@ -28,11 +28,16 @@ import com.google.inject.Binder;
 import com.google.inject.CreationException;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.questhelper.QuestHelperConfig;
+import com.questhelper.QuestHelperPlugin;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.panel.PanelDetails;
-import com.questhelper.requirements.ItemRequirement;
-import java.util.ArrayList;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.Requirement;
+import java.awt.Graphics;
 import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import javax.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,11 +46,18 @@ import net.runelite.api.QuestState;
 import net.runelite.client.eventbus.EventBus;
 import com.questhelper.steps.OwnerStep;
 import com.questhelper.steps.QuestStep;
+import net.runelite.client.ui.ColorScheme;
+import net.runelite.client.ui.overlay.components.LineComponent;
+import net.runelite.client.ui.overlay.components.PanelComponent;
 
-public abstract class QuestHelper implements Module
+public abstract class QuestHelper implements Module, QuestDebugRenderer
 {
 	@Inject
 	protected Client client;
+
+	@Getter
+	@Setter
+	protected QuestHelperConfig config;
 
 	@Inject
 	private EventBus eventBus;
@@ -65,11 +77,13 @@ public abstract class QuestHelper implements Module
 	{
 	}
 
-	public abstract void startUp();
+	public abstract void startUp(QuestHelperConfig config);
 
 	public abstract void shutDown();
 
 	public abstract boolean updateQuest();
+
+	public void debugStartup(QuestHelperConfig config) {}
 
 	protected void startUpStep(QuestStep step)
 	{
@@ -124,7 +138,42 @@ public abstract class QuestHelper implements Module
 
 	public boolean isCompleted()
 	{
-		return (quest.getState(client) == QuestState.FINISHED);
+		return getState(client) == QuestState.FINISHED;
+	}
+
+	public QuestState getState(Client client)
+	{
+		return quest.getState(client);
+	}
+
+	public boolean clientMeetsRequirements()
+	{
+		if (getGeneralRequirements() == null)
+		{
+			return true;
+		}
+
+		return getGeneralRequirements().stream().filter(Objects::nonNull).allMatch(r -> r.check(client));
+	}
+
+	@Override
+	public void renderDebugOverlay(Graphics graphics, QuestHelperPlugin plugin, QuestHelper quest, PanelComponent panelComponent)
+	{
+		if (!plugin.isDeveloperMode()) return;
+		panelComponent.getChildren().add(LineComponent.builder()
+			.left("Quest")
+			.leftColor(ColorScheme.BRAND_ORANGE_TRANSPARENT)
+			.right("Var")
+			.rightColor(ColorScheme.BRAND_ORANGE_TRANSPARENT)
+			.build()
+		);
+		panelComponent.getChildren().add(LineComponent.builder()
+			.left(quest.getQuest().getName())
+			.leftColor(quest.getConfig().debugColor())
+			.right(quest.getVar() + "")
+			.rightColor(quest.getConfig().debugColor())
+			.build()
+		);
 	}
 
 	public int getVar()
@@ -132,25 +181,35 @@ public abstract class QuestHelper implements Module
 		return quest.getVar(client);
 	}
 
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		return null;
 	}
 
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<Requirement> getGeneralRequirements()
 	{
 		return null;
 	}
 
-	public ArrayList<String> getCombatRequirements()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		return null;
 	}
 
-	public ArrayList<String> getNotes()
+	public List<Requirement> getGeneralRecommended()
 	{
 		return null;
 	}
 
-	public abstract ArrayList<PanelDetails> getPanels();
+	public List<String> getCombatRequirements()
+	{
+		return null;
+	}
+
+	public List<String> getNotes()
+	{
+		return null;
+	}
+
+	public abstract List<PanelDetails> getPanels();
 }

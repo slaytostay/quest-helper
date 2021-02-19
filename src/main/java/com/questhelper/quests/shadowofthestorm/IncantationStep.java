@@ -25,9 +25,8 @@
 package com.questhelper.quests.shadowofthestorm;
 
 import com.questhelper.questhelpers.QuestHelper;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.steps.DetailedQuestStep;
-import java.util.ArrayList;
 import java.util.Collections;
 import net.runelite.api.ItemID;
 import net.runelite.api.events.MenuOptionClicked;
@@ -60,7 +59,7 @@ public class IncantationStep extends DetailedQuestStep
 		super(questHelper, "Click the demonic sigil and read the incantation.");
 		ItemRequirement sigilHighlighted = new ItemRequirement("Demonic sigil", ItemID.DEMONIC_SIGIL);
 		sigilHighlighted.setHighlightInInventory(true);
-		this.addItemRequirements(new ArrayList<>(Collections.singletonList(sigilHighlighted)));
+		this.addItemRequirements(Collections.singletonList(sigilHighlighted));
 		this.reverse = reverse;
 	}
 
@@ -140,11 +139,11 @@ public class IncantationStep extends DetailedQuestStep
 			return;
 		}
 		incantationOrder = new String[]{
-			words.get(client.getVarbitValue(2562)),
-			words.get(client.getVarbitValue(2563)),
-			words.get(client.getVarbitValue(2564)),
-			words.get(client.getVarbitValue(2565)),
-			words.get(client.getVarbitValue(2566)),
+			words.get(client.getVarbitValue(1373)),
+			words.get(client.getVarbitValue(1374)),
+			words.get(client.getVarbitValue(1375)),
+			words.get(client.getVarbitValue(1376)),
+			words.get(client.getVarbitValue(1377))
 		};
 		if (reverse)
 		{

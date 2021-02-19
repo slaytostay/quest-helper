@@ -24,46 +24,52 @@
  */
 package com.questhelper.quests.dreammentor;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.player.CombatLevelRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.WidgetTextRequirement;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
+import com.questhelper.steps.DetailedQuestStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.WidgetTextCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.DetailedQuestStep;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.DREAM_MENTOR
 )
 public class DreamMentor extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement sealOfPassage, dreamVial, astralRune, astralRuneShards, groundAstralRune, dreamVialWater, dreamVialWithGoutweed,
 		pestleAndMortar, dreamPotion, foodAll, food4, food6, goutweed, tinderbox, hammer, combatGear, food14, chest;
 
-	ConditionForStep inLunarMine, inCyrisusRoom, at40Health, at70Health, lookingAtBank, gotItems, cyrisusDressed, at100Health, hasVialWater, hasVialGout,
+	Requirement inLunarMine, inCyrisusRoom, at40Health, at70Health, lookingAtBank, gotItems, cyrisusDressed, at100Health, hasVialWater, hasVialGout,
 		hasAstralShard, hasAstralPowder, hasDreamPotion, litBrazier, inArena, unlockedDream, inadaquacyNearby, everlastingNearby,
 		untouchableNearby, illusiveNearby;
 
@@ -72,6 +78,7 @@ public class DreamMentor extends BasicQuestHelper
 		talkAfterHelping, supportCyrisusToRecovery, talkToOneiromancer, fillVialWithWater, addGoutweed, useHammerOnAstralRune, usePestleOnShards,
 		useGroundAstralOnVial, lightBrazier, talkToCyrisusForDream, killInadaquacy, killEverlasting, killUntouchable, killIllusive, returnToOneiromancer;
 
+	//Zones
 	Zone lunarMine, cyrisusRoom, arena;
 
 	@Override
@@ -179,20 +186,25 @@ public class DreamMentor extends BasicQuestHelper
 		hammer.setHighlightInInventory(true);
 
 		goutweed = new ItemRequirement("Goutweed", ItemID.GOUTWEED);
-		goutweed.setTip("You can get one from the Troll Kitchen's Storeroom in Trollheim");
+		goutweed.setTooltip("You can get one from the Troll Kitchen's Storeroom in Trollheim");
 		goutweed.setHighlightInInventory(true);
 
 		dreamPotion = new ItemRequirement("Dream potion", ItemID.DREAM_POTION);
 
-		foodAll = new ItemRequirement("3 different types of food, 7 of two and 6 of one", -1, -1);
-		food14 = new ItemRequirement("14 food, 5x of 2 different types of food, and 4x of another", -1, -1);
-		food4 = new ItemRequirement("4 food, 1x of 2 different types of food, and 2x of another", -1, -1);
-		food6 = new ItemRequirement("6 food, 2x of 3 different types of food", -1, -1);
+		foodAll = new ItemRequirement("3 different types of food, 7 of two and 6 of one", -1, 20);
+		foodAll.setDisplayItemId(BankSlotIcons.getFood());
+		food14 = new ItemRequirement("14 food, 5x of 2 different types of food, and 4x of another", -1, 14);
+		food14.setDisplayItemId(BankSlotIcons.getFood());
+		food4 = new ItemRequirement("4 food, 1x of 2 different types of food, and 2x of another", -1, 4);
+		food4.setDisplayItemId(BankSlotIcons.getFood());
+		food6 = new ItemRequirement("6 food, 2x of 3 different types of food", -1, 6);
+		food6.setDisplayItemId(BankSlotIcons.getFood());
 		tinderbox = new ItemRequirement("Tinderbox", ItemID.TINDERBOX);
 
 		chest = new ItemRequirement("Cyrisus's chest", ItemID.CYRISUSS_CHEST);
 
 		combatGear = new ItemRequirement("Combat gear", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 	}
 
 	public void loadZones()
@@ -204,27 +216,27 @@ public class DreamMentor extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inLunarMine = new ZoneCondition(lunarMine);
-		inCyrisusRoom = new ZoneCondition(cyrisusRoom);
-		inArena = new ZoneCondition(arena);
+		inLunarMine = new ZoneRequirement(lunarMine);
+		inCyrisusRoom = new ZoneRequirement(cyrisusRoom);
+		inArena = new ZoneRequirement(arena);
 
-		at40Health = new VarbitCondition(3621, 40, Operation.GREATER_EQUAL);
-		at70Health = new VarbitCondition(3621, 70, Operation.GREATER_EQUAL);
-		at100Health = new VarbitCondition(3621, 100, Operation.GREATER_EQUAL);
+		at40Health = new VarbitRequirement(3621, 40, Operation.GREATER_EQUAL);
+		at70Health = new VarbitRequirement(3621, 70, Operation.GREATER_EQUAL);
+		at100Health = new VarbitRequirement(3621, 100, Operation.GREATER_EQUAL);
 
-		lookingAtBank = new WidgetTextCondition(260, 41, "Cyrisus's Bank");
+		lookingAtBank = new WidgetTextRequirement(260, 41, "Cyrisus's Bank");
 		gotItems = new CyrisusBankConditional();
-		cyrisusDressed = new VarbitCondition(3623, 100);
+		cyrisusDressed = new VarbitRequirement(3623, 100);
 
-		hasVialWater = new ItemRequirementCondition(dreamVialWater);
-		hasVialGout = new ItemRequirementCondition(dreamVialWithGoutweed);
-		hasAstralShard = new ItemRequirementCondition(astralRuneShards);
-		hasAstralPowder = new ItemRequirementCondition(groundAstralRune);
-		hasDreamPotion = new ItemRequirementCondition(dreamPotion);
+		hasVialWater = new ItemRequirements(dreamVialWater);
+		hasVialGout = new ItemRequirements(dreamVialWithGoutweed);
+		hasAstralShard = new ItemRequirements(astralRuneShards);
+		hasAstralPowder = new ItemRequirements(groundAstralRune);
+		hasDreamPotion = new ItemRequirements(dreamPotion);
 
-		litBrazier = new VarbitCondition(2430, 1);
+		litBrazier = new VarbitRequirement(2430, 1);
 
-		unlockedDream = new VarbitCondition(3625, 1);
+		unlockedDream = new VarbitRequirement(3625, 1);
 		inadaquacyNearby = new NpcCondition(NpcID.THE_INADEQUACY);
 		everlastingNearby = new NpcCondition(NpcID.THE_EVERLASTING);
 		untouchableNearby = new NpcCondition(NpcID.THE_UNTOUCHABLE);
@@ -244,12 +256,12 @@ public class DreamMentor extends BasicQuestHelper
 		feed4Food = new NpcStep(this, NpcID.FALLEN_MAN, new WorldPoint(2346, 10360, 2), "Feed the fallen man 4 food. You'll need to alternate between at least 3 different types of food.", food4);
 
 		talkToCyrisus2 = new NpcStep(this, NpcID.FALLEN_MAN_3466, new WorldPoint(2346, 10360, 2), "Talk to the fallen man.");
-		((NpcStep)(talkToCyrisus2)).addAlternateNpcs(NpcID.FALLEN_MAN);
+		((NpcStep) (talkToCyrisus2)).addAlternateNpcs(NpcID.FALLEN_MAN);
 		feed4Food2 = new NpcStep(this, NpcID.FALLEN_MAN_3466, new WorldPoint(2346, 10360, 2), "Feed the fallen man 4 food. You'll need to alternate between at least 3 different types of food.", food4);
 
 		// 3622 = spirit
 		talkToCyrisus3 = new NpcStep(this, NpcID.FALLEN_MAN_3466, new WorldPoint(2346, 10360, 2), "Talk to the fallen man.");
-		((NpcStep)(talkToCyrisus3)).addAlternateNpcs(NpcID.CYRISUS_3467);
+		((NpcStep) (talkToCyrisus3)).addAlternateNpcs(NpcID.CYRISUS_3467);
 		talkToCyrisus3.addDialogSteps("You're looking better now.", "Well, you look and sound more lively.");
 		talkToCyrisus3.addDialogSteps("Are you looking forward to getting out?", "That's the spirit!");
 		talkToCyrisus3.addDialogSteps("You seem like a nice guy.", "Just being honest.");
@@ -267,7 +279,7 @@ public class DreamMentor extends BasicQuestHelper
 
 		feed6Food = new NpcStep(this, NpcID.CYRISUS_3467, new WorldPoint(2346, 10360, 2), "Feed Cyrisus 6 food. You'll need to alternate between at least 3 different types of food.", food6);
 		talkToCyrisus4 = new NpcStep(this, NpcID.CYRISUS_3467, new WorldPoint(2346, 10360, 2), "Talk to Cyrisus.");
-		((NpcStep)(talkToCyrisus4)).addAlternateNpcs(NpcID.CYRISUS_3468);
+		((NpcStep) (talkToCyrisus4)).addAlternateNpcs(NpcID.CYRISUS_3468);
 		talkToCyrisus4.addDialogSteps("You're looking better now.", "Well, you look and sound more lively.");
 		talkToCyrisus4.addDialogSteps("Are you looking forward to getting out?", "That's the spirit!");
 		talkToCyrisus4.addDialogSteps("You seem like a nice guy.", "Just being honest.");
@@ -298,14 +310,14 @@ public class DreamMentor extends BasicQuestHelper
 
 		useFood3 = new NpcStep(this, NpcID.CYRISUS_3468, new WorldPoint(2346, 10360, 2), "Feed Cyrisus alternating types of food.", food6);
 		useFood3.addSubSteps(goBackDownAfterGearing);
-		((NpcStep)(useFood3)).addAlternateNpcs(NpcID.CYRISUS_3469);
-		((NpcStep)(useFood3)).addAlternateNpcs(NpcID.CYRISUS_3470);
-		((NpcStep)(useFood3)).addAlternateNpcs(NpcID.CYRISUS_3471);
+		((NpcStep) (useFood3)).addAlternateNpcs(NpcID.CYRISUS_3469);
+		((NpcStep) (useFood3)).addAlternateNpcs(NpcID.CYRISUS_3470);
+		((NpcStep) (useFood3)).addAlternateNpcs(NpcID.CYRISUS_3471);
 
 		supportCyrisusToRecovery = new NpcStep(this, NpcID.CYRISUS_3468, new WorldPoint(2346, 10360, 2), "Talk to Cyrisus until he's fully recovered.");
-		((NpcStep)(supportCyrisusToRecovery)).addAlternateNpcs(NpcID.CYRISUS_3469);
-		((NpcStep)(supportCyrisusToRecovery)).addAlternateNpcs(NpcID.CYRISUS_3470);
-		((NpcStep)(supportCyrisusToRecovery)).addAlternateNpcs(NpcID.CYRISUS_3471);
+		((NpcStep) (supportCyrisusToRecovery)).addAlternateNpcs(NpcID.CYRISUS_3469);
+		((NpcStep) (supportCyrisusToRecovery)).addAlternateNpcs(NpcID.CYRISUS_3470);
+		((NpcStep) (supportCyrisusToRecovery)).addAlternateNpcs(NpcID.CYRISUS_3471);
 		supportCyrisusToRecovery.addDialogSteps("You're looking better now.", "Well, you look and sound more lively.");
 		supportCyrisusToRecovery.addDialogSteps("Are you looking forward to getting out?", "That's the spirit!");
 		supportCyrisusToRecovery.addDialogSteps("You seem like a nice guy.", "Just being honest.");
@@ -322,7 +334,7 @@ public class DreamMentor extends BasicQuestHelper
 		supportCyrisusToRecovery.addDialogSteps("Tell me a bit about yourself.", "Fishing!");
 
 		talkAfterHelping = new NpcStep(this, NpcID.CYRISUS_3468, new WorldPoint(2346, 10360, 2), "Talk to Cyrisus.");
-		((NpcStep)(talkAfterHelping)).addAlternateNpcs(NpcID.CYRISUS_3469, NpcID.CYRISUS_3470, NpcID.CYRISUS_3471);
+		((NpcStep) (talkAfterHelping)).addAlternateNpcs(NpcID.CYRISUS_3469, NpcID.CYRISUS_3470, NpcID.CYRISUS_3471);
 		supportCyrisusToRecovery.addSubSteps(talkAfterHelping);
 
 		talkToOneiromancer = new NpcStep(this, NpcID.ONEIROMANCER, new WorldPoint(2151, 3867, 0), "Talk to the Oneiromancer in the south east of Lunar Isle.", sealOfPassage);
@@ -341,43 +353,53 @@ public class DreamMentor extends BasicQuestHelper
 		lightBrazier.addIcon(ItemID.TINDERBOX);
 
 		talkToCyrisusForDream = new NpcStep(this, NpcID.CYRISUS_3468, new WorldPoint(2075, 3912, 0), "Talk to Cyrisus to enter the dream.", combatGear, sealOfPassage);
-		((NpcStep)(talkToCyrisusForDream)).addAlternateNpcs(NpcID.CYRISUS_3469, NpcID.CYRISUS_3470, NpcID.CYRISUS_3471);
+		((NpcStep) (talkToCyrisusForDream)).addAlternateNpcs(NpcID.CYRISUS_3469, NpcID.CYRISUS_3470, NpcID.CYRISUS_3471);
 		talkToCyrisusForDream.addDialogStep("Yes, let's go!");
 		killInadaquacy = new NpcStep(this, NpcID.THE_INADEQUACY, new WorldPoint(1824, 5150, 2), "Kill The Inadequacy.");
-		killEverlasting = new NpcStep(this, NpcID.THE_EVERLASTING, new WorldPoint(1824, 5150, 2),"Kill The Everlasting. You can safe spot it by the entry book.");
-		killUntouchable = new NpcStep(this, NpcID.THE_UNTOUCHABLE, new WorldPoint(1824, 5150, 2),"Kill The Untouchable. You can safe spot it by the entry book.");
-		killIllusive = new NpcStep(this, NpcID.THE_ILLUSIVE, new WorldPoint(1824, 5150, 2),"Kill The Illusive.");
+		killEverlasting = new NpcStep(this, NpcID.THE_EVERLASTING, new WorldPoint(1824, 5150, 2), "Kill The Everlasting. You can safe spot it by the entry book.");
+		killUntouchable = new NpcStep(this, NpcID.THE_UNTOUCHABLE, new WorldPoint(1824, 5150, 2), "Kill The Untouchable. You can safe spot it by the entry book.");
+		killIllusive = new NpcStep(this, NpcID.THE_ILLUSIVE, new WorldPoint(1824, 5150, 2), "Kill The Illusive.");
 		returnToOneiromancer = new NpcStep(this, NpcID.ONEIROMANCER, new WorldPoint(2151, 3867, 0), "Talk to the Oneiromancer to finish the quest!", sealOfPassage);
 		returnToOneiromancer.addDialogStep("Cyrisus.");
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(sealOfPassage, foodAll, goutweed, astralRune, hammer, pestleAndMortar, tinderbox, combatGear));
+		return Arrays.asList(sealOfPassage, foodAll, goutweed, astralRune, hammer, pestleAndMortar, tinderbox, combatGear);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("The Inadequacy (level 343)", "The Everlasting (level 223, safespottable)", "The Untouchable (level 274, safespottable)", "The Illusive (level 108, won't attack you)"));
+		return Arrays.asList("The Inadequacy (level 343)", "The Everlasting (level 223, safespottable)", "The Untouchable (level 274, safespottable)", "The Illusive (level 108, won't attack you)");
 	}
 
 	@Override
-	public ArrayList<String> getNotes()
+	public List<String> getNotes()
 	{
-		return new ArrayList<>(Collections.singletonList("You will need to fight all 4 bosses in a row without prayers. It's recommended that you use magic as they all have very low magic defence."));
+		return Collections.singletonList("You will need to fight all 4 bosses in a row without prayers. It's recommended that you use magic as they all have very low magic defence.");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Helping Cyrisus", new ArrayList<>(Arrays.asList(goDownToCyrisus, enterCyrisusCave,
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Helping Cyrisus", Arrays.asList(goDownToCyrisus, enterCyrisusCave,
 			talkToCyrisus, feed4Food, talkToCyrisus2, feed4Food2, talkToCyrisus3, feed6Food, talkToCyrisus4, talkToJack, giveCyrisusGear,
-			useFood3, supportCyrisusToRecovery)), foodAll));
-		allSteps.add(new PanelDetails("Defeating his fear", new ArrayList<>(Arrays.asList(talkToOneiromancer, fillVialWithWater, addGoutweed,
-			useHammerOnAstralRune, usePestleOnShards, useGroundAstralOnVial, lightBrazier, talkToCyrisusForDream, killInadaquacy, killEverlasting, killUntouchable, killIllusive, returnToOneiromancer)), goutweed, astralRune, hammer, pestleAndMortar, tinderbox, combatGear));
+			useFood3, supportCyrisusToRecovery), foodAll));
+		allSteps.add(new PanelDetails("Defeating his fear", Arrays.asList(talkToOneiromancer, fillVialWithWater, addGoutweed,
+			useHammerOnAstralRune, usePestleOnShards, useGroundAstralOnVial, lightBrazier, talkToCyrisusForDream, killInadaquacy, killEverlasting, killUntouchable, killIllusive, returnToOneiromancer), goutweed, astralRune, hammer, pestleAndMortar, tinderbox, combatGear));
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new CombatLevelRequirement(85));
+		req.add(new QuestRequirement(QuestHelperQuest.LUNAR_DIPLOMACY, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.EADGARS_RUSE, QuestState.FINISHED));
+		return req;
 	}
 }

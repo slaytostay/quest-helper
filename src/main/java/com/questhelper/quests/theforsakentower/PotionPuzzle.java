@@ -25,24 +25,24 @@
 package com.questhelper.quests.theforsakentower;
 
 import com.google.inject.Inject;
-import com.questhelper.requirements.ItemRequirement;
 import com.questhelper.QuestHelperPlugin;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.QuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
 import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
 import com.questhelper.steps.OwnerStep;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.runelite.api.Client;
@@ -66,7 +66,7 @@ public class PotionPuzzle extends QuestStep implements OwnerStep
 	protected Client client;
 
 	// Potion 1
-	private static final Pattern LINE1 = Pattern.compile("^(.*) blend is directly");
+	private static final Pattern LINE1 = Pattern.compile("^(.*) is directly left of");
 	// Potion 2, potion 3
 	private static final Pattern LINE2 = Pattern.compile("^(.*) is next to (.*)[.]");
 	// Potion 5, potion 4
@@ -83,9 +83,9 @@ public class PotionPuzzle extends QuestStep implements OwnerStep
 
 	ItemRequirement[] fluids;
 
-	ConditionForStep hasOldNotes, inFirstFloor, inBasement, triedToActivate, cleanedRefinery, hasFluid1, hasFluid2, hasFluid3, hasFluid4, hasFluid5, inSecondFloor;
+	Requirement hasOldNotes, inFirstFloor, inBasement, triedToActivate, cleanedRefinery, hasFluid1, hasFluid2, hasFluid3, hasFluid4, hasFluid5, inSecondFloor;
 
-	ConditionForStep[] hasFluids;
+	Requirement[] hasFluids;
 
 	DetailedQuestStep goUpLadder, goUpStairs, goDownToFirstFloor, searchPotionCupboard, inspectRefinery, readNote, getFluid, useFluidOnRefinery, activateRefinery;
 
@@ -121,21 +121,21 @@ public class PotionPuzzle extends QuestStep implements OwnerStep
 
 	protected void updateSteps()
 	{
-		if (inBasement.checkCondition(client))
+		if (inBasement.check(client))
 		{
 			startUpStep(goUpLadder);
 		}
-		else if (inSecondFloor.checkCondition(client))
+		else if (inSecondFloor.check(client))
 		{
 			startUpStep(goDownToFirstFloor);
 		}
-		else if (inFirstFloor.checkCondition(client))
+		else if (inFirstFloor.check(client))
 		{
-			if (cleanedRefinery.checkCondition(client))
+			if (cleanedRefinery.check(client))
 			{
 				startUpStep(activateRefinery);
 			}
-			else if (!triedToActivate.checkCondition(client))
+			else if (!triedToActivate.check(client))
 			{
 				startUpStep(inspectRefinery);
 			}
@@ -152,7 +152,7 @@ public class PotionPuzzle extends QuestStep implements OwnerStep
 					fluidFound = true;
 				}
 
-				if (hasFluids[correctFluid].checkCondition(client))
+				if (hasFluids[correctFluid].check(client))
 				{
 					startUpStep(useFluidOnRefinery);
 				}
@@ -161,7 +161,7 @@ public class PotionPuzzle extends QuestStep implements OwnerStep
 					startUpStep(getFluid);
 				}
 			}
-			else if (hasOldNotes.checkCondition(client))
+			else if (hasOldNotes.check(client))
 			{
 				startUpStep(readNote);
 			}
@@ -256,19 +256,19 @@ public class PotionPuzzle extends QuestStep implements OwnerStep
 
 	private void setupConditions()
 	{
-		inFirstFloor = new ZoneCondition(firstFloor);
-		inSecondFloor = new ZoneCondition(secondFloor);
-		inBasement = new ZoneCondition(basement);
+		inFirstFloor = new ZoneRequirement(firstFloor);
+		inSecondFloor = new ZoneRequirement(secondFloor);
+		inBasement = new ZoneRequirement(basement);
 
-		triedToActivate = new VarbitCondition(7799, 2);
-		cleanedRefinery = new VarbitCondition(7799, 3);
-		hasOldNotes = new ItemRequirementCondition(oldNotes);
-		hasFluid1 = new ItemRequirementCondition(fluid1);
-		hasFluid2 = new ItemRequirementCondition(fluid2);
-		hasFluid3 = new ItemRequirementCondition(fluid3);
-		hasFluid4 = new ItemRequirementCondition(fluid4);
-		hasFluid5 = new ItemRequirementCondition(fluid5);
-		hasFluids = new ConditionForStep[]{null, hasFluid1, hasFluid2, hasFluid3, hasFluid4, hasFluid5 };
+		triedToActivate = new VarbitRequirement(7799, 2);
+		cleanedRefinery = new VarbitRequirement(7799, 3);
+		hasOldNotes = new ItemRequirements(oldNotes);
+		hasFluid1 = new ItemRequirements(fluid1);
+		hasFluid2 = new ItemRequirements(fluid2);
+		hasFluid3 = new ItemRequirements(fluid3);
+		hasFluid4 = new ItemRequirements(fluid4);
+		hasFluid5 = new ItemRequirements(fluid5);
+		hasFluids = new Requirement[]{null, hasFluid1, hasFluid2, hasFluid3, hasFluid4, hasFluid5 };
 	}
 
 	private void setupZones()
@@ -296,11 +296,11 @@ public class PotionPuzzle extends QuestStep implements OwnerStep
 		activateRefinery.addDialogStep("Yes.");
 	}
 
-	public ArrayList<PanelDetails> panelDetails()
+	public List<PanelDetails> panelDetails()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 		PanelDetails potionPanel = new PanelDetails("Potion puzzle",
-			new ArrayList<>(Arrays.asList(goUpStairs, inspectRefinery, searchPotionCupboard, readNote, getFluid, useFluidOnRefinery, activateRefinery)));
+			Arrays.asList(goUpStairs, inspectRefinery, searchPotionCupboard, readNote, getFluid, useFluidOnRefinery, activateRefinery));
 		potionPanel.setLockingStep(this);
 		allSteps.add(potionPanel);
 		return allSteps;

@@ -24,34 +24,36 @@
  */
 package com.questhelper.quests.biohazard;
 
-import com.questhelper.requirements.ItemRequirement;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.questhelpers.QuestUtil;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.ObjectCondition;
+import com.questhelper.requirements.util.LogicType;
 import com.questhelper.steps.ConditionalStep;
-import com.questhelper.steps.DetailedOwnerStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.ObjectCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -59,21 +61,27 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class Biohazard extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement gasMask, birdFeed, birdCage, rottenApple, medicalGown, key, distillator, plagueSample, ethenea, liquidHoney, sulphuricBroline,
-		touchPaper, priestGownTop, priestGownBottom, teleports, priestGownBottomEquipped, priestGownTopEquipped, medicalGownEquipped, birdCageHighlighted;
+		touchPaper, priestGownTop, priestGownBottom, priestGownBottomEquipped, priestGownTopEquipped, medicalGownEquipped,
+		birdCageHighlighted;
 
-	ConditionForStep hasBirdFeed, hasPigeonCage, inMournerBackyard, inWestArdougne, hasRottenApple, hasDistillator,
+	//Items Recommended
+	ItemRequirement teleportVarrock, teleportArdougne, teleportRimmington;
+
+	Requirement hasBirdFeed, hasPigeonCage, inMournerBackyard, inWestArdougne, hasRottenApple, hasDistillator,
 		inMournerBuilding, upstairsInMournerBuilding, hasMedicalGown, hasKey, hasLiquidHoney, hasEthenea, hasBroline, hasChemicals, inVarrockSouthEast,
 		hasPriestSet, isUpstairsArdougneCastle;
 
 	QuestStep talkToElena, talkToJerico, getBirdFeed, getBirdFeed2, getPigeonCage, investigateWatchtower, clickPigeonCage, talkToOmartAgain,
 		talkToOmartToReturnToWest, talkToKilron, enterBackyardOfHeadquaters, pickupRottenApple, useRottenAppleOnCauldron, searchSarahsCupboard,
 		searchSarahsCupboard2, enterMournerHeadquaters, goUpstairsInMournerBuilding, killMourner, searchCrateForDistillator,
-	goBackDownstairsInMournersHeadquaters, talkToElenaWithDistillator, talkToTheChemist, goToVarrock, vinciVarrock, chancyVarrock, hopsVarrock,
-	talkToAsyff, talkToGuidor, returnToElenaAfterSampling, informTheKing, informTheKingGoUpstairs;
+		goBackDownstairsInMournersHeadquaters, talkToElenaWithDistillator, talkToTheChemist, goToVarrock, vinciVarrock, chancyVarrock, hopsVarrock,
+		talkToAsyff, talkToGuidor, returnToElenaAfterSampling, informTheKing, informTheKingGoUpstairs;
 
 	GiveIngredientsToHelpersStep giveChemicals;
 
+	//Zones
 	Zone westArdougne1, westArdougne2, westArdougne3, mournerBackyard, mournerBuilding1, mournerBuilding2, mournersBuildingUpstairs, varrockSouthEast, upstairsArdougneCastle;
 
 	@Override
@@ -157,7 +165,7 @@ public class Biohazard extends BasicQuestHelper
 	public void setupItemRequirements()
 	{
 		gasMask = new ItemRequirement("Gas mask", ItemID.GAS_MASK, 1, true);
-		gasMask.setTip("You can get another from the cupboard in Edmond's house west of Elena's house.");
+		gasMask.setTooltip("You can get another from the cupboard in Edmond's house west of Elena's house.");
 		birdCage = new ItemRequirement("Pigeon cage", ItemID.PIGEON_CAGE);
 		birdCageHighlighted = new ItemRequirement("Pigeon cage", ItemID.PIGEON_CAGE);
 		birdCageHighlighted.setHighlightInInventory(true);
@@ -169,54 +177,56 @@ public class Biohazard extends BasicQuestHelper
 		key = new ItemRequirement("Key", ItemID.KEY_423);
 		distillator = new ItemRequirement("Distillator", ItemID.DISTILLATOR);
 		plagueSample = new ItemRequirement("Plague sample", ItemID.PLAGUE_SAMPLE);
-		plagueSample.setTip("You can get another from Elena in East Ardougne.");
+		plagueSample.setTooltip("You can get another from Elena in East Ardougne.");
 		ethenea = new ItemRequirement("Ethenea", ItemID.ETHENEA);
-		ethenea.setTip("You can get another from Elena in East Ardougne.");
+		ethenea.setTooltip("You can get another from Elena in East Ardougne.");
 		liquidHoney = new ItemRequirement("Liquid honey", ItemID.LIQUID_HONEY);
-		liquidHoney.setTip("You can get another from Elena in East Ardougne.");
+		liquidHoney.setTooltip("You can get another from Elena in East Ardougne.");
 		sulphuricBroline = new ItemRequirement("Sulphuric broline", ItemID.SULPHURIC_BROLINE);
-		sulphuricBroline.setTip("You can get another from Elena in East Ardougne.");
+		sulphuricBroline.setTooltip("You can get another from Elena in East Ardougne.");
 		touchPaper = new ItemRequirement("Touch paper", ItemID.TOUCH_PAPER);
-		touchPaper.setTip("You can get more from the Chemist in Rimmington.");
+		touchPaper.setTooltip("You can get more from the Chemist in Rimmington.");
 		priestGownBottom = new ItemRequirement("Priest gown (bottom)", ItemID.PRIEST_GOWN_428);
 		priestGownTop = new ItemRequirement("Priest gown (top)", ItemID.PRIEST_GOWN);
 		priestGownBottomEquipped = new ItemRequirement("Priest gown (bottom)", ItemID.PRIEST_GOWN_428, 1, true);
 		priestGownTopEquipped = new ItemRequirement("Priest gown (top)", ItemID.PRIEST_GOWN, 1, true);
-		teleports = new ItemRequirement("Teleports to Varrock, Ardougne, and Rimmington.", -1, -1);
+		teleportVarrock = new ItemRequirement("Teleport to Varrock", ItemID.VARROCK_TELEPORT);
+		teleportArdougne = new ItemRequirement("Teleport to Ardougne", ItemID.ARDOUGNE_TELEPORT, 3);
+		teleportRimmington = new ItemRequirement("Teleport to Rimmington", ItemID.RIMMINGTON_TELEPORT);
 	}
 
 	public void loadZones()
 	{
-		mournerBackyard = new Zone(new WorldPoint(2542, 3328,0), new WorldPoint(2555, 3333, 0));
-		westArdougne1 = new Zone(new WorldPoint(2460,3279,0), new WorldPoint(2556, 3334,2));
-		westArdougne2 = new Zone(new WorldPoint(2434,3305,0), new WorldPoint(2464, 3323,2));
-		westArdougne3 = new Zone(new WorldPoint(2510,3265,0), new WorldPoint(2556, 3280,2));
-		mournerBuilding1 = new Zone(new WorldPoint(2547, 3321,0), new WorldPoint(2555, 3327, 0));
-		mournerBuilding2 = new Zone(new WorldPoint(2542, 3324,0), new WorldPoint(2546, 3327, 0));
-		mournersBuildingUpstairs = new Zone(new WorldPoint(2542, 3321,1), new WorldPoint(2555, 3327, 1));
-		varrockSouthEast = new Zone(new WorldPoint(3265, 3376,0), new WorldPoint(3287, 3407, 1));
+		mournerBackyard = new Zone(new WorldPoint(2542, 3328, 0), new WorldPoint(2555, 3333, 0));
+		westArdougne1 = new Zone(new WorldPoint(2460, 3279, 0), new WorldPoint(2556, 3334, 2));
+		westArdougne2 = new Zone(new WorldPoint(2434, 3305, 0), new WorldPoint(2464, 3323, 2));
+		westArdougne3 = new Zone(new WorldPoint(2510, 3265, 0), new WorldPoint(2556, 3280, 2));
+		mournerBuilding1 = new Zone(new WorldPoint(2547, 3321, 0), new WorldPoint(2555, 3327, 0));
+		mournerBuilding2 = new Zone(new WorldPoint(2542, 3324, 0), new WorldPoint(2546, 3327, 0));
+		mournersBuildingUpstairs = new Zone(new WorldPoint(2542, 3321, 1), new WorldPoint(2555, 3327, 1));
+		varrockSouthEast = new Zone(new WorldPoint(3265, 3376, 0), new WorldPoint(3287, 3407, 1));
 		upstairsArdougneCastle = new Zone(new WorldPoint(2570, 3283, 1), new WorldPoint(2590, 3310, 1));
 	}
 
 	public void setupConditions()
 	{
-		hasPigeonCage = new ItemRequirementCondition(birdCage);
-		hasBirdFeed = new ItemRequirementCondition(birdFeed);
-		hasRottenApple = new ItemRequirementCondition(rottenApple);
-		inWestArdougne = new ZoneCondition(westArdougne1, westArdougne2, westArdougne3);
-		inMournerBackyard = new ZoneCondition(mournerBackyard);
-		hasMedicalGown = new ItemRequirementCondition(medicalGown);
-		inMournerBuilding = new ZoneCondition(mournerBuilding1, mournerBuilding2);
-		upstairsInMournerBuilding = new ZoneCondition(mournersBuildingUpstairs);
-		hasKey = new ItemRequirementCondition(key);
-		hasDistillator = new ItemRequirementCondition(distillator);
-		hasLiquidHoney = new ItemRequirementCondition(liquidHoney);
-		hasEthenea = new ItemRequirementCondition(ethenea);
-		hasBroline = new ItemRequirementCondition(sulphuricBroline);
-		hasChemicals = new ItemRequirementCondition(LogicType.OR, ethenea, liquidHoney, sulphuricBroline);
-		inVarrockSouthEast = new ZoneCondition(varrockSouthEast);
-		hasPriestSet = new ItemRequirementCondition(priestGownBottom, priestGownTop);
-		isUpstairsArdougneCastle = new ZoneCondition(upstairsArdougneCastle);
+		hasPigeonCage = new ItemRequirements(birdCage);
+		hasBirdFeed = new ItemRequirements(birdFeed);
+		hasRottenApple = new ItemRequirements(rottenApple);
+		inWestArdougne = new ZoneRequirement(westArdougne1, westArdougne2, westArdougne3);
+		inMournerBackyard = new ZoneRequirement(mournerBackyard);
+		hasMedicalGown = new ItemRequirements(medicalGown);
+		inMournerBuilding = new ZoneRequirement(mournerBuilding1, mournerBuilding2);
+		upstairsInMournerBuilding = new ZoneRequirement(mournersBuildingUpstairs);
+		hasKey = new ItemRequirements(key);
+		hasDistillator = new ItemRequirements(distillator);
+		hasLiquidHoney = new ItemRequirements(liquidHoney);
+		hasEthenea = new ItemRequirements(ethenea);
+		hasBroline = new ItemRequirements(sulphuricBroline);
+		hasChemicals = new ItemRequirements(LogicType.OR, "", ethenea, liquidHoney, sulphuricBroline);
+		inVarrockSouthEast = new ZoneRequirement(varrockSouthEast);
+		hasPriestSet = new ItemRequirements(priestGownBottom, priestGownTop);
+		isUpstairsArdougneCastle = new ZoneRequirement(upstairsArdougneCastle);
 	}
 
 	public void setupSteps()
@@ -295,7 +305,7 @@ public class Biohazard extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Mourner (level 13)");
@@ -303,7 +313,7 @@ public class Biohazard extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(gasMask);
@@ -311,30 +321,40 @@ public class Biohazard extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
-		reqs.add(teleports);
+		reqs.add(teleportArdougne);
+		reqs.add(teleportRimmington);
+		reqs.add(teleportVarrock);
 		return reqs;
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Start the quest", new ArrayList<>(Collections.singletonList(talkToElena)), gasMask));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Start the quest", Collections.singletonList(talkToElena), gasMask));
 		allSteps.add(new PanelDetails("Getting back into West Ardougne",
-			new ArrayList<>(Arrays.asList(talkToJerico, getBirdFeed, getPigeonCage, investigateWatchtower, clickPigeonCage, talkToOmartAgain))));
+			Arrays.asList(talkToJerico, getBirdFeed, getPigeonCage, investigateWatchtower, clickPigeonCage, talkToOmartAgain)));
 		allSteps.add(new PanelDetails("Getting the Distillator",
 			enterBackyardOfHeadquaters, pickupRottenApple, useRottenAppleOnCauldron, searchSarahsCupboard, enterMournerHeadquaters,
-				goUpstairsInMournerBuilding, searchCrateForDistillator, talkToElenaWithDistillator));
+			goUpstairsInMournerBuilding, searchCrateForDistillator, talkToElenaWithDistillator));
 
-		ArrayList<QuestStep> testingSteps = new ArrayList<>(Arrays.asList(talkToTheChemist, goToVarrock, talkToAsyff, talkToGuidor));
+		List<QuestStep> testingSteps = QuestUtil.toArrayList(talkToTheChemist, goToVarrock, talkToAsyff, talkToGuidor);
 		testingSteps.addAll(giveChemicals.getDisplaySteps());
 		testingSteps.addAll(Arrays.asList(goToVarrock, talkToAsyff, talkToGuidor));
 		allSteps.add(new PanelDetails("Testing the plague sample", testingSteps, plagueSample, liquidHoney, ethenea, sulphuricBroline));
 
 		allSteps.add(new PanelDetails("Revealing the truth", returnToElenaAfterSampling, informTheKing));
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		List<Requirement> requirements = new ArrayList<>();
+		requirements.add(new QuestRequirement(QuestHelperQuest.PLAGUE_CITY, QuestState.FINISHED));
+		return requirements;
 	}
 }

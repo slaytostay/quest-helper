@@ -1,12 +1,10 @@
 package com.questhelper.quests.lunardiplomacy;
 
 import com.questhelper.questhelpers.QuestHelper;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
 import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.VarbitCondition;
-import java.util.ArrayList;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.coords.WorldPoint;
@@ -15,7 +13,7 @@ import net.runelite.client.eventbus.Subscribe;
 
 public class BringLunarItems extends NpcStep
 {
-	ConditionForStep handedInHelm, handedInCape, handedInAmulet, handedInTorso, handedInGloves, handedInBoots, handedInLegs, handedInRing;
+	Requirement handedInHelm, handedInCape, handedInAmulet, handedInTorso, handedInGloves, handedInBoots, handedInLegs, handedInRing;
 
 	ItemRequirement helm, cape, amulet, torso, gloves, boots, legs, ring, sealOfPassage;
 
@@ -42,16 +40,16 @@ public class BringLunarItems extends NpcStep
 	public void setupConditions()
 	{
 		sealOfPassage = new ItemRequirement("Seal of passage", ItemID.SEAL_OF_PASSAGE);
-		sealOfPassage.setTip("You can get another from Brundt");
+		sealOfPassage.setTooltip("You can get another from Brundt");
 
-		handedInHelm = new VarbitCondition(2436, 1);
-		handedInCape = new VarbitCondition(2437, 1);
-		handedInAmulet = new VarbitCondition(2438, 1);
-		handedInTorso = new VarbitCondition(2439, 1);
-		handedInGloves = new VarbitCondition(2441, 1);
-		handedInBoots = new VarbitCondition(2440, 1);
-		handedInLegs = new VarbitCondition(2442, 1);
-		handedInRing = new VarbitCondition(2443, 1);
+		handedInHelm = new VarbitRequirement(2436, 1);
+		handedInCape = new VarbitRequirement(2437, 1);
+		handedInAmulet = new VarbitRequirement(2438, 1);
+		handedInTorso = new VarbitRequirement(2439, 1);
+		handedInGloves = new VarbitRequirement(2441, 1);
+		handedInBoots = new VarbitRequirement(2440, 1);
+		handedInLegs = new VarbitRequirement(2442, 1);
+		handedInRing = new VarbitRequirement(2443, 1);
 	}
 
 	@Override
@@ -71,40 +69,40 @@ public class BringLunarItems extends NpcStep
 
 	public void updateStep()
 	{
-		this.requirements = new ArrayList<>();
-		this.requirements.add(sealOfPassage);
+		emptyRequirements();
+		addRequirement(sealOfPassage);
 
-		if (!handedInAmulet.checkCondition(client))
+		if (!handedInAmulet.check(client))
 		{
-			this.requirements.add(amulet);
+			addRequirement(amulet);
 		}
-		if (!handedInBoots.checkCondition(client))
+		if (!handedInBoots.check(client))
 		{
-			this.requirements.add(boots);
+			addRequirement(boots);
 		}
-		if (!handedInCape.checkCondition(client))
+		if (!handedInCape.check(client))
 		{
-			this.requirements.add(cape);
+			addRequirement(cape);
 		}
-		if (!handedInGloves.checkCondition(client))
+		if (!handedInGloves.check(client))
 		{
-			this.requirements.add(gloves);
+			addRequirement(gloves);
 		}
-		if (!handedInHelm.checkCondition(client))
+		if (!handedInHelm.check(client))
 		{
-			this.requirements.add(helm);
+			addRequirement(helm);
 		}
-		if (!handedInLegs.checkCondition(client))
+		if (!handedInLegs.check(client))
 		{
-			this.requirements.add(legs);
+			addRequirement(legs);
 		}
-		if (!handedInRing.checkCondition(client))
+		if (!handedInRing.check(client))
 		{
-			this.requirements.add(ring);
+			addRequirement(ring);
 		}
-		if (!handedInTorso.checkCondition(client))
+		if (!handedInTorso.check(client))
 		{
-			this.requirements.add(torso);
+			addRequirement(torso);
 		}
 	}
 }

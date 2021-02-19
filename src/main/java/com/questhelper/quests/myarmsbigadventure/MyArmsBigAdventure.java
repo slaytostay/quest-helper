@@ -24,44 +24,56 @@
  */
 package com.questhelper.quests.myarmsbigadventure;
 
+import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ItemStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.MY_ARMS_BIG_ADVENTURE
 )
 public class MyArmsBigAdventure extends BasicQuestHelper
 {
-	ItemRequirement goutLump, bucket, bucketHighlight, farmingManual, ugthanki3, rake, dibber, spade, hardyGout, superCompost, combatGear, plantCure, rakeHighlight,
-		dibberHighlight, hardyGoutHighlight, superCompostHighlight, spadeHighlight, plantCureHighlight, supercompost7, cureOrCompost, rakeHead, rakeHandle;
+	//Items Required
+	ItemRequirement goutLump, bucket, bucketHighlight, farmingManual, ugthanki3, rake, dibber, spade, hardyGout, superCompost,
+		rakeHighlight, dibberHighlight, hardyGoutHighlight, superCompostHighlight, spadeHighlight, plantCureHighlight,
+		supercompost7, cureOrCompost, rakeHead, rakeHandle, climbingBoots, superCompost8;
 
-	ConditionForStep inStrongholdFloor1, inStrongholdFloor2, inPrison, hasLump, onRoof, added3Dung, added7Comp, usedRake, givenCompost, givenHardy, givenDibber,
+	//Items Recommended
+	ItemRequirement food, prayerPotions, combatGear, gamesNecklace;
+
+	Requirement inStrongholdFloor1, inStrongholdFloor2, inPrison, hasLump, onRoof, added3Dung, added7Comp, usedRake, givenCompost, givenHardy, givenDibber,
 		givenCure, hasRakeHeadAndHandle, rakeHeadNearby, babyNearby, giantNearby;
 
 	DetailedQuestStep enterStronghold, goDownToChef, goUpToChef, talkToBurntmeat, talkToMyArm, useBucketOnPot, enterStrongholdWithLump, goDownToArmWithLump, goUpToArmWithLump, talkToArmWithLump,
@@ -71,6 +83,7 @@ public class MyArmsBigAdventure extends BasicQuestHelper
 		talkToMyArmAfterGrow, killBabyRoc, killGiantRoc, giveSpade, goDownFromMyArmToBurntmeat, goDownToBurntmeat, talkToBurntmeatAgain, goUpToMyArmFinish, talkToMyArmAfterHarvest,
 		goUpFromBurntmeatFinish, talkToMyArmFinish, enterStrongholdFinish;
 
+	//Zones
 	Zone strongholdFloor1, strongholdFloor2, prison, roof;
 
 	@Override
@@ -216,7 +229,7 @@ public class MyArmsBigAdventure extends BasicQuestHelper
 		bucketHighlight = new ItemRequirement("Bucket", ItemID.BUCKET);
 		bucketHighlight.setHighlightInInventory(true);
 		farmingManual = new ItemRequirement("Farming manual", ItemID.FARMING_MANUAL);
-		farmingManual.setTip("You can get another from My Arm on the Troll Stronghold roof");
+		farmingManual.setTooltip("You can get another from My Arm on the Troll Stronghold roof");
 		farmingManual.setHighlightInInventory(true);
 		ugthanki3 = new ItemRequirement("Ugthanki dung", ItemID.UGTHANKI_DUNG, 3);
 		ugthanki3.setHighlightInInventory(true);
@@ -225,10 +238,13 @@ public class MyArmsBigAdventure extends BasicQuestHelper
 		dibber = new ItemRequirement("Seed dibber", ItemID.SEED_DIBBER);
 		spade = new ItemRequirement("Spade", ItemID.SPADE);
 		superCompost = new ItemRequirement("Supercompost", ItemID.SUPERCOMPOST);
+		superCompost.addAlternates(ItemID.ULTRACOMPOST);
 		hardyGout = new ItemRequirement("Hardy gout tubers", ItemID.HARDY_GOUT_TUBERS);
-		hardyGout.setTip("You can get more from Murcaily");
-		combatGear = new ItemRequirement("Combat gear, food + potions", -1, -1);
-		plantCure = new ItemRequirement("Plant cure", ItemID.PLANT_CURE);
+		hardyGout.setTooltip("You can get more from Murcaily");
+		combatGear = new ItemRequirement("Combat gear", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
+		food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
+		prayerPotions = new ItemRequirement("Prayer potions", ItemCollections.getPrayerPotions(), -1);
 
 		rakeHighlight = new ItemRequirement("Rake", ItemID.RAKE);
 		rakeHighlight.setHighlightInInventory(true);
@@ -237,14 +253,19 @@ public class MyArmsBigAdventure extends BasicQuestHelper
 		spadeHighlight = new ItemRequirement("Spade", ItemID.SPADE);
 		spadeHighlight.setHighlightInInventory(true);
 		superCompostHighlight = new ItemRequirement("Supercompost", ItemID.SUPERCOMPOST);
+		superCompostHighlight.addAlternates(ItemID.ULTRACOMPOST);
 		superCompostHighlight.setHighlightInInventory(true);
 		hardyGoutHighlight = new ItemRequirement("Hardy gout tubers", ItemID.HARDY_GOUT_TUBERS);
-		hardyGoutHighlight.setTip("You can get more from Murcaily");
+		hardyGoutHighlight.setTooltip("You can get more from Murcaily");
 		hardyGoutHighlight.setHighlightInInventory(true);
 		plantCureHighlight = new ItemRequirement("Plant cure", ItemID.PLANT_CURE);
 		plantCureHighlight.setHighlightInInventory(true);
 
 		supercompost7 = new ItemRequirement("Supercompost", ItemID.SUPERCOMPOST, 7);
+		supercompost7.addAlternates(ItemID.ULTRACOMPOST);
+		superCompost8 = new ItemRequirement("Supercompost", ItemID.SUPERCOMPOST, 8);
+		superCompost8.addAlternates(ItemID.ULTRACOMPOST);
+		climbingBoots = new ItemRequirement("Climbing boots", ItemID.CLIMBING_BOOTS);
 
 		cureOrCompost = new ItemRequirement("Either super/ultra compost, or a plant cure", ItemID.PLANT_CURE);
 		cureOrCompost.addAlternates(ItemID.SUPERCOMPOST, ItemID.ULTRACOMPOST);
@@ -253,6 +274,9 @@ public class MyArmsBigAdventure extends BasicQuestHelper
 		rakeHead.setHighlightInInventory(true);
 		rakeHandle = new ItemRequirement("Rake handle", ItemID.RAKE_HANDLE);
 		rakeHandle.setHighlightInInventory(true);
+
+		gamesNecklace = new ItemRequirement("Games necklace for Burthorpe teleport",
+			ItemCollections.getGamesNecklaces());
 	}
 
 	public void loadZones()
@@ -265,24 +289,24 @@ public class MyArmsBigAdventure extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inStrongholdFloor1 = new ZoneCondition(strongholdFloor1);
-		inStrongholdFloor2 = new ZoneCondition(strongholdFloor2);
-		inPrison = new ZoneCondition(prison);
-		hasLump = new ItemRequirementCondition(goutLump);
-		onRoof = new ZoneCondition(roof);
+		inStrongholdFloor1 = new ZoneRequirement(strongholdFloor1);
+		inStrongholdFloor2 = new ZoneRequirement(strongholdFloor2);
+		inPrison = new ZoneRequirement(prison);
+		hasLump = new ItemRequirements(goutLump);
+		onRoof = new ZoneRequirement(roof);
 
-		added3Dung = new VarbitCondition(2791, 3);
-		added7Comp = new VarbitCondition(2792, 7);
+		added3Dung = new VarbitRequirement(2791, 3);
+		added7Comp = new VarbitRequirement(2792, 7);
 
-		givenHardy = new VarbitCondition(2794, 1);
-		usedRake = new VarbitCondition(2799, 6);
-		givenCompost = new VarbitCondition(2799, 7);
+		givenHardy = new VarbitRequirement(2794, 1);
+		usedRake = new VarbitRequirement(2799, 6);
+		givenCompost = new VarbitRequirement(2799, 7);
 
-		givenDibber = new VarbitCondition(2799, 9, Operation.GREATER_EQUAL);
-		givenCure = new VarbitCondition(2798, 1);
+		givenDibber = new VarbitRequirement(2799, 9, Operation.GREATER_EQUAL);
+		givenCure = new VarbitRequirement(2798, 1);
 
-		hasRakeHeadAndHandle = new Conditions(new ItemRequirementCondition(rakeHead), new ItemRequirementCondition(rakeHandle));
-		rakeHeadNearby = new ItemCondition(rakeHead);
+		hasRakeHeadAndHandle = new Conditions(new ItemRequirements(rakeHead), new ItemRequirements(rakeHandle));
+		rakeHeadNearby = new ItemOnTileRequirement(rakeHead);
 
 		babyNearby = new NpcCondition(NpcID.BABY_ROC);
 		giantNearby = new NpcCondition(NpcID.GIANT_ROC);
@@ -385,9 +409,11 @@ public class MyArmsBigAdventure extends BasicQuestHelper
 		giveCure = new NpcStep(this, NpcID.MY_ARM_742, new WorldPoint(2829, 3695, 0), "Give My Arm some plant cure.", plantCureHighlight);
 		giveCure.addIcon(ItemID.PLANT_CURE);
 
-		talkToMyArmAfterGrow = new NpcStep(this, NpcID.MY_ARM_742, new WorldPoint(2829, 3695, 0), "Talk to My Arm. Be prepared to fight a baby and giant Roc.");
+		talkToMyArmAfterGrow = new NpcStep(this, NpcID.MY_ARM_742, new WorldPoint(2829, 3695, 0),
+			"Talk to My Arm. Be prepared to fight a baby and giant Roc.");
 		killBabyRoc = new NpcStep(this, NpcID.BABY_ROC, "Kill the Baby Roc.");
-		talkToMyArmAfterBaby = new NpcStep(this, NpcID.MY_ARM_742, new WorldPoint(2829, 3695, 0), "Talk to My Arm. Be prepared to fight the Giant Roc.");
+		talkToMyArmAfterBaby = new NpcStep(this, NpcID.MY_ARM_742, new WorldPoint(2829, 3695, 0),
+			"Talk to My Arm. Be prepared to fight the Giant Roc.");
 
 		killGiantRoc = new NpcStep(this, NpcID.GIANT_ROC, "Kill the Giant Roc.");
 		talkToMyArmAfterHarvest = new NpcStep(this, NpcID.MY_ARM_742, new WorldPoint(2829, 3695, 0), "Talk to My Arm.");
@@ -398,7 +424,8 @@ public class MyArmsBigAdventure extends BasicQuestHelper
 		goDownToBurntmeat = new ObjectStep(this, ObjectID.STONE_STAIRCASE_3789, new WorldPoint(2844, 10052, 2), "Go talk to Burntmeat.");
 		goDownToBurntmeat.setWorldMapPoint(new WorldPoint(2971, 10115, 1));
 
-		talkToBurntmeatAgain = new NpcStep(this, NpcID.BURNTMEAT, new WorldPoint(2845, 10057, 1), "Talk to Burntmeat in the Troll Stronghold.");
+		talkToBurntmeatAgain = new NpcStep(this, NpcID.BURNTMEAT, new WorldPoint(2845, 10057, 1),
+			"Talk to Burntmeat in the Troll Stronghold.");
 		talkToBurntmeatAgain.setWorldMapPoint(new WorldPoint(2911, 10087, 1));
 		talkToBurntmeatAgain.addSubSteps(goDownFromMyArmToBurntmeat, goDownToBurntmeat);
 
@@ -415,14 +442,19 @@ public class MyArmsBigAdventure extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(ugthanki3, supercompost7, rake, dibber, spade, bucket, cureOrCompost));
+		return Arrays.asList(climbingBoots, ugthanki3, superCompost8, rake, dibber, spade, bucket);
 	}
 
+	@Override
+	public List<ItemRequirement> getItemRecommended()
+	{
+		return Arrays.asList(combatGear, food, prayerPotions, gamesNecklace);
+	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Baby Roc (level 75)");
@@ -431,15 +463,31 @@ public class MyArmsBigAdventure extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(talkToBurntmeat, talkToMyArm))));
-		allSteps.add(new PanelDetails("Preparing to grow", new ArrayList<>(Arrays.asList(useBucketOnPot, talkToArmWithLump, talkToMyArmUpstairs, readBook, talkToMyArmAfterReading,
-			useUgthankiDung, useCompost, talkToMyArmAfterFertilising)), bucket, supercompost7, ugthanki3));
-		allSteps.add(new PanelDetails("Karamja adventure", new ArrayList<>(Arrays.asList(talkToBarnaby, talkAfterBoat, talkToMyArmAtTai, talkToMurcaily, talkToMyArmAfterMurcaily))));
-		allSteps.add(new PanelDetails("Troll farming", new ArrayList<>(Arrays.asList(talkToMyArmForFight, giveRake, giveSupercompost, giveHardyGout, giveDibber, talkToMyArmAfterGrow, killBabyRoc, killGiantRoc, giveSpade, talkToMyArmAfterHarvest, talkToBurntmeatAgain, talkToMyArmFinish)), combatGear, rake, superCompost, dibber, plantCure));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.EADGARS_RUSE, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.THE_FEUD, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.JUNGLE_POTION, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.WOODCUTTING, 10));
+		req.add(new SkillRequirement(Skill.FARMING, 29, true));
+		// 907 is the Varbit for tai bwo wannai cleanup favour
+		req.add(new VarbitRequirement(907, Operation.GREATER_EQUAL, 60, "At least 60% favor in the Tai Bwo Wannai Cleanup minigame"));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(talkToBurntmeat, talkToMyArm), climbingBoots));
+		allSteps.add(new PanelDetails("Preparing to grow", Arrays.asList(useBucketOnPot, talkToArmWithLump,
+			talkToMyArmUpstairs, readBook, talkToMyArmAfterReading, useUgthankiDung, useCompost, talkToMyArmAfterFertilising),
+			climbingBoots, bucket, supercompost7, ugthanki3));
+		allSteps.add(new PanelDetails("Karamja adventure", Arrays.asList(talkToBarnaby, talkAfterBoat, talkToMyArmAtTai, talkToMurcaily, talkToMyArmAfterMurcaily)));
+		allSteps.add(new PanelDetails("Troll farming", Arrays.asList(talkToMyArmForFight, giveRake, giveSupercompost, giveHardyGout,
+			giveDibber, talkToMyArmAfterGrow, killBabyRoc, killGiantRoc, giveSpade, talkToMyArmAfterHarvest, talkToBurntmeatAgain,
+			talkToMyArmFinish), combatGear, rake, superCompost, dibber));
 		return allSteps;
 	}
 }
-

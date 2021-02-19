@@ -1,45 +1,53 @@
 package com.questhelper.quests.blackknightfortress;
 
+import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.quest.QuestPointRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.steps.ConditionalStep;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.ConditionalStep;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.ZoneCondition;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.BLACK_KNIGHTS_FORTRESS
 )
 public class BlackKnightFortress extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement ironChainbody, cabbage, bronzeMed;
 
-	ConditionForStep onTopOfFortress, inBasement, inSecretRoomGroundFloor, inSecretRoomFirstFloor, inSecretRoomSecondFloor, inCentralAreaFloor1, inMainEntrance, inWestRoomFloor1,
-	inEastRoomFloor0, inEastRoomFloor1, inEastRoomFloor2, inListeningRoom, inCabbageHoleRoom, inPathToCabbageRoom, inEastTurret;
+	//Items Recommended
+	ItemRequirement teleportFalador, armour, food;
+
+	Requirement onTopOfFortress, inBasement, inSecretRoomGroundFloor, inSecretRoomFirstFloor, inSecretRoomSecondFloor, inCentralAreaFloor1, inMainEntrance, inWestRoomFloor1,
+		inEastRoomFloor0, inEastRoomFloor1, inEastRoomFloor2, inListeningRoom, inCabbageHoleRoom, inPathToCabbageRoom, inEastTurret;
 
 	Zone secretRoomFloor0, secretRoomFloor1, secretRoomFloor2, secretRoomFloor3, secretBasement, mainEntrance1, mainEntrance2, mainEntrance3, mainEntrance4, westFloor1,
 		eastRoom1Floor0, eastRoom2Floor0, listeningRoom1, listeningRoom2, eastRoomFloor2, centralArea1Floor1, centralArea2Floor1, centralArea3Floor1,
 		northPathToCabbageHole1, northPathToCabbageHole2, northPathToCabbageHole3, cabbageHoleRoom, eastRoom1Floor1, eastRoom2Floor1, eastRoom3Floor1, eastRoom4Floor1, eastTurret;
 
 	QuestStep speakToAmik, enterFortress, pushWall, climbUpLadder1, climbUpLadder2, climbUpLadder3, climbUpLadder4, climbUpLadder5, climbUpLadder6,
-		climbDownLadder1,  climbDownLadder2,  climbDownLadder3, climbDownLadder4,  climbDownLadder5, climbDownLadder6, listenAtGrill, pushWall2,
+		climbDownLadder1, climbDownLadder2, climbDownLadder3, climbDownLadder4, climbDownLadder5, climbDownLadder6, listenAtGrill, pushWall2,
 		returnToAmik, exitBasement, exitTopOfFortress, exitEastTurret, exitWestRoomFirstFloor, goBackDownFromCabbageZone, goUpLadderToCabbageZone;
 	ObjectStep useCabbageOnHole;
 
@@ -93,73 +101,82 @@ public class BlackKnightFortress extends BasicQuestHelper
 		return steps;
 	}
 
-	private void setupZones() {
-		secretRoomFloor0 = new Zone(new WorldPoint(3015, 3517,0), new WorldPoint(3016, 3519,0));
-		secretRoomFloor1 = new Zone(new WorldPoint(3015, 3517,1), new WorldPoint(3016, 3519,1));
-		secretRoomFloor2 = new Zone(new WorldPoint(3007, 3513,2), new WorldPoint(3018, 3519,2));
-		secretRoomFloor3 = new Zone(new WorldPoint(3009, 3514,3), new WorldPoint(3012, 3517,3));
+	private void setupZones()
+	{
+		secretRoomFloor0 = new Zone(new WorldPoint(3015, 3517, 0), new WorldPoint(3016, 3519, 0));
+		secretRoomFloor1 = new Zone(new WorldPoint(3015, 3517, 1), new WorldPoint(3016, 3519, 1));
+		secretRoomFloor2 = new Zone(new WorldPoint(3007, 3513, 2), new WorldPoint(3018, 3519, 2));
+		secretRoomFloor3 = new Zone(new WorldPoint(3009, 3514, 3), new WorldPoint(3012, 3517, 3));
 
 		secretBasement = new Zone(new WorldPoint(1862, 4264, 0), new WorldPoint(1873, 4229, 0));
-		mainEntrance1 = new Zone(new WorldPoint(3008, 3513,0), new WorldPoint(3012, 3518,0));
-		mainEntrance2 = new Zone(new WorldPoint(3012, 3514,0), new WorldPoint(3014, 3516,0));
-		mainEntrance3 = new Zone(new WorldPoint(3015, 3515,0), new WorldPoint(3019, 3516,0));
-		mainEntrance4 = new Zone(new WorldPoint(3019, 3513,0), new WorldPoint(3019, 3517,0));
-		eastRoom1Floor0 = new Zone(new WorldPoint(3020, 3513,0), new WorldPoint(3030, 3518,0));
-		eastRoom2Floor0 = new Zone(new WorldPoint(3021, 3511,0), new WorldPoint(3030, 3512,0));
+		mainEntrance1 = new Zone(new WorldPoint(3008, 3513, 0), new WorldPoint(3012, 3518, 0));
+		mainEntrance2 = new Zone(new WorldPoint(3012, 3514, 0), new WorldPoint(3014, 3516, 0));
+		mainEntrance3 = new Zone(new WorldPoint(3015, 3515, 0), new WorldPoint(3019, 3516, 0));
+		mainEntrance4 = new Zone(new WorldPoint(3019, 3513, 0), new WorldPoint(3019, 3517, 0));
+		eastRoom1Floor0 = new Zone(new WorldPoint(3020, 3513, 0), new WorldPoint(3030, 3518, 0));
+		eastRoom2Floor0 = new Zone(new WorldPoint(3021, 3511, 0), new WorldPoint(3030, 3512, 0));
 
-		eastRoom1Floor1 = new Zone(new WorldPoint(3021, 3506,1), new WorldPoint(3025, 3512,1));
-		eastRoom2Floor1 = new Zone(new WorldPoint(3021, 3513,1), new WorldPoint(3021, 3513,1));
-		eastRoom3Floor1 = new Zone(new WorldPoint(3026, 3510,1), new WorldPoint(3029, 3515,1));
-		eastRoom4Floor1 = new Zone(new WorldPoint(3025, 3513,1), new WorldPoint(3025, 3516,1));
+		eastRoom1Floor1 = new Zone(new WorldPoint(3021, 3506, 1), new WorldPoint(3025, 3512, 1));
+		eastRoom2Floor1 = new Zone(new WorldPoint(3021, 3513, 1), new WorldPoint(3021, 3513, 1));
+		eastRoom3Floor1 = new Zone(new WorldPoint(3026, 3510, 1), new WorldPoint(3029, 3515, 1));
+		eastRoom4Floor1 = new Zone(new WorldPoint(3025, 3513, 1), new WorldPoint(3025, 3516, 1));
 
-		eastRoomFloor2 = new Zone(new WorldPoint(3021, 3504,2), new WorldPoint(3031, 3516,2));
+		eastRoomFloor2 = new Zone(new WorldPoint(3021, 3504, 2), new WorldPoint(3031, 3516, 2));
 
-		listeningRoom1 = new Zone(new WorldPoint(3021, 3510,0), new WorldPoint(3026, 3510,0));
-		listeningRoom2 = new Zone(new WorldPoint(3025, 3506,0), new WorldPoint(3026, 3509,0));
+		listeningRoom1 = new Zone(new WorldPoint(3021, 3510, 0), new WorldPoint(3026, 3510, 0));
+		listeningRoom2 = new Zone(new WorldPoint(3025, 3506, 0), new WorldPoint(3026, 3509, 0));
 
-		westFloor1 = new Zone(new WorldPoint(3007, 3513,1), new WorldPoint(3014, 3519,1));
+		westFloor1 = new Zone(new WorldPoint(3007, 3513, 1), new WorldPoint(3014, 3519, 1));
 
-		centralArea1Floor1 = new Zone(new WorldPoint(3015, 3514,1), new WorldPoint(3024, 3516,1));
-		centralArea2Floor1 = new Zone(new WorldPoint(3019, 3517,1), new WorldPoint(3021, 3518,1));
-		centralArea3Floor1 = new Zone(new WorldPoint(3022, 3513,1), new WorldPoint(3024, 3513,1));
+		centralArea1Floor1 = new Zone(new WorldPoint(3015, 3514, 1), new WorldPoint(3024, 3516, 1));
+		centralArea2Floor1 = new Zone(new WorldPoint(3019, 3517, 1), new WorldPoint(3021, 3518, 1));
+		centralArea3Floor1 = new Zone(new WorldPoint(3022, 3513, 1), new WorldPoint(3024, 3513, 1));
 
-		northPathToCabbageHole1 = new Zone(new WorldPoint(3022, 3517,1), new WorldPoint(3030, 3518,1));
-		northPathToCabbageHole2 = new Zone(new WorldPoint(3030, 3510,1), new WorldPoint(3030, 3516,1));
-		northPathToCabbageHole3 = new Zone(new WorldPoint(3029, 3516,1), new WorldPoint(3029, 3516,1));
+		northPathToCabbageHole1 = new Zone(new WorldPoint(3022, 3517, 1), new WorldPoint(3030, 3518, 1));
+		northPathToCabbageHole2 = new Zone(new WorldPoint(3030, 3510, 1), new WorldPoint(3030, 3516, 1));
+		northPathToCabbageHole3 = new Zone(new WorldPoint(3029, 3516, 1), new WorldPoint(3029, 3516, 1));
 
-		cabbageHoleRoom = new Zone(new WorldPoint(3026, 3504,1), new WorldPoint(3032, 3509,1));
+		cabbageHoleRoom = new Zone(new WorldPoint(3026, 3504, 1), new WorldPoint(3032, 3509, 1));
 
-		eastTurret = new Zone(new WorldPoint(3027, 3505,3), new WorldPoint(3031, 3508,3));
+		eastTurret = new Zone(new WorldPoint(3027, 3505, 3), new WorldPoint(3031, 3508, 3));
 	}
 
-	private void setupItemRequirements() {
+	private void setupItemRequirements()
+	{
 		ironChainbody = new ItemRequirement("Iron chainbody", ItemID.IRON_CHAINBODY, 1, true);
-		ironChainbody.setTip("You can buy one from the Chainmail Shop in south Falador");
+		ironChainbody.setTooltip("You can buy one from the Chainmail Shop in south Falador");
 		cabbage = new ItemRequirement("Cabbage (NOT from Draynor Manor)", ItemID.CABBAGE);
-		cabbage.setTip("You can get one from the Edgeville Monastary east of the Black Knights; Fortress.");
+		cabbage.setTooltip("You can get one from the Edgeville Monastery east of the Black Knights' Fortress.");
 		bronzeMed = new ItemRequirement("Bronze med helm", ItemID.BRONZE_MED_HELM, 1, true);
-		bronzeMed.setTip("You can get one from the helmet shop in Barbarian Village.");
+		bronzeMed.setTooltip("You can get one from the helmet shop in Barbarian Village.");
+
+		teleportFalador = new ItemRequirement("Teleport to Falador", ItemID.FALADOR_TELEPORT);
+		armour = new ItemRequirement("Armour", -1, -1);
+		armour.setDisplayItemId(BankSlotIcons.getArmour());
+		food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
 	}
 
-	private void setupConditions() {
-		onTopOfFortress = new ZoneCondition(secretRoomFloor3);
-		inBasement = new ZoneCondition(secretBasement);
-		inEastTurret = new ZoneCondition(eastTurret);
-		inSecretRoomGroundFloor = new ZoneCondition(secretRoomFloor0);
-		inSecretRoomFirstFloor = new ZoneCondition(secretRoomFloor1);
-		inSecretRoomSecondFloor = new ZoneCondition(secretRoomFloor2);
-		inMainEntrance = new ZoneCondition(mainEntrance1, mainEntrance2, mainEntrance3, mainEntrance4);
-		inCentralAreaFloor1 = new ZoneCondition(centralArea1Floor1, centralArea2Floor1, centralArea3Floor1);
-		inWestRoomFloor1 = new ZoneCondition(westFloor1);
-		inEastRoomFloor0 = new ZoneCondition(eastRoom1Floor0, eastRoom2Floor0);
-		inEastRoomFloor1 = new ZoneCondition(eastRoom1Floor1, eastRoom2Floor1, eastRoom3Floor1, eastRoom4Floor1);
-		inEastRoomFloor2 = new ZoneCondition(eastRoomFloor2);
-		inListeningRoom = new ZoneCondition(listeningRoom1, listeningRoom2);
-		inPathToCabbageRoom = new ZoneCondition(northPathToCabbageHole1, northPathToCabbageHole2, northPathToCabbageHole3);
-		inCabbageHoleRoom = new ZoneCondition(cabbageHoleRoom);
+	private void setupConditions()
+	{
+		onTopOfFortress = new ZoneRequirement(secretRoomFloor3);
+		inBasement = new ZoneRequirement(secretBasement);
+		inEastTurret = new ZoneRequirement(eastTurret);
+		inSecretRoomGroundFloor = new ZoneRequirement(secretRoomFloor0);
+		inSecretRoomFirstFloor = new ZoneRequirement(secretRoomFloor1);
+		inSecretRoomSecondFloor = new ZoneRequirement(secretRoomFloor2);
+		inMainEntrance = new ZoneRequirement(mainEntrance1, mainEntrance2, mainEntrance3, mainEntrance4);
+		inCentralAreaFloor1 = new ZoneRequirement(centralArea1Floor1, centralArea2Floor1, centralArea3Floor1);
+		inWestRoomFloor1 = new ZoneRequirement(westFloor1);
+		inEastRoomFloor0 = new ZoneRequirement(eastRoom1Floor0, eastRoom2Floor0);
+		inEastRoomFloor1 = new ZoneRequirement(eastRoom1Floor1, eastRoom2Floor1, eastRoom3Floor1, eastRoom4Floor1);
+		inEastRoomFloor2 = new ZoneRequirement(eastRoomFloor2);
+		inListeningRoom = new ZoneRequirement(listeningRoom1, listeningRoom2);
+		inPathToCabbageRoom = new ZoneRequirement(northPathToCabbageHole1, northPathToCabbageHole2, northPathToCabbageHole3);
+		inCabbageHoleRoom = new ZoneRequirement(cabbageHoleRoom);
 	}
 
-	private void setupSteps() {
+	private void setupSteps()
+	{
 		speakToAmik = new NpcStep(this, NpcID.SIR_AMIK_VARZE_4771, new WorldPoint(2959, 3339, 2), "Speak to Sir Amik Varze on the 2nd floor of Falador Castle.");
 		speakToAmik.addDialogStep("I seek a quest!");
 		speakToAmik.addDialogStep("I laugh in the face of danger!");
@@ -200,7 +217,7 @@ public class BlackKnightFortress extends BasicQuestHelper
 		goUpLadderToCabbageZone = new ObjectStep(this, ObjectID.LADDER_17159, new WorldPoint(3022, 3518, 0),
 			"Go into the east room and climb the ladder there. When trying to go through the door to the room, you'll have to go through some dialog. Select option 2.", cabbage);
 		goUpLadderToCabbageZone.addDialogStep("I don't care. I'm going in anyway.");
-		pushWall2 = new ObjectStep(this, ObjectID.WALL_2341, new WorldPoint(3030, 3510 , 1),
+		pushWall2 = new ObjectStep(this, ObjectID.WALL_2341, new WorldPoint(3030, 3510, 1),
 			"Push the wall to enter the storage room", cabbage);
 		useCabbageOnHole = new ObjectStep(this, ObjectID.HOLE_2336, new WorldPoint(3031, 3507, 1), "USE the cabbage on the hole here. Be careful not to eat it.", cabbage);
 		useCabbageOnHole.addIcon(ItemID.CABBAGE);
@@ -216,7 +233,7 @@ public class BlackKnightFortress extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(bronzeMed);
@@ -227,35 +244,42 @@ public class BlackKnightFortress extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
-		reqs.add(new ItemRequirement("Teleports to Falador", ItemID.FALADOR_TELEPORT));
-		reqs.add(new ItemRequirement("Food", -1, -1));
-		reqs.add(new ItemRequirement("Armour", -1, -1));
+		reqs.add(teleportFalador);
+		reqs.add(food);
+		reqs.add(armour);
 
 		return reqs;
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("Able to survive being attacked by multiple level 33 Black Knights"));
+		return Collections.singletonList("Able to survive being attacked by multiple level 33 Black Knights");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels() {
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-		allSteps.add(new PanelDetails("Talk to Sir Amik Varze", new ArrayList<>(Collections.singletonList(speakToAmik))));
+		allSteps.add(new PanelDetails("Talk to Sir Amik Varze", Collections.singletonList(speakToAmik)));
 		allSteps.add(new PanelDetails("Infiltrate the fortress",
-			new ArrayList<>(Arrays.asList(enterFortress, pushWall, climbUpLadder1, climbUpLadder2, climbDownLadder3,
-				climbUpLadder4, climbDownLadder5, climbDownLadder6, listenAtGrill)),
+			Arrays.asList(enterFortress, pushWall, climbUpLadder1, climbUpLadder2, climbDownLadder3,
+				climbUpLadder4, climbDownLadder5, climbDownLadder6, listenAtGrill),
 			bronzeMed, ironChainbody, cabbage));
 		allSteps.add(new PanelDetails("Sabotage the potion",
-			new ArrayList<>(Arrays.asList(climbUpLadder6, climbUpLadder5, climbDownLadder4, climbUpLadder3, climbDownLadder2, climbDownLadder1,
-				goUpLadderToCabbageZone, pushWall2, useCabbageOnHole))));
-		allSteps.add(new PanelDetails("Return to Sir Amik Varze", new ArrayList<>(Collections.singletonList(returnToAmik))));
+			Arrays.asList(climbUpLadder6, climbUpLadder5, climbDownLadder4, climbUpLadder3, climbDownLadder2, climbDownLadder1,
+				goUpLadderToCabbageZone, pushWall2, useCabbageOnHole)));
+		allSteps.add(new PanelDetails("Return to Sir Amik Varze", Collections.singletonList(returnToAmik)));
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		return Collections.singletonList(new QuestPointRequirement(12));
 	}
 }

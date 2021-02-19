@@ -25,47 +25,55 @@
 package com.questhelper.quests.templeofikov;
 
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.player.FreeInventorySlotRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.player.WeightRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.conditional.ObjectCondition;
+import com.questhelper.requirements.WidgetTextRequirement;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ItemStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.ObjectCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.WeightCondition;
-import com.questhelper.steps.conditional.WidgetTextCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import net.runelite.api.InventoryID;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.TEMPLE_OF_IKOV
 )
 public class TempleOfIkov extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement pendantOfLucien, bootsOfLightness, limpwurt20, yewOrBetterBow, knife, lightSource, lever, iceArrows20, iceArrows, shinyKey,
-		armadylPendant, staffOfArmadyl, pendantOfLucienEquipped, bootsOfLightnessEquipped, emptyInventorySpot, iceArrowsEquipped;
+		armadylPendant, staffOfArmadyl, pendantOfLucienEquipped, bootsOfLightnessEquipped, iceArrowsEquipped;
 
-	ConditionForStep hasPendantOfLucien, hasBootsOfLightness, belowMinus1Weight, below4Weight, hasYewBow, hasLimpwurts,
+	Requirement emptyInventorySpot;
+
+	Requirement hasPendantOfLucien, hasBootsOfLightness, belowMinus1Weight, below4Weight, hasYewBow, hasLimpwurts,
 		inEntryRoom, inNorthRoom, inBootsRoom, dontHaveBoots, inMainOrNorthRoom, hasLever, leverNearby, pulledLever, inArrowRoom,
 		hasEnoughArrows, lesNearby, inLesRoom, inWitchRoom, hasShinyKey, inDemonArea, inArmaRoom, hasStaffOfArmadyl, hasArrows;
 
@@ -76,6 +84,7 @@ public class TempleOfIkov extends BasicQuestHelper
 
 	ObjectStep collectArrows;
 
+	//Zones
 	Zone entryRoom1, entryRoom2, northRoom1, northRoom2, bootsRoom, arrowRoom1, arrowRoom2, arrowRoom3, lesRoom, witchRoom, demonArea1, demonArea2, demonArea3,
 		demonArea4, armaRoom1, armaRoom2;
 
@@ -180,7 +189,8 @@ public class TempleOfIkov extends BasicQuestHelper
 		bootsOfLightnessEquipped = new ItemRequirement("Boots of lightness", ItemID.BOOTS_OF_LIGHTNESS, 1, true);
 		limpwurt20 = new ItemRequirement("Limpwurt (unnoted)", ItemID.LIMPWURT_ROOT, 20);
 		yewOrBetterBow = new ItemRequirement("Yew, magic, or dark bow", ItemID.YEW_SHORTBOW);
-		yewOrBetterBow.addAlternates(ItemID.YEW_LONGBOW, ItemID.YEW_COMP_BOW, ItemID.MAGIC_SHORTBOW, ItemID.MAGIC_SHORTBOW_I, ItemID.MAGIC_LONGBOW, ItemID.DARK_BOW);
+		yewOrBetterBow.addAlternates(ItemID.YEW_LONGBOW, ItemID.YEW_COMP_BOW, ItemID.MAGIC_SHORTBOW, ItemID.MAGIC_SHORTBOW_I,
+			ItemID.MAGIC_LONGBOW, ItemID.DARK_BOW);
 		knife = new ItemRequirement("Knife to get the boots of lightness", ItemID.KNIFE);
 		lightSource = new ItemRequirement("A light source to get the boots of lightness", ItemCollections.getLightSources());
 
@@ -198,7 +208,7 @@ public class TempleOfIkov extends BasicQuestHelper
 
 		staffOfArmadyl = new ItemRequirement("Staff of Armadyl", ItemID.STAFF_OF_ARMADYL);
 
-		emptyInventorySpot = new ItemRequirement("An empty inventory slot", -1, -1);
+		emptyInventorySpot = new FreeInventorySlotRequirement(InventoryID.INVENTORY,  1);
 	}
 
 	public void loadZones()
@@ -225,34 +235,34 @@ public class TempleOfIkov extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		hasBootsOfLightness = new ItemRequirementCondition(bootsOfLightness);
-		dontHaveBoots = new ItemRequirementCondition(LogicType.NOR, bootsOfLightness);
-		hasPendantOfLucien = new ItemRequirementCondition(pendantOfLucien);
-		hasYewBow = new ItemRequirementCondition(yewOrBetterBow);
-		hasLimpwurts = new ItemRequirementCondition(limpwurt20);
-		hasLever = new ItemRequirementCondition(lever);
+		hasBootsOfLightness = new ItemRequirements(bootsOfLightness);
+		dontHaveBoots = new ItemRequirements(LogicType.NOR, bootsOfLightness);
+		hasPendantOfLucien = new ItemRequirements(pendantOfLucien);
+		hasYewBow = new ItemRequirements(yewOrBetterBow);
+		hasLimpwurts = new ItemRequirements(limpwurt20);
+		hasLever = new ItemRequirements(lever);
 
-		below4Weight = new WeightCondition(4, Operation.LESS_EQUAL);
-		belowMinus1Weight = new WeightCondition(-1, Operation.LESS_EQUAL);
-		inEntryRoom = new ZoneCondition(entryRoom1, entryRoom2);
-		inNorthRoom = new ZoneCondition(northRoom1, northRoom2);
-		inLesRoom = new ZoneCondition(lesRoom);
-		inBootsRoom = new ZoneCondition(bootsRoom);
+		below4Weight = new WeightRequirement(4, Operation.LESS_EQUAL);
+		belowMinus1Weight = new WeightRequirement(-1, Operation.LESS_EQUAL);
+		inEntryRoom = new ZoneRequirement(entryRoom1, entryRoom2);
+		inNorthRoom = new ZoneRequirement(northRoom1, northRoom2);
+		inLesRoom = new ZoneRequirement(lesRoom);
+		inBootsRoom = new ZoneRequirement(bootsRoom);
 		inMainOrNorthRoom = new Conditions(LogicType.OR, inEntryRoom, inNorthRoom, inLesRoom);
 
-		pulledLever = new Conditions(true, LogicType.OR, new WidgetTextCondition(229, 1, "You hear the clunking of some hidden machinery."));
+		pulledLever = new Conditions(true, LogicType.OR, new WidgetTextRequirement(229, 1, "You hear the clunking of some hidden machinery."));
 		leverNearby = new ObjectCondition(ObjectID.LEVER_87, new WorldPoint(2671, 9804, 0));
-		inArrowRoom = new ZoneCondition(arrowRoom1, arrowRoom2, arrowRoom3);
-		hasEnoughArrows = new Conditions(true, LogicType.OR, new ItemRequirementCondition(iceArrows20));
-		hasArrows = new ItemRequirementCondition(iceArrows);
+		inArrowRoom = new ZoneRequirement(arrowRoom1, arrowRoom2, arrowRoom3);
+		hasEnoughArrows = new Conditions(true, LogicType.OR, new ItemRequirements(iceArrows20));
+		hasArrows = new ItemRequirements(iceArrows);
 		lesNearby = new NpcCondition(NpcID.FIRE_WARRIOR_OF_LESARKUS);
-		inWitchRoom = new ZoneCondition(witchRoom);
-		hasShinyKey = new ItemRequirementCondition(shinyKey);
+		inWitchRoom = new ZoneRequirement(witchRoom);
+		hasShinyKey = new ItemRequirements(shinyKey);
 
-		inDemonArea = new ZoneCondition(demonArea1, demonArea2, demonArea3, demonArea4);
-		inArmaRoom = new ZoneCondition(armaRoom1, armaRoom2);
+		inDemonArea = new ZoneRequirement(demonArea1, demonArea2, demonArea3, demonArea4);
+		inArmaRoom = new ZoneRequirement(armaRoom1, armaRoom2);
 
-		hasStaffOfArmadyl = new ItemRequirementCondition(staffOfArmadyl);
+		hasStaffOfArmadyl = new ItemRequirements(staffOfArmadyl);
 	}
 
 	public void setupSteps()
@@ -348,7 +358,7 @@ public class TempleOfIkov extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(yewOrBetterBow);
@@ -360,7 +370,7 @@ public class TempleOfIkov extends BasicQuestHelper
 
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Fire Warrior of Lesarkus (level 84)");
@@ -368,14 +378,23 @@ public class TempleOfIkov extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Collections.singletonList(talkToLucien))));
-		allSteps.add(new PanelDetails("Defeat Lesarkus", new ArrayList<>(
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new SkillRequirement(Skill.THIEVING, 42, true));
+		req.add(new SkillRequirement(Skill.RANGED, 40));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Collections.singletonList(talkToLucien)));
+		allSteps.add(new PanelDetails("Defeat Lesarkus", 
 			Arrays.asList(prepare, enterDungeon, goDownToBoots, getBoots, goUpFromBoots, pickUpLever, useLeverOnHole,
-				pullLever, enterArrowRoom, collectArrows, returnToMainRoom, goSearchThievingLever, tryToEnterWitchRoom, fightLes)), yewOrBetterBow, knife, lightSource, limpwurt20));
-		allSteps.add(new PanelDetails("Explore deeper", new ArrayList<>(Arrays.asList(enterLesDoor, giveWineldaLimps, pickUpKey, pushWall, makeChoice, returnToLucien))));
+				pullLever, enterArrowRoom, collectArrows, returnToMainRoom, goSearchThievingLever, tryToEnterWitchRoom, fightLes), yewOrBetterBow, knife, lightSource, limpwurt20));
+		allSteps.add(new PanelDetails("Explore deeper", Arrays.asList(enterLesDoor, giveWineldaLimps, pickUpKey, pushWall, makeChoice, returnToLucien)));
 		return allSteps;
 	}
 }

@@ -27,31 +27,36 @@ package com.questhelper.quests.naturespirit;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.ChatMessageRequirement;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.WidgetTextRequirement;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.util.LogicType;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ChatMessageCondition;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.WidgetTextCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -59,11 +64,14 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class NatureSpirit extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement ghostspeak, silverSickle, washingBowl, mirror, journal, druidicSpell, druidPouch, blessedSickle,
-		spellCard, mirrorHighlighted, journalHighlighted, mushroom, mushroomHighlighted, druidPouchFull, salveTele,
-		combatGear;
+		spellCard, mirrorHighlighted, journalHighlighted, mushroom, mushroomHighlighted, druidPouchFull;
 
-	ConditionForStep inUnderground, fillimanNearby, hasMirror, mirrorNearby, hasJournal, hasMushroom, usedMushroom, onOrange,
+	//Items Recommended
+	ItemRequirement combatGear, salveTele;
+
+	Requirement inUnderground, fillimanNearby, hasMirror, mirrorNearby, hasJournal, hasMushroom, usedMushroom, onOrange,
 		usedCard, inGrotto, hasPouch, hasFullPouch, natureSpiritNearby, ghastNearby;
 
 	QuestStep goDownToDrezel, talkToDrezel, leaveDrezel, enterSwamp, tryToEnterGrotto, talkToFilliman, takeWashingBowl,
@@ -72,6 +80,7 @@ public class NatureSpirit extends BasicQuestHelper
 		blessSickle, fillPouches, killGhasts, killGhast, enterGrottoAgain, touchAltarAgain, talkToNatureSpiritToFinish, offerToHelp,
 		spawnFillimanForRitual, talkToFillimanInGrotto;
 
+	//Zones
 	Zone underground, orangeStone, grotto;
 
 	@Override
@@ -173,20 +182,21 @@ public class NatureSpirit extends BasicQuestHelper
 		journalHighlighted = new ItemRequirement("Journal", ItemID.JOURNAL);
 		journalHighlighted.setHighlightInInventory(true);
 		druidicSpell = new ItemRequirement("Druidic spell", ItemID.DRUIDIC_SPELL);
-		druidicSpell.setTip("You can get another from Filliman");
+		druidicSpell.setTooltip("You can get another from Filliman");
 		druidPouch = new ItemRequirement("Druidic pouch", ItemID.DRUID_POUCH);
-		druidPouch.setTip("You can get another from the Grotto");
+		druidPouch.setTooltip("You can get another from the Grotto");
 		druidPouchFull = new ItemRequirement("Druidic pouch", ItemID.DRUID_POUCH_2958);
 		blessedSickle = new ItemRequirement("Silver sickle (b)", ItemID.SILVER_SICKLE_B);
-		blessedSickle.setTip("You can bless another silver sickle with the nature spirit");
+		blessedSickle.setTooltip("You can bless another silver sickle with the nature spirit");
 		spellCard = new ItemRequirement("A used spell or druidic spell", ItemID.A_USED_SPELL);
 		spellCard.addAlternates(ItemID.DRUIDIC_SPELL);
-		spellCard.setTip("You can get another spell from Filliman");
+		spellCard.setTooltip("You can get another spell from Filliman");
 		mushroom = new ItemRequirement("Mort myre fungus", ItemID.MORT_MYRE_FUNGUS);
 		mushroomHighlighted = new ItemRequirement("Mort myre fungus", ItemID.MORT_MYRE_FUNGUS);
 		mushroomHighlighted.setHighlightInInventory(true);
-		salveTele = new ItemRequirement("2 Salve Graveyard Teleports", ItemID.SALVE_GRAVEYARD_TELEPORT, -1);
+		salveTele = new ItemRequirement("2 Salve Graveyard Teleports", ItemID.SALVE_GRAVEYARD_TELEPORT, 2);
 		combatGear = new ItemRequirement("Combat gear to kill the ghasts", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 	}
 
 	public void loadZones()
@@ -198,25 +208,25 @@ public class NatureSpirit extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inUnderground = new ZoneCondition(underground);
-		onOrange = new ZoneCondition(orangeStone);
-		inGrotto = new ZoneCondition(grotto);
+		inUnderground = new ZoneRequirement(underground);
+		onOrange = new ZoneRequirement(orangeStone);
+		inGrotto = new ZoneRequirement(grotto);
 		fillimanNearby = new NpcCondition(NpcID.FILLIMAN_TARLOCK);
 		natureSpiritNearby = new NpcCondition(NpcID.NATURE_SPIRIT);
-		hasMirror = new ItemRequirementCondition(mirror);
-		mirrorNearby = new ItemCondition(mirror);
-		hasJournal = new ItemRequirementCondition(journal);
-		hasMushroom = new ItemRequirementCondition(mushroom);
-		usedMushroom = new Conditions(true, LogicType.OR, new ChatMessageCondition("The stone seems to absorb the fungus."),
-			new WidgetTextCondition(229, 1, "nature symbol<br>scratched into it. This stone seems complete in some way."),
-			new WidgetTextCondition(119, 3, true, "Mort Myre Fungi was absorbed"));
-		usedCard = new Conditions(true, LogicType.OR, new ChatMessageCondition("The stone seems to absorb the used spell scroll."),
-			new ChatMessageCondition("The stone seems to absorb the spell scroll."),
-			new WidgetTextCondition(229, 1, "spirit symbol<br>scratched into it. This stone seems to be complete"),
-			new WidgetTextCondition(119, 3, true, "spell scroll was absorbed"));
+		hasMirror = new ItemRequirements(mirror);
+		mirrorNearby = new ItemOnTileRequirement(mirror);
+		hasJournal = new ItemRequirements(journal);
+		hasMushroom = new ItemRequirements(mushroom);
+		usedMushroom = new Conditions(true, LogicType.OR, new ChatMessageRequirement("The stone seems to absorb the fungus."),
+			new WidgetTextRequirement(229, 1, "nature symbol<br>scratched into it. This stone seems complete in some way."),
+			new WidgetTextRequirement(119, 3, true, "Mort Myre Fungi was absorbed"));
+		usedCard = new Conditions(true, LogicType.OR, new ChatMessageRequirement("The stone seems to absorb the used spell scroll."),
+			new ChatMessageRequirement("The stone seems to absorb the spell scroll."),
+			new WidgetTextRequirement(229, 1, "spirit symbol<br>scratched into it. This stone seems to be complete"),
+			new WidgetTextRequirement(119, 3, true, "spell scroll was absorbed"));
 
-		hasFullPouch = new ItemRequirementCondition(druidPouchFull);
-		hasPouch = new Conditions(LogicType.OR, new ItemRequirementCondition(druidPouch), hasFullPouch);
+		hasFullPouch = new ItemRequirements(druidPouchFull);
+		hasPouch = new Conditions(LogicType.OR, new ItemRequirements(druidPouch), hasFullPouch);
 		ghastNearby = new NpcCondition(NpcID.GHAST_946);
 	}
 
@@ -235,7 +245,8 @@ public class NatureSpirit extends BasicQuestHelper
 		talkToFilliman.addDialogStep("How long have you been a ghost?");
 		takeWashingBowl = new DetailedQuestStep(this, new WorldPoint(3437, 3337, 0), "Pick up the washing bowl.", washingBowl);
 		takeMirror = new DetailedQuestStep(this, new WorldPoint(3437, 3337, 0), "Pick up the mirror.", mirror);
-		useMirrorOnFilliman = new NpcStep(this, NpcID.FILLIMAN_TARLOCK, new WorldPoint(3440, 3336, 0), "Talk to Filliman Tarlock.", ghostspeak, mirrorHighlighted);
+		useMirrorOnFilliman = new NpcStep(this, NpcID.FILLIMAN_TARLOCK, new WorldPoint(3440, 3336, 0), "Use the mirror on Filliman Tarlock.", ghostspeak, mirrorHighlighted);
+		useMirrorOnFilliman.addDialogStep("How long have you been a ghost?");
 		useMirrorOnFilliman.addIcon(ItemID.MIRROR);
 		searchGrotto = new ObjectStep(this, ObjectID.GROTTO_TREE, new WorldPoint(3440, 3339, 0), "Right-click search the grotto tree.");
 		useJournalOnFilliman = new NpcStep(this, NpcID.FILLIMAN_TARLOCK, new WorldPoint(3440, 3336, 0), "Talk to Filliman Tarlock.", ghostspeak, journalHighlighted);
@@ -243,7 +254,7 @@ public class NatureSpirit extends BasicQuestHelper
 		offerToHelp = new NpcStep(this, NpcID.FILLIMAN_TARLOCK, new WorldPoint(3440, 3336, 0), "Talk to Filliman Tarlock and offer to help.", ghostspeak);
 		offerToHelp.addDialogStep("How can I help?");
 		goBackDownToDrezel = new ObjectStep(this, ObjectID.TRAPDOOR_3432, new WorldPoint(3422, 3485, 0), "Talk to Drezel to get blessed.");
-		((ObjectStep)(goBackDownToDrezel)).addAlternateObjects(ObjectID.TRAPDOOR_3433);
+		((ObjectStep) (goBackDownToDrezel)).addAlternateObjects(ObjectID.TRAPDOOR_3433);
 		talkToDrezelForBlessing = new NpcStep(this, NpcID.DREZEL, new WorldPoint(3439, 9896, 0), "Talk to Drezel under the Paterdomus Temple.");
 		talkToDrezelForBlessing.addSubSteps(goBackDownToDrezel);
 		talkToDrezelForBlessing.addSubSteps(goBackDownToDrezel);
@@ -274,41 +285,50 @@ public class NatureSpirit extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(ghostspeak, silverSickle));
+		return Arrays.asList(ghostspeak, silverSickle);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(salveTele, combatGear));
+		return Arrays.asList(salveTele, combatGear);
 	}
 
 	@Override
-	public ArrayList<String> getNotes()
+	public List<String> getNotes()
 	{
-		return new ArrayList<>(Collections.singletonList("Whilst in Mort Myre, the Ghasts will occasionally rot the food in your inventory."));
+		return Collections.singletonList("Whilst in Mort Myre, the Ghasts will occasionally rot the food in your inventory.");
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Collections.singletonList("3 Ghasts (level 30)"));
+		return Collections.singletonList("3 Ghasts (level 30)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.THE_RESTLESS_GHOST, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.PRIEST_IN_PERIL, QuestState.FINISHED));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
 		allSteps.add(new PanelDetails("Start the quest",
-			new ArrayList<>(Arrays.asList(talkToDrezel, enterSwamp, tryToEnterGrotto, talkToFilliman, takeWashingBowl,
-			takeMirror, useMirrorOnFilliman, searchGrotto, useJournalOnFilliman)), ghostspeak, silverSickle));
+			Arrays.asList(talkToDrezel, enterSwamp, tryToEnterGrotto, talkToFilliman, takeWashingBowl,
+				takeMirror, useMirrorOnFilliman, searchGrotto, useJournalOnFilliman), ghostspeak, silverSickle));
 		allSteps.add(new PanelDetails("Helping Filliman",
-			new ArrayList<>(Arrays.asList(talkToDrezelForBlessing, castSpellAndGetMushroom, useMushroom, useSpellCard, standOnOrange,
-				tellFillimanToCast, enterGrotto, searchAltar, talkToFillimanInGrotto)), ghostspeak, silverSickle));
+			Arrays.asList(talkToDrezelForBlessing, castSpellAndGetMushroom, useMushroom, useSpellCard, standOnOrange,
+				tellFillimanToCast, enterGrotto, searchAltar, talkToFillimanInGrotto), ghostspeak, silverSickle));
 		allSteps.add(new PanelDetails("Killing Ghasts",
-			new ArrayList<>(Arrays.asList(blessSickle, fillPouches, killGhasts, enterGrottoAgain, talkToNatureSpiritToFinish)), ghostspeak, silverSickle));
+			Arrays.asList(blessSickle, fillPouches, killGhasts, enterGrottoAgain, talkToNatureSpiritToFinish), ghostspeak, silverSickle));
 
 		return allSteps;
 	}

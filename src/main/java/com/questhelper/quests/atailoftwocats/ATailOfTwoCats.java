@@ -26,32 +26,33 @@ package com.questhelper.quests.atailoftwocats;
 
 import com.questhelper.ItemCollections;
 import com.questhelper.NpcCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
-import com.questhelper.requirements.FollowerRequirement;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.FollowerItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.quest.QuestRequirement;
 import com.questhelper.requirements.Requirement;
-import com.questhelper.requirements.Requirements;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
+import net.runelite.api.QuestState;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -59,11 +60,11 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class ATailOfTwoCats extends BasicQuestHelper
 {
-	ItemRequirement catspeak, catspeakE, deathRune5, catItem, chocolateCake, logs, tinderbox, milk, shears, potatoSeed4, rake, dibber, vialOfWater, desertTop, desertBottom, hat, catspeakEWorn;
+	//Items Required
+	ItemRequirement catspeak, catspeakE, deathRune5, chocolateCake, logs, tinderbox, milk, shears,
+		potatoSeed4, rake, dibber, vialOfWater, desertTop, desertBottom, hat, catspeakEWorn, cat;
 
-	Requirement catFollower, cat;
-
-	ConditionForStep bobNearby, rakedPatch, madeBed, plantedSeed, placedLogs, litLogs, placedCake, placedMilk, usedShears, grownPotatoes;
+	Requirement bobNearby, rakedPatch, madeBed, plantedSeed, placedLogs, litLogs, placedCake, placedMilk, usedShears, grownPotatoes;
 
 	QuestStep talkToUnferth, talkToHild, findBob, talkToBob, talkToGertrude, talkToReldo, findBobAgain, talkToBobAgain, talkToSphinx, useRake, plantSeeds, makeBed, useLogsOnFireplace, lightLogs,
 		useChocolateCakeOnTable, useMilkOnTable, useShearsOnUnferth, reportToUnferth, talkToApoth, talkToUnferthAsDoctor, findBobToFinish, talkToBobToFinish, talkToUnferthToFinish, waitForPotatoesToGrow;
@@ -127,14 +128,15 @@ public class ATailOfTwoCats extends BasicQuestHelper
 
 	public void setupItemRequirements()
 	{
-		catspeak = new ItemRequirement("Catspeak amulet", ItemID.CATSPEAK_AMULET);
+		catspeak = new ItemRequirement("Catspeak amulet", ItemID.CATSPEAK_AMULET, 1, true);
+		catspeak.setTooltip("You can get another from the Sphinx in Sophanem");
 		catspeakE = new ItemRequirement("Catspeak amulet (e)", ItemID.CATSPEAK_AMULETE);
 		catspeakEWorn = new ItemRequirement("Catspeak amulet (e)", ItemID.CATSPEAK_AMULETE, 1, true);
 		catspeakE.setHighlightInInventory(true);
 		deathRune5 = new ItemRequirement("Death runes", ItemID.DEATH_RUNE, 5);
-		catItem = new ItemRequirement("Any cat", ItemCollections.getCats());
-		catFollower = new FollowerRequirement("Any cat following you", NpcCollections.getCats());
-		cat = new Requirements(LogicType.OR, "Any cat", catItem, catFollower);
+		cat = new FollowerItemRequirement("A cat",
+			ItemCollections.getCats(),
+			NpcCollections.getCats());
 
 		chocolateCake = new ItemRequirement("Chocolate cake", ItemID.CHOCOLATE_CAKE);
 		chocolateCake.setHighlightInInventory(true);
@@ -157,21 +159,22 @@ public class ATailOfTwoCats extends BasicQuestHelper
 		desertTop = new ItemRequirement("Desert shirt", ItemID.DESERT_SHIRT, 1, true);
 		hat = new ItemRequirement("Doctor's or Nurse hat", ItemID.DOCTORS_HAT, 1, true);
 		hat.addAlternates(ItemID.NURSE_HAT);
+		hat.setDisplayMatchedItemName(true);
 	}
 
 	public void setupConditions()
 	{
 		bobNearby = new NpcCondition(NpcID.BOB_8034);
 
-		rakedPatch = new VarbitCondition(1033, 3);
-		plantedSeed = new VarbitCondition(1033, 4, Operation.GREATER_EQUAL);
-		grownPotatoes = new VarbitCondition(1033, 8);
-		madeBed = new VarbitCondition(1029, 1);
-		placedLogs = new VarbitCondition(1030, 1);
-		litLogs = new VarbitCondition(1030, 2);
-		placedCake = new VarbitCondition(1031, 3);
-		placedMilk = new VarbitCondition(1031, 4);
-		usedShears = new VarbitCondition(1032, 8);
+		rakedPatch = new VarbitRequirement(1033, 3);
+		plantedSeed = new VarbitRequirement(1033, 4, Operation.GREATER_EQUAL);
+		grownPotatoes = new VarbitRequirement(1033, 8);
+		madeBed = new VarbitRequirement(1029, 1);
+		placedLogs = new VarbitRequirement(1030, 1);
+		litLogs = new VarbitRequirement(1030, 2);
+		placedCake = new VarbitRequirement(1031, 3);
+		placedMilk = new VarbitRequirement(1031, 4);
+		usedShears = new VarbitRequirement(1032, 8);
 	}
 
 	public void setupSteps()
@@ -179,7 +182,7 @@ public class ATailOfTwoCats extends BasicQuestHelper
 		talkToUnferth = new NpcStep(this, NpcID.UNFERTH, new WorldPoint(2919, 3559, 0), "Talk to Unferth in north east Burthorpe.", cat, catspeak);
 		talkToUnferth.addDialogStep("I'll help you.");
 		talkToHild = new NpcStep(this, NpcID.HILD_4112, new WorldPoint(2930, 3568, 0), "Talk to Hild in the house north east of Unferth.", deathRune5, catspeak);
-		findBob = new DetailedQuestStep(this, "Operate the catspeak amulet (e) to locate Bob the Cat.", catspeakE);
+		findBob = new DetailedQuestStep(this, "Operate the catspeak amulet (e) to locate Bob the Cat. He's often in Catherby Archery Shop or at the Varrock Anvil.", catspeakE);
 		talkToBob = new NpcStep(this, NpcID.BOB_8034, "Talk to Bob the Cat.", cat, catspeakEWorn);
 		talkToGertrude = new NpcStep(this, NpcID.GERTRUDE_7723, new WorldPoint(3151, 3413, 0), "Talk to Gertrude west of Varrock.", cat, catspeakEWorn);
 		talkToGertrude.addDialogStep("Ask about Bob's parents.");
@@ -204,7 +207,7 @@ public class ATailOfTwoCats extends BasicQuestHelper
 		useMilkOnTable = new ObjectStep(this, NullObjectID.NULL_9435, new WorldPoint(2921, 3556, 0), "Use a bucket of milk on Unferth's table.", milk);
 		useMilkOnTable.addIcon(ItemID.BUCKET_OF_MILK);
 		useShearsOnUnferth = new NpcStep(this, NpcID.UNFERTH_4241, new WorldPoint(2919, 3559, 0), "Use some shears on Unferth in north east Burthorpe.", shears);
-		((NpcStep)(useShearsOnUnferth)).addAlternateNpcs(NpcID.UNFERTH, NpcID.UNFERTH_4238, NpcID.UNFERTH_4239, NpcID.UNFERTH_4240);
+		((NpcStep) (useShearsOnUnferth)).addAlternateNpcs(NpcID.UNFERTH, NpcID.UNFERTH_4238, NpcID.UNFERTH_4239, NpcID.UNFERTH_4240);
 		useShearsOnUnferth.addIcon(ItemID.SHEARS);
 
 		waitForPotatoesToGrow = new DetailedQuestStep(this, "You now need to wait 15-35 minutes for the potatoes to grow.");
@@ -221,25 +224,37 @@ public class ATailOfTwoCats extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(catItem, catspeak, deathRune5, chocolateCake, logs, tinderbox, milk, shears, potatoSeed4, rake, dibber, vialOfWater, desertTop, desertBottom));
+		return Arrays.asList(cat, catspeak, deathRune5, chocolateCake, logs, tinderbox, milk, shears, potatoSeed4, rake, dibber, vialOfWater, desertTop, desertBottom);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(talkToUnferth, talkToHild, findBob, talkToBob)), catItem, catspeak, deathRune5));
+		allSteps.add(new PanelDetails("Starting off",
+			Arrays.asList(talkToUnferth, talkToHild, findBob, talkToBob), cat, catspeak, deathRune5));
 
-		allSteps.add(new PanelDetails("Bob's past", new ArrayList<>(Arrays.asList(talkToGertrude, talkToReldo, findBobAgain, talkToBobAgain, talkToSphinx)), catItem));
+		allSteps.add(new PanelDetails("Bob's past",
+			Arrays.asList(talkToGertrude, talkToReldo, findBobAgain, talkToBobAgain, talkToSphinx), cat));
 
-		allSteps.add(new PanelDetails("Helping Unferth", new ArrayList<>(Arrays.asList(useRake, plantSeeds, makeBed, useLogsOnFireplace, lightLogs, useChocolateCakeOnTable, useMilkOnTable, useShearsOnUnferth, reportToUnferth)),
-			catItem, catspeakE, rake, dibber, potatoSeed4, logs, tinderbox, chocolateCake, milk, shears));
+		allSteps.add(new PanelDetails("Helping Unferth",
+			Arrays.asList(useRake, plantSeeds, makeBed, useLogsOnFireplace, lightLogs,
+				useChocolateCakeOnTable, useMilkOnTable, useShearsOnUnferth, reportToUnferth),
+			cat, catspeakE, rake, dibber, potatoSeed4, logs, tinderbox, chocolateCake, milk, shears));
 
-		allSteps.add(new PanelDetails("'Curing' Unferth", new ArrayList<>(Arrays.asList(talkToApoth, talkToUnferthAsDoctor, findBobToFinish, talkToBobToFinish, talkToUnferthToFinish)), catItem, catspeakE, vialOfWater));
+		allSteps.add(new PanelDetails("'Curing' Unferth",
+			Arrays.asList(talkToApoth, talkToUnferthAsDoctor, findBobToFinish, talkToBobToFinish,
+				talkToUnferthToFinish), cat, catspeakE, vialOfWater, desertTop, desertBottom));
 
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		return Collections.singletonList(new QuestRequirement(QuestHelperQuest.ICTHLARINS_LITTLE_HELPER, QuestState.FINISHED));
 	}
 }

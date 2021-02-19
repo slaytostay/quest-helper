@@ -25,36 +25,41 @@
 package com.questhelper.quests.heroesquest;
 
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.quest.QuestPointRequirement;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarplayerRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.ObjectCondition;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ItemStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.ObjectCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.SkillCondition;
-import com.questhelper.steps.conditional.VarplayerCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
@@ -63,11 +68,15 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class HeroesQuest extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement iceGloves, equippedIceGloves, fishingRod, fishingBait, dustyKey, dustyKeyHint, harralanderUnf, pickaxe, blamishSlime, blamishOil,
 		oilRod, jailKey, rawLavaEel, lavaEel, thievesArmband, rangedMage, miscKey, blackFullHelm, blackPlatebody, blackPlatelegs, idPapers, candlestick,
-		gripsKey, fireFeather, combatGear, antifireShield, varrockTeleport;
+		gripsKey, fireFeather;
 
-	ConditionForStep inTaverleyDungeon, hasOil, hasSlime, hasDustyKey, has70Agility, inDeepTaverleyDungeon, hasOilRod, hasRawLavaEel, hasLavaEel, hasThievesArmband,
+	//Items Recommended
+	ItemRequirement combatGear, antifireShield, varrockTeleport;
+
+	Requirement inTaverleyDungeon, hasOil, hasSlime, hasDustyKey, has70Agility, inDeepTaverleyDungeon, hasOilRod, hasRawLavaEel, hasLavaEel, hasThievesArmband,
 		talkedToKatrine, talkedToStraven, hasJailKey, inJailCell, inBlackArmGang, inPhoenixBase, talkedToAlfonse, hasMiscKey, blackArmGangDoorUnlocked, gottenPapers,
 		enteredMansion, talkedToGrip, inGarden, inSecretRoom, chestOpen, hasCandlestick, hasGripsKey, gripsKeyOnFloor, inTreasureRoom, talkedToCharlie,
 		unlockedCandlestickBlackArm, unlockedCandlestickPhoenix, finishedBlackArm, finishedPhoenix, inIceEntrance, inIceUndergroundRoom1, inIceUndergroundRoom2,
@@ -81,9 +90,12 @@ public class HeroesQuest extends BasicQuestHelper
 
 	ConditionalStep getThievesArmband, getIceGloves, getLavaEel, getFireFeather;
 
+	//Zones
 	Zone taverleyDungeon, deepTaverleyDungeon1, deepTaverleyDungeon2, deepTaverleyDungeon3, deepTaverleyDungeon4, jailCell, phoenixBase, phoenixEntry,
 		garden1, garden2, secretRoom, treasureRoom, iceEntrance, iceRoom1P1, iceRoom1P2, iceRoom1P3, iceRoom2P1, iceRoom2P2, iceRoom2P3, iceRoom2P4,
 		iceUp1P1, iceUp1P2, iceUp1P3, iceUp1P4, iceUp2, iceThrone1, iceThrone2, iceThrone3, entrana;
+
+	boolean isInBlackArmGang;
 
 	@Override
 	public Map<Integer, QuestStep> loadSteps()
@@ -93,6 +105,11 @@ public class HeroesQuest extends BasicQuestHelper
 		setupConditions();
 		setupSteps();
 		Map<Integer, QuestStep> steps = new HashMap<>();
+
+		if (inBlackArmGang.check(client))
+		{
+			isInBlackArmGang = true;
+		}
 
 		steps.put(0, talkToAchietties);
 
@@ -108,9 +125,9 @@ public class HeroesQuest extends BasicQuestHelper
 		getLavaEel.addStep(hasSlime, makeBlamishOil);
 		getLavaEel.setLockingCondition(hasLavaEel);
 
-		if (inBlackArmGang.checkCondition(client))
+		if (inBlackArmGang.check(client))
 		{
-			thievesArmband.setTip("You can get another from Katrine in the Black Arm Gang base.");
+			thievesArmband.setTooltip("You can get another from Katrine in the Black Arm Gang base.");
 			getThievesArmband = new ConditionalStep(this, talkToKatrine);
 			getThievesArmband.addStep(hasCandlestick, returnToKatrine);
 			getThievesArmband.addStep(new Conditions(inTreasureRoom, chestOpen), searchChest);
@@ -126,7 +143,7 @@ public class HeroesQuest extends BasicQuestHelper
 		}
 		else
 		{
-			thievesArmband.setTip("You can get another from Straven in the Phoenix Gang base.");
+			thievesArmband.setTooltip("You can get another from Straven in the Phoenix Gang base.");
 			getThievesArmband = new ConditionalStep(this, enterPhoenixBase);
 			getThievesArmband.addStep(new Conditions(hasCandlestick, inPhoenixBase), bringCandlestickToStraven);
 			getThievesArmband.addStep(hasCandlestick, enterPhoenixBaseAgain);
@@ -200,19 +217,21 @@ public class HeroesQuest extends BasicQuestHelper
 		thievesArmband = new ItemRequirement("Thieves' armband", ItemID.THIEVES_ARMBAND);
 
 		rangedMage = new ItemRequirement("A ranged or magic attack method", -1, -1);
+		rangedMage.setDisplayItemId(BankSlotIcons.getRangedCombatGear());
 		miscKey = new ItemRequirement("Miscellaneous key", ItemID.MISCELLANEOUS_KEY);
 		blackFullHelm = new ItemRequirement("Black full helm", ItemID.BLACK_FULL_HELM, 1, true);
 		blackPlatebody = new ItemRequirement("Black platebody", ItemID.BLACK_PLATEBODY, 1, true);
 		blackPlatelegs = new ItemRequirement("Black platelegs", ItemID.BLACK_PLATELEGS, 1, true);
 		idPapers = new ItemRequirement("Id papers", ItemID.ID_PAPERS);
-		idPapers.setTip("You can get another from Trobert in the building in east Brimhaven.");
+		idPapers.setTooltip("You can get another from Trobert in the building in east Brimhaven.");
 		candlestick = new ItemRequirement("Pete's candlestick", ItemID.PETES_CANDLESTICK);
 		gripsKey = new ItemRequirement("Grip's keyring", ItemID.GRIPS_KEYRING);
 		fireFeather = new ItemRequirement("Fire feather", ItemID.FIRE_FEATHER);
 
 		combatGear = new ItemRequirement("Weapons, armour and food for the Ice Queen", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 		varrockTeleport = new ItemRequirement("Varrock teleport", ItemID.VARROCK_TELEPORT);
-		antifireShield  = new ItemRequirement("Anti-dragon shield", ItemID.ANTIDRAGON_SHIELD);
+		antifireShield = new ItemRequirement("Anti-dragon shield", ItemID.ANTIDRAGON_SHIELD);
 	}
 
 	public void loadZones()
@@ -251,65 +270,65 @@ public class HeroesQuest extends BasicQuestHelper
 		iceThrone2 = new Zone(new WorldPoint(2874, 9937, 0), new WorldPoint(2879, 9965, 0));
 		iceThrone3 = new Zone(new WorldPoint(2860, 9917, 0), new WorldPoint(2866, 9918, 0));
 
-		entrana = new Zone(new WorldPoint(2798, 3327,0), new WorldPoint(2878, 3394,1));
+		entrana = new Zone(new WorldPoint(2798, 3327, 0), new WorldPoint(2878, 3394, 1));
 
 	}
 
 	public void setupConditions()
 	{
-		inTaverleyDungeon = new ZoneCondition(taverleyDungeon);
-		hasSlime = new ItemRequirementCondition(blamishSlime);
-		hasOil = new ItemRequirementCondition(blamishOil);
-		hasOilRod = new ItemRequirementCondition(oilRod);
-		hasLavaEel = new ItemRequirementCondition(lavaEel);
-		hasRawLavaEel = new ItemRequirementCondition(rawLavaEel);
-		hasJailKey = new ItemRequirementCondition(jailKey);
-		hasDustyKey = new ItemRequirementCondition(dustyKey);
-		inDeepTaverleyDungeon = new ZoneCondition(deepTaverleyDungeon1, deepTaverleyDungeon2, deepTaverleyDungeon3, deepTaverleyDungeon4);
-		inJailCell = new ZoneCondition(jailCell);
-		has70Agility = new SkillCondition(Skill.AGILITY, 70, Operation.GREATER_EQUAL);
+		inTaverleyDungeon = new ZoneRequirement(taverleyDungeon);
+		hasSlime = new ItemRequirements(blamishSlime);
+		hasOil = new ItemRequirements(blamishOil);
+		hasOilRod = new ItemRequirements(oilRod);
+		hasLavaEel = new ItemRequirements(lavaEel);
+		hasRawLavaEel = new ItemRequirements(rawLavaEel);
+		hasJailKey = new ItemRequirements(jailKey);
+		hasDustyKey = new ItemRequirements(dustyKey);
+		inDeepTaverleyDungeon = new ZoneRequirement(deepTaverleyDungeon1, deepTaverleyDungeon2, deepTaverleyDungeon3, deepTaverleyDungeon4);
+		inJailCell = new ZoneRequirement(jailCell);
+		has70Agility = new SkillRequirement(Skill.AGILITY, 70);
 
-		hasThievesArmband = new ItemRequirementCondition(thievesArmband);
-		talkedToKatrine = new VarplayerCondition(188, 7, Operation.GREATER_EQUAL);
-		blackArmGangDoorUnlocked = new VarplayerCondition(188, 8, Operation.GREATER_EQUAL);
-		gottenPapers = new VarplayerCondition(188, 9, Operation.GREATER_EQUAL);
-		enteredMansion = new VarplayerCondition(188, 10, Operation.GREATER_EQUAL);
-		talkedToGrip = new VarplayerCondition(188, 11, Operation.GREATER_EQUAL);
-		unlockedCandlestickBlackArm = new VarplayerCondition(188, 12);
-		finishedBlackArm = new VarplayerCondition(188, 13, Operation.GREATER_EQUAL);
-		talkedToStraven = new VarplayerCondition(188, 2, Operation.GREATER_EQUAL);
-		talkedToAlfonse = new VarplayerCondition(188, 3, Operation.GREATER_EQUAL);
-		talkedToCharlie = new VarplayerCondition(188, 4, Operation.GREATER_EQUAL);
-		unlockedCandlestickPhoenix = new VarplayerCondition(188, 5, Operation.GREATER_EQUAL);
-		finishedPhoenix = new VarplayerCondition(188, 6, Operation.GREATER_EQUAL);
-		hasMiscKey = new ItemRequirementCondition(miscKey);
-		inSecretRoom = new ZoneCondition(secretRoom);
-		inGarden = new ZoneCondition(garden1, garden2);
-		hasCandlestick = new ItemRequirementCondition(candlestick);
-		gripsKeyOnFloor = new ItemCondition(gripsKey);
-		hasGripsKey = new ItemRequirementCondition(gripsKey);
-		inTreasureRoom = new ZoneCondition(treasureRoom);
+		hasThievesArmband = new ItemRequirements(thievesArmband);
+		talkedToKatrine = new VarplayerRequirement(188, 7, Operation.GREATER_EQUAL);
+		blackArmGangDoorUnlocked = new VarplayerRequirement(188, 8, Operation.GREATER_EQUAL);
+		gottenPapers = new VarplayerRequirement(188, 9, Operation.GREATER_EQUAL);
+		enteredMansion = new VarplayerRequirement(188, 10, Operation.GREATER_EQUAL);
+		talkedToGrip = new VarplayerRequirement(188, 11, Operation.GREATER_EQUAL);
+		unlockedCandlestickBlackArm = new VarplayerRequirement(188, 12);
+		finishedBlackArm = new VarplayerRequirement(188, 13, Operation.GREATER_EQUAL);
+		talkedToStraven = new VarplayerRequirement(188, 2, Operation.GREATER_EQUAL);
+		talkedToAlfonse = new VarplayerRequirement(188, 3, Operation.GREATER_EQUAL);
+		talkedToCharlie = new VarplayerRequirement(188, 4, Operation.GREATER_EQUAL);
+		unlockedCandlestickPhoenix = new VarplayerRequirement(188, 5, Operation.GREATER_EQUAL);
+		finishedPhoenix = new VarplayerRequirement(188, 6, Operation.GREATER_EQUAL);
+		hasMiscKey = new ItemRequirements(miscKey);
+		inSecretRoom = new ZoneRequirement(secretRoom);
+		inGarden = new ZoneRequirement(garden1, garden2);
+		hasCandlestick = new ItemRequirements(candlestick);
+		gripsKeyOnFloor = new ItemOnTileRequirement(gripsKey);
+		hasGripsKey = new ItemRequirements(gripsKey);
+		inTreasureRoom = new ZoneRequirement(treasureRoom);
 		chestOpen = new ObjectCondition(ObjectID.CHEST_2633);
 
-		inBlackArmGang = new VarplayerCondition(146, 4, Operation.GREATER_EQUAL);
-		inPhoenixBase = new ZoneCondition(phoenixBase, phoenixEntry);
+		inBlackArmGang = new VarplayerRequirement(146, 4, Operation.GREATER_EQUAL);
+		inPhoenixBase = new ZoneRequirement(phoenixBase, phoenixEntry);
 
-		inIceEntrance = new ZoneCondition(iceEntrance);
-		inIceUndergroundRoom1 = new ZoneCondition(iceRoom1P1, iceRoom1P2, iceRoom1P3);
-		inIceUndergroundRoom2 = new ZoneCondition(iceRoom2P1, iceRoom2P2, iceRoom2P3, iceRoom2P4);
-		inIceAboveGround1 = new ZoneCondition(iceUp1P1, iceUp1P2, iceUp1P3, iceUp1P4);
-		inIceAboveGround2 = new ZoneCondition(iceUp2);
+		inIceEntrance = new ZoneRequirement(iceEntrance);
+		inIceUndergroundRoom1 = new ZoneRequirement(iceRoom1P1, iceRoom1P2, iceRoom1P3);
+		inIceUndergroundRoom2 = new ZoneRequirement(iceRoom2P1, iceRoom2P2, iceRoom2P3, iceRoom2P4);
+		inIceAboveGround1 = new ZoneRequirement(iceUp1P1, iceUp1P2, iceUp1P3, iceUp1P4);
+		inIceAboveGround2 = new ZoneRequirement(iceUp2);
 
-		inThroneRoom = new ZoneCondition(iceThrone1, iceThrone2, iceThrone3);
+		inThroneRoom = new ZoneRequirement(iceThrone1, iceThrone2, iceThrone3);
 
-		iceGlovesNearby = new ItemCondition(ItemID.ICE_GLOVES);
-		hasIceGloves = new ItemRequirementCondition(iceGloves);
+		iceGlovesNearby = new ItemOnTileRequirement(ItemID.ICE_GLOVES);
+		hasIceGloves = new ItemRequirements(iceGloves);
 
-		fireFeatherNearby = new ItemCondition(ItemID.FIRE_FEATHER);
+		fireFeatherNearby = new ItemOnTileRequirement(ItemID.FIRE_FEATHER);
 
-		hasFireFeather = new ItemRequirementCondition(fireFeather);
+		hasFireFeather = new ItemRequirements(fireFeather);
 
-		onEntrana = new ZoneCondition(entrana);
+		onEntrana = new ZoneRequirement(entrana);
 	}
 
 	public void setupSteps()
@@ -366,7 +385,7 @@ public class HeroesQuest extends BasicQuestHelper
 		enterTreasureRoom = new ObjectStep(this, ObjectID.DOOR_2621, new WorldPoint(2764, 3197, 0), "Use Grip's keyring on the treasure room door.", gripsKey);
 		enterTreasureRoom.addIcon(ItemID.GRIPS_KEYRING);
 		searchChest = new ObjectStep(this, ObjectID.CHEST_2632, new WorldPoint(2766, 3199, 0), "Search the chest in the treasure room for two candlesticks.");
-		((ObjectStep)(searchChest)).addAlternateObjects(ObjectID.CHEST_2633);
+		((ObjectStep) (searchChest)).addAlternateObjects(ObjectID.CHEST_2633);
 
 		returnToKatrine = new NpcStep(this, NpcID.KATRINE, new WorldPoint(3185, 3385, 0), "Give one of Pete's candlesticks to your partner. Afterwards, return to Katrine with Pete's candlestick", candlestick);
 		returnToKatrine.addDialogStep("I have a candlestick now.");
@@ -404,15 +423,15 @@ public class HeroesQuest extends BasicQuestHelper
 		killFireBird = new NpcStep(this, NpcID.ENTRANA_FIREBIRD, new WorldPoint(2840, 3374, 0), "Kill the entrana firebird on the north of Entrana.", equippedIceGloves);
 		pickupFireFeather = new ItemStep(this, "Pick up the fire feather.", fireFeather);
 
-		finishQuest =  new NpcStep(this, NpcID.ACHIETTIES, new WorldPoint(2904, 3511, 0), "Bring Achietties all the items to finish.", fireFeather, thievesArmband, lavaEel);
+		finishQuest = new NpcStep(this, NpcID.ACHIETTIES, new WorldPoint(2904, 3511, 0), "Bring Achietties all the items to finish.", fireFeather, thievesArmband, lavaEel);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Ice Queen (level 111) for ice gloves");
-		if (!inBlackArmGang.checkCondition(client))
+		if (!inBlackArmGang.check(client))
 		{
 			reqs.add("Grip (level 26)");
 		}
@@ -420,7 +439,7 @@ public class HeroesQuest extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(fishingRod);
@@ -428,7 +447,7 @@ public class HeroesQuest extends BasicQuestHelper
 		reqs.add(harralanderUnf);
 		reqs.add(pickaxe);
 		reqs.add(iceGloves);
-		if (inBlackArmGang.checkCondition(client))
+		if (inBlackArmGang.check(client))
 		{
 			reqs.add(blackFullHelm);
 			reqs.add(blackPlatebody);
@@ -446,7 +465,7 @@ public class HeroesQuest extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(combatGear);
@@ -457,10 +476,10 @@ public class HeroesQuest extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getNotes()
+	public List<String> getNotes()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
-		if (inBlackArmGang.checkCondition(client))
+		if (inBlackArmGang.check(client))
 		{
 			reqs.add("You will need to find another player who joined the Phoenix Gang during the Shield of Arrav quest to assist you. If one of you is an Ironman, you can use the necessary items on one another to trade them.");
 		}
@@ -472,37 +491,37 @@ public class HeroesQuest extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-		PanelDetails firstPanel = new PanelDetails("Start the quest", new ArrayList<>(Collections.singletonList(talkToAchietties)));
+		PanelDetails firstPanel = new PanelDetails("Start the quest", Collections.singletonList(talkToAchietties));
 
-		PanelDetails secondPanel = new PanelDetails("Get the Lava Eel", new ArrayList<>(Arrays.asList(talkToGerrant, makeBlamishOil, useOilOnRod, enterTaverleyDungeon, fishLavaEel, cookLavaEel)), harralanderUnf, fishingRod, fishingBait, dustyKey);
+		PanelDetails secondPanel = new PanelDetails("Get the Lava Eel", Arrays.asList(talkToGerrant, makeBlamishOil, useOilOnRod, enterTaverleyDungeon, fishLavaEel, cookLavaEel), harralanderUnf, fishingRod, fishingBait, dustyKey);
 		secondPanel.setLockingStep(getLavaEel);
 		PanelDetails thirdPanel;
 
-		if (inBlackArmGang.checkCondition(client))
+		if (inBlackArmGang.check(client))
 		{
 			thirdPanel = new PanelDetails("Get thieves' armband",
-				new ArrayList<>(Arrays.asList(talkToKatrine, talkToTrobert, enterMansion, talkToGrip, getKeyFromGrip, pickupKey, enterTreasureRoom, searchChest, returnToKatrine)),
+				Arrays.asList(talkToKatrine, talkToTrobert, enterMansion, talkToGrip, getKeyFromGrip, pickupKey, enterTreasureRoom, searchChest, returnToKatrine),
 				blackFullHelm, blackPlatebody, blackPlatelegs);
 		}
 		else
 		{
-			thirdPanel = new PanelDetails("Get thieves' armband", new ArrayList<>(
-				Arrays.asList(talkToStraven, talkToAlfonse, getKeyFromPartner, talkToCharlie, pushWall, useKeyOnDoor, killGrip, bringCandlestickToStraven)));
+			thirdPanel = new PanelDetails("Get thieves' armband", 
+				Arrays.asList(talkToStraven, talkToAlfonse, getKeyFromPartner, talkToCharlie, pushWall, useKeyOnDoor, killGrip, bringCandlestickToStraven));
 		}
 
 		thirdPanel.setLockingStep(getThievesArmband);
 
-		PanelDetails fourthPanel = new PanelDetails("Get ice gloves", new ArrayList<>(Arrays.asList(mineEntranceRocks, takeLadder1Down, takeLadder2Up, takeLadder3Down, takeLadder4Up, takeLadder5Down, killIceQueen)));
+		PanelDetails fourthPanel = new PanelDetails("Get ice gloves", Arrays.asList(mineEntranceRocks, takeLadder1Down, takeLadder2Up, takeLadder3Down, takeLadder4Up, takeLadder5Down, killIceQueen));
 		fourthPanel.setLockingStep(getIceGloves);
 
-		PanelDetails fifthPanel = new PanelDetails("Get fire feather", new ArrayList<>(Arrays.asList(goToEntrana, killFireBird)));
+		PanelDetails fifthPanel = new PanelDetails("Get fire feather", Arrays.asList(goToEntrana, killFireBird));
 		fifthPanel.setLockingStep(getFireFeather);
 
-		PanelDetails sixthPanel = new PanelDetails("Finish off", new ArrayList<>(Arrays.asList(finishQuest)), fireFeather, thievesArmband, lavaEel);
+		PanelDetails sixthPanel = new PanelDetails("Finish off", Collections.singletonList(finishQuest), fireFeather, thievesArmband, lavaEel);
 
 		allSteps.add(firstPanel);
 		allSteps.add(secondPanel);
@@ -511,5 +530,34 @@ public class HeroesQuest extends BasicQuestHelper
 		allSteps.add(fifthPanel);
 		allSteps.add(sixthPanel);
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRecommended()
+	{
+		return Collections.singletonList(new ItemRequirement("Another player", -1, -1));
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestPointRequirement(55));
+		req.add(new SkillRequirement(Skill.COOKING, 53, true));
+		req.add(new SkillRequirement(Skill.FISHING, 53, true));
+		req.add(new SkillRequirement(Skill.HERBLORE, 25, true));
+		req.add(new SkillRequirement(Skill.MINING, 50, true));
+		if (isInBlackArmGang)
+		{
+			req.add(new QuestRequirement(QuestHelperQuest.SHIELD_OF_ARRAV_BLACK_ARM_GANG, QuestState.FINISHED));
+		}
+		else
+		{
+			req.add(new QuestRequirement(QuestHelperQuest.SHIELD_OF_ARRAV_PHOENIX_GANG, QuestState.FINISHED));
+		}
+		req.add(new QuestRequirement(QuestHelperQuest.LOST_CITY, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.MERLINS_CRYSTAL, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.DRAGON_SLAYER_I, QuestState.FINISHED));
+		return req;
 	}
 }

@@ -26,34 +26,38 @@ package com.questhelper.quests.thetouristtrap;
 
 import com.questhelper.ItemCollections;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.var.VarplayerRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.WidgetTextRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.VarplayerCondition;
-import com.questhelper.steps.conditional.WidgetTextCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.Operation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import net.runelite.api.widgets.WidgetInfo;
 
 @QuestDescriptor(
@@ -61,12 +65,15 @@ import net.runelite.api.widgets.WidgetInfo;
 )
 public class TheTouristTrap extends BasicQuestHelper
 {
-	ItemRequirement combatGear, desertTop, desertBottom, desertBoot, desertTopWorn, desertBottomWorn, desertBootWorn, bronzeBar3, hammer, feather50,
+	//Items Required
+	ItemRequirement desertTop, desertBottom, desertBoot, desertTopWorn, desertBottomWorn, desertBootWorn, bronzeBar3, hammer, feather50,
 		metalKey, slaveTop, slaveRobe, slaveBoot, slaveTopWorn, slaveRobeWorn, slaveBootWorn, bedabinKey, technicalPlans, prototypeDart, prototypeDartTip,
-		feather10, bronzeBar, tentiPineapple, bronzeBarHighlighted, barrel, anaInABarrel, anaInABarrelHighlighted, waterskins, knife, pickaxe, coins100,
-		barrelHighlighted;
+		feather10, bronzeBar, tentiPineapple, bronzeBarHighlighted, barrel, anaInABarrel, anaInABarrelHighlighted, barrelHighlighted;
 
-	ConditionForStep inJail, onSlope, inCamp, hasSlaveClothes, inUpstairs, onCliff, onSecondCliff, inJailEscape, inMine1, hasPlans, distractedSiad, searchedBookcase,
+		//Items Required
+	ItemRequirement waterskins, knife, pickaxe, coins100, combatGear;
+
+	Requirement inJail, onSlope, inCamp, hasSlaveClothes, inUpstairs, onCliff, onSecondCliff, inJailEscape, inMine1, hasPlans, distractedSiad, searchedBookcase,
 		hasTip, hasDart, hasBarrel, inDeepMine, inDeepMineP1, inDeepMineP2, hasAnaInBarrel, anaOnCart, anaOnSurfaceInBarrel, anaOnSurface, anaPlacedOnCartOfLift,
 		inMiningRoom, anaFree;
 
@@ -78,6 +85,7 @@ public class TheTouristTrap extends BasicQuestHelper
 
 	DetailedQuestStep escapeJail, climbSlope, climbCliff, climbDownCliff;
 
+	//Zones
 	Zone jail, slope, camp, upstairs, cliff, secondCliff, mine1, deepMine, deepMineP1, deepMineP2P1, deepMineP2P2, miningRoom;
 
 	@Override
@@ -186,6 +194,7 @@ public class TheTouristTrap extends BasicQuestHelper
 	public void setupItemRequirements()
 	{
 		combatGear = new ItemRequirement("Combat gear", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 		desertTop = new ItemRequirement("Desert shirt", ItemID.DESERT_SHIRT);
 		desertBottom = new ItemRequirement("Desert robe", ItemID.DESERT_ROBE);
 		desertBoot = new ItemRequirement("Desert boots", ItemID.DESERT_BOOTS);
@@ -197,24 +206,24 @@ public class TheTouristTrap extends BasicQuestHelper
 		feather50 = new ItemRequirement("Feather", ItemID.FEATHER, 50);
 
 		metalKey = new ItemRequirement("Metal key", ItemID.METAL_KEY);
-		metalKey.setTip("You can get another by killing the Mercenary Guard outside the Desert Mining Camp");
+		metalKey.setTooltip("You can get another by killing the Mercenary Guard outside the Desert Mining Camp");
 		slaveTop = new ItemRequirement("Slave shirt", ItemID.SLAVE_SHIRT);
-		slaveTop.setTip("You can trade in a desert robe set for slave clothes with the Male Slave");
+		slaveTop.setTooltip("You can trade in a desert robe set for slave clothes with the Male Slave");
 		slaveTopWorn = new ItemRequirement("Slave shirt", ItemID.SLAVE_SHIRT, 1, true);
-		slaveTopWorn.setTip("You can trade in a desert robe set for slave clothes with the Male Slave");
+		slaveTopWorn.setTooltip("You can trade in a desert robe set for slave clothes with the Male Slave");
 		slaveRobe = new ItemRequirement("Slave robe", ItemID.SLAVE_ROBE);
-		slaveRobe.setTip("You can trade in a desert robe set for slave clothes with the Male Slave");
+		slaveRobe.setTooltip("You can trade in a desert robe set for slave clothes with the Male Slave");
 		slaveRobeWorn = new ItemRequirement("Slave robe", ItemID.SLAVE_ROBE, 1, true);
-		slaveRobeWorn.setTip("You can trade in a desert robe set for slave clothes with the Male Slave");
+		slaveRobeWorn.setTooltip("You can trade in a desert robe set for slave clothes with the Male Slave");
 		slaveBoot = new ItemRequirement("Slave boots", ItemID.SLAVE_BOOTS);
-		slaveBoot.setTip("You can trade in a desert robe set for slave clothes with the Male Slave");
+		slaveBoot.setTooltip("You can trade in a desert robe set for slave clothes with the Male Slave");
 		slaveBootWorn = new ItemRequirement("Slave boots", ItemID.SLAVE_BOOTS, 1, true);
-		slaveBootWorn.setTip("You can trade in a desert robe set for slave clothes with the Male Slave");
+		slaveBootWorn.setTooltip("You can trade in a desert robe set for slave clothes with the Male Slave");
 
 		bedabinKey = new ItemRequirement("Bedabin key", ItemID.BEDABIN_KEY);
-		bedabinKey.setTip("You can get another from Al Shabim in the Bedabin Camp");
+		bedabinKey.setTooltip("You can get another from Al Shabim in the Bedabin Camp");
 		technicalPlans = new ItemRequirement("Technical plans", ItemID.TECHNICAL_PLANS);
-		technicalPlans.setTip("You'll need to get another plan from Siad's chest");
+		technicalPlans.setTooltip("You'll need to get another plan from Siad's chest");
 		prototypeDart = new ItemRequirement("Prototype dart", ItemID.PROTOTYPE_DART);
 		prototypeDartTip = new ItemRequirement("Prototype dart tip", ItemID.PROTOTYPE_DART_TIP);
 		prototypeDartTip.setHighlightInInventory(true);
@@ -226,7 +235,7 @@ public class TheTouristTrap extends BasicQuestHelper
 		bronzeBarHighlighted.setHighlightInInventory(true);
 
 		tentiPineapple = new ItemRequirement("Tenti pineapple", ItemID.TENTI_PINEAPPLE);
-		tentiPineapple.setTip("You can get another from Al Shabim in the Bedabin Camp");
+		tentiPineapple.setTooltip("You can get another from Al Shabim in the Bedabin Camp");
 
 		barrel = new ItemRequirement("Barrel", ItemID.BARREL);
 		barrelHighlighted = new ItemRequirement("Barrel", ItemID.BARREL);
@@ -249,7 +258,7 @@ public class TheTouristTrap extends BasicQuestHelper
 		slope = new Zone(new WorldPoint(3282, 3032, 0), new WorldPoint(3283, 3037, 0));
 		cliff = new Zone(new WorldPoint(3279, 3037, 0), new WorldPoint(3281, 3038, 0));
 		secondCliff = new Zone(new WorldPoint(3273, 3035, 0), new WorldPoint(3278, 3039, 0));
-		mine1 = new Zone(new WorldPoint(3266,9410, 0), new WorldPoint(3282, 9466, 0));
+		mine1 = new Zone(new WorldPoint(3266, 9410, 0), new WorldPoint(3282, 9466, 0));
 		deepMine = new Zone(new WorldPoint(3282, 9408, 0), new WorldPoint(3326, 9470, 0));
 		deepMineP1 = new Zone(new WorldPoint(3283, 9409, 0), new WorldPoint(3314, 9427, 0));
 		deepMineP2P1 = new Zone(new WorldPoint(3315, 9416, 0), new WorldPoint(3326, 9470, 0));
@@ -259,37 +268,37 @@ public class TheTouristTrap extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inJail = new ZoneCondition(jail);
-		inCamp = new ZoneCondition(camp);
-		inMine1 = new ZoneCondition(mine1);
-		inUpstairs = new ZoneCondition(upstairs);
-		inDeepMine = new ZoneCondition(deepMine);
-		inDeepMineP1 = new ZoneCondition(deepMineP1);
-		inDeepMineP2 = new ZoneCondition(deepMineP2P1, deepMineP2P2);
-		inMiningRoom = new ZoneCondition(miningRoom);
+		inJail = new ZoneRequirement(jail);
+		inCamp = new ZoneRequirement(camp);
+		inMine1 = new ZoneRequirement(mine1);
+		inUpstairs = new ZoneRequirement(upstairs);
+		inDeepMine = new ZoneRequirement(deepMine);
+		inDeepMineP1 = new ZoneRequirement(deepMineP1);
+		inDeepMineP2 = new ZoneRequirement(deepMineP2P1, deepMineP2P2);
+		inMiningRoom = new ZoneRequirement(miningRoom);
 
-		onSlope = new ZoneCondition(slope);
-		onCliff = new ZoneCondition(cliff);
-		onSecondCliff = new ZoneCondition(secondCliff);
-		inJailEscape = new ZoneCondition(jail, slope, cliff, secondCliff);
+		onSlope = new ZoneRequirement(slope);
+		onCliff = new ZoneRequirement(cliff);
+		onSecondCliff = new ZoneRequirement(secondCliff);
+		inJailEscape = new ZoneRequirement(jail, slope, cliff, secondCliff);
 
-		hasSlaveClothes = new ItemRequirementCondition(slaveTop, slaveBoot, slaveRobe);
-		hasPlans = new ItemRequirementCondition(technicalPlans);
-		hasTip = new ItemRequirementCondition(prototypeDartTip);
-		hasDart = new ItemRequirementCondition(prototypeDart);
-		hasBarrel = new ItemRequirementCondition(barrel);
-		hasAnaInBarrel = new ItemRequirementCondition(anaInABarrel);
+		hasSlaveClothes = new ItemRequirements(slaveTop, slaveBoot, slaveRobe);
+		hasPlans = new ItemRequirements(technicalPlans);
+		hasTip = new ItemRequirements(prototypeDartTip);
+		hasDart = new ItemRequirements(prototypeDart);
+		hasBarrel = new ItemRequirements(barrel);
+		hasAnaInBarrel = new ItemRequirements(anaInABarrel);
 
-		searchedBookcase = new Conditions(true, new WidgetTextCondition(WidgetInfo.DIALOG_SPRITE_TEXT, "You notice several books on the subject of sailing."));
-		distractedSiad = new Conditions(true, new WidgetTextCondition(229, 1, "The captain starts rambling on about his days as a salty sea dog. He<br>looks quite distracted..."));
+		searchedBookcase = new Conditions(true, new WidgetTextRequirement(WidgetInfo.DIALOG_SPRITE_TEXT, "You notice several books on the subject of sailing."));
+		distractedSiad = new Conditions(true, new WidgetTextRequirement(229, 1, "The captain starts rambling on about his days as a salty sea dog. He<br>looks quite distracted..."));
 
-		anaPlacedOnCartOfLift = new VarbitCondition(2805, 1);
+		anaPlacedOnCartOfLift = new VarbitRequirement(2805, 1);
 		// TODO: Better detection of if Ana is on the surface or in the underground barrel
-		anaOnSurface = new VarplayerCondition(197, 22, Operation.GREATER_EQUAL);
+		anaOnSurface = new VarplayerRequirement(197, 22, Operation.GREATER_EQUAL);
 		// TODO: This only gets set the first time. If you somehow lose Ana between here and the cart it remains set. Need to add more logic around this
-		anaOnSurfaceInBarrel = new VarbitCondition(2808, 1);
-		anaOnCart = new VarbitCondition(2809, 1);
-		anaFree = new VarbitCondition(3733, 1);
+		anaOnSurfaceInBarrel = new VarbitRequirement(2808, 1);
+		anaOnCart = new VarbitRequirement(2809, 1);
+		anaFree = new VarbitRequirement(3733, 1);
 	}
 
 	public void setupSteps()
@@ -372,43 +381,51 @@ public class TheTouristTrap extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getNotes()
+	public List<String> getNotes()
 	{
-		return new ArrayList<>(Collections.singletonList("Almost any deviation from the steps listed here will often result in you being thrown into jail, or to an inconvenient location. If you'd wish to avoid this, try to follow the helper to the letter."));
+		return Collections.singletonList("Almost any deviation from the steps listed here will often result in you being thrown into jail, or to an inconvenient location. If you'd wish to avoid this, try to follow the helper to the letter.");
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(desertTop, desertBottom, desertBoot, bronzeBar3, hammer, feather50));
+		return Arrays.asList(desertTop, desertBottom, desertBoot, bronzeBar3, hammer, feather50);
 	}
 
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(combatGear, waterskins, knife, pickaxe, coins100));
+		return Arrays.asList(combatGear, waterskins, knife, pickaxe, coins100);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Collections.singletonList("Mercenary Captain (level 47)"));
+		return Collections.singletonList("Mercenary Captain (level 47)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		return Arrays.asList(new SkillRequirement(Skill.FLETCHING, 10, true),
+			new SkillRequirement(Skill.SMITHING, 20, true));
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
 		allSteps.add(new PanelDetails("Investigating the trap",
-			new ArrayList<>(Arrays.asList(talkToIrena, talkToCaptain, enterCamp, talkToSlave, enterMine, talkToGuard)),
+			Arrays.asList(talkToIrena, talkToCaptain, enterCamp, talkToSlave, enterMine, talkToGuard),
 			desertTop, desertBottom, desertBoot, bronzeBar3, hammer, feather50));
 		allSteps.add(new PanelDetails("Helping out",
-			new ArrayList<>(Arrays.asList(talkToShabim, enterCampForTask, goUpToSiad, searchBookcase, talkToSiad, searchChest, returnToShabim, useAnvil, useFeatherOnTip, bringPrototypeToShabim)),
+			Arrays.asList(talkToShabim, enterCampForTask, goUpToSiad, searchBookcase, talkToSiad, searchChest, returnToShabim,
+				useAnvil, useFeatherOnTip, bringPrototypeToShabim),
 			bronzeBar3, hammer, feather50));
-		allSteps.add(new PanelDetails("Freeing Ana", new ArrayList<>(
+		allSteps.add(new PanelDetails("Freeing Ana", 
 			Arrays.asList(enterCampWithPineapple, enterMineWithPineapple, talkToGuardWithPineapple, enterDeepMine, getBarrel, enterMineCart, useBarrelOnAna, useBarrelOnMineCart,
-				returnInMineCart, searchBarrelsForAna, sendAnaUp, leaveDeepMine, operateWinch, searchWinchBarrel, useBarrelOnCart, talkToDriver, returnToIrena, talkToAna, talkToIrenaToFinish)),
+				returnInMineCart, searchBarrelsForAna, sendAnaUp, leaveDeepMine, operateWinch, searchWinchBarrel, useBarrelOnCart, talkToDriver, returnToIrena, talkToAna, talkToIrenaToFinish),
 			slaveTop, slaveRobe, slaveBoot));
 
 		return allSteps;

@@ -24,44 +24,56 @@
  */
 package com.questhelper.quests.makinghistory;
 
+import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.ComplexRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.util.ComplexRequirementBuilder;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.DigStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.util.Operation;
+import com.questhelper.steps.ConditionalStep;
+import com.questhelper.steps.DetailedQuestStep;
+import com.questhelper.steps.DigStep;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.ConditionalStep;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.MAKING_HISTORY
 )
 public class MakingHistory extends BasicQuestHelper
 {
-	ItemRequirement spade, saphAmulet, ghostSpeakAmulet, ardougneTeleport, ectophial, ringOfDueling, enchantedKey, chest, journal, scroll, letter,
-		passage, enchantedKeyHighlighted;
+	//Items Required
+	ItemRequirement spade, saphAmulet, ghostSpeakAmulet, enchantedKey, chest, journal, scroll, letter, enchantedKeyHighlighted, ectoTokens;
+	ComplexRequirement portPhasmatysEntry;
 
-	ConditionForStep hasEnchantedKey, hasChest, hasJournal, hasScroll, talkedtoBlanin, talkedToDron, talkedToMelina, talkedToDroalak,
+	//Items Recommended
+	ItemRequirement ardougneTeleport, ectophial, ringOfDueling, passage, rellekaTeleport, runRestoreItems;
+
+	Requirement hasEnchantedKey, hasChest, hasJournal, hasScroll, talkedtoBlanin, talkedToDron, talkedToMelina, talkedToDroalak,
 		inCastle, gotKey, gotChest, gotScroll, handedInJournal, handedInScroll, finishedFrem, finishedKey, finishedGhost, handedInEverything;
 
 	QuestStep talkToJorral, talkToSilverMerchant, dig, openChest, talkToBlanin, talkToDron, talkToDroalak,
@@ -69,6 +81,7 @@ public class MakingHistory extends BasicQuestHelper
 
 	ConditionalStep dronSteps, ghostSteps, keySteps;
 
+	//Zones
 	Zone castle;
 
 	@Override
@@ -118,27 +131,55 @@ public class MakingHistory extends BasicQuestHelper
 	{
 		spade = new ItemRequirement("Spade", ItemID.SPADE);
 		saphAmulet = new ItemRequirement("Sapphire amulet", ItemID.SAPPHIRE_AMULET);
-		ghostSpeakAmulet = new ItemRequirement("Ghostspeak amulet", ItemID.GHOSTSPEAK_AMULET, 1, true);
-		ardougneTeleport = new ItemRequirement("A teleport to Ardougne", ItemID.ARDOUGNE_TELEPORT, -1);
+		ghostSpeakAmulet = new ItemRequirement("Ghostspeak amulet", ItemCollections.getGhostspeak(), 1, true);
+		ghostSpeakAmulet.setTooltip("You can also wear the Morytania Legs 2 or higher.");
+		ardougneTeleport = new ItemRequirement("Teleports to Ardougne", ItemID.ARDOUGNE_TELEPORT, 3);
+
 		ectophial = new ItemRequirement("Ectophial, or method of getting to Port Phasmatys", ItemID.ECTOPHIAL);
-		ringOfDueling = new ItemRequirement("Ring of Dueling", ItemID.RING_OF_DUELING8);
+		ectophial.addAlternates(ItemID.FENKENSTRAINS_CASTLE_TELEPORT, ItemID.KHARYRLL_TELEPORT);
+		ectophial.addAlternates(ItemCollections.getSlayerRings()); // Slayer Tower
+		ectophial.addAlternates(ItemID.MORYTANIA_LEGS_2, ItemID.MORYTANIA_LEGS_3, ItemID.MORYTANIA_LEGS_4);
+		ectophial.setTooltip("You will need 2 ecto-tokens if you have not completed Ghosts Ahoy.");
+		ectophial.appendToTooltip("If you do not have 2 ecto-tokens bring 1 bone, 1 pot and 1 bucket to earn 5 ecto-tokens at the Ectofunctus.\n");
+		ectophial.appendToTooltip("You can use the Fairy Ring 'ALQ' or the Morytania Legs 2 or higher to get to Port Phasmatys.");
+		ectophial.appendToTooltip("Slayer rings and the Kharyrll teleport can also be used.");
+
+		ectoTokens = new ItemRequirement("Ecto-tokens", ItemID.ECTOTOKEN, 2);
+		ectoTokens.setTooltip("You do not need two ecto-tokens if you have completed Ghosts Ahoy.");
+		ectoTokens.appendToTooltip("If you do not have 2 ecto-tokens bring 1 bone, 1 pot and 1 bucket to earn 5 ecto-tokens at the Ectofunctus.");
+		ectoTokens.appendToTooltip("Additionally, you can also enter Port Phasmatys via Charter ship, but that costs up to 4,100 coins.");
+
+		portPhasmatysEntry = ComplexRequirementBuilder.or("2 x Ecto-tokens")
+			.with(ectoTokens)
+			.with(new QuestRequirement(QuestHelperQuest.GHOSTS_AHOY, QuestState.FINISHED))
+			.with(new ItemRequirement("Coins", ItemID.COINS_995, 4100))
+			.build();
+		portPhasmatysEntry.setTooltip(ectoTokens.getTooltip());
+
+		ringOfDueling = new ItemRequirement("Ring of Dueling", ItemCollections.getRingOfDuelings());
 		enchantedKey = new ItemRequirement("Enchanted key", ItemID.ENCHANTED_KEY);
-		enchantedKey.setTip("You can get another from the silver merchant in East Ardougne's market");
+		enchantedKey.setTooltip("You can get another from the silver merchant in East Ardougne's market");
 
 		enchantedKeyHighlighted = new ItemRequirement("Enchanted key", ItemID.ENCHANTED_KEY);
-		enchantedKeyHighlighted.setTip("You can get another from the silver merchant in East Ardougne's market");
+		enchantedKeyHighlighted.setTooltip("You can get another from the silver merchant in East Ardougne's market");
 		enchantedKeyHighlighted.setHighlightInInventory(true);
 
 		journal = new ItemRequirement("Journal", ItemID.JOURNAL_6755);
 		chest = new ItemRequirement("Chest", ItemID.CHEST);
-		chest.setTip("You can dig up another from north of Castle Wars");
+		chest.setTooltip("You can dig up another from north of Castle Wars");
 		chest.setHighlightInInventory(true);
 		scroll = new ItemRequirement("Scroll", ItemID.SCROLL);
-		scroll.setTip("You can get another from Droalak in Port Phasmatys");
+		scroll.setTooltip("You can get another from Droalak in Port Phasmatys");
 		letter = new ItemRequirement("Letter", ItemID.LETTER_6757);
-		letter.setTip("You can get another from King Lathas in East Ardougne castle");
-		passage = new ItemRequirement("Necklace of passage", ItemID.NECKLACE_OF_PASSAGE1);
-		passage.addAlternates(ItemID.NECKLACE_OF_PASSAGE2, ItemID.NECKLACE_OF_PASSAGE3, ItemID.NECKLACE_OF_PASSAGE5, ItemID.NECKLACE_OF_PASSAGE5);
+		letter.setTooltip("You can get another from King Lathas in East Ardougne castle");
+		passage = new ItemRequirement("Necklace of passage", ItemCollections.getNecklaceOfPassages());
+		rellekaTeleport = new ItemRequirement("Relleka Teleport", ItemID.RELLEKKA_TELEPORT);
+		rellekaTeleport.addAlternates(ItemCollections.getEnchantedLyre());
+		rellekaTeleport.addAlternates(ItemID.FREMENNIK_SEA_BOOTS_2, ItemID.FREMENNIK_SEA_BOOTS_3, ItemID.FREMENNIK_SEA_BOOTS_4);
+		rellekaTeleport.setTooltip("You can also use Fairy Rings if you have those unlocked.");
+		rellekaTeleport.appendToTooltip("You can also teleport to Camelot and run North.");
+		runRestoreItems = new ItemRequirement("Potions/Items to restore run energy", ItemCollections.getRunRestoreItems());
+
 	}
 
 	public void loadZones()
@@ -148,22 +189,22 @@ public class MakingHistory extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		hasEnchantedKey = new ItemRequirementCondition(enchantedKey);
-		hasJournal = new ItemRequirementCondition(journal);
-		hasScroll = new ItemRequirementCondition(scroll);
-		hasChest = new ItemRequirementCondition(chest);
-		talkedtoBlanin = new Conditions(LogicType.OR, new VarbitCondition(1385, 1), new VarbitCondition(1385, 2));
-		talkedToDron = new VarbitCondition(1385, 3, Operation.GREATER_EQUAL);
+		hasEnchantedKey = new ItemRequirements(enchantedKey);
+		hasJournal = new ItemRequirements(journal);
+		hasScroll = new ItemRequirements(scroll);
+		hasChest = new ItemRequirements(chest);
+		talkedtoBlanin = new Conditions(LogicType.OR, new VarbitRequirement(1385, 1), new VarbitRequirement(1385, 2));
+		talkedToDron = new VarbitRequirement(1385, 3, Operation.GREATER_EQUAL);
 
-		talkedToDroalak = new Conditions(LogicType.OR, new VarbitCondition(1386, 2), new VarbitCondition(1386, 1));
-		talkedToMelina = new Conditions(LogicType.OR, new VarbitCondition(1386, 4), new VarbitCondition(1386, 3));
-		gotScroll = new VarbitCondition(1386, 5);
-		handedInScroll = new VarbitCondition(1386, 6);
+		talkedToDroalak = new Conditions(LogicType.OR, new VarbitRequirement(1386, 2), new VarbitRequirement(1386, 1));
+		talkedToMelina = new Conditions(LogicType.OR, new VarbitRequirement(1386, 4), new VarbitRequirement(1386, 3));
+		gotScroll = new VarbitRequirement(1386, 5);
+		handedInScroll = new VarbitRequirement(1386, 6);
 
-		inCastle = new ZoneCondition(castle);
-		gotKey = new VarbitCondition(1384, 1, Operation.GREATER_EQUAL);
-		gotChest = new VarbitCondition(1384, 2, Operation.GREATER_EQUAL);
-		handedInJournal = new VarbitCondition(1384, 4);
+		inCastle = new ZoneRequirement(castle);
+		gotKey = new VarbitRequirement(1384, 1, Operation.GREATER_EQUAL);
+		gotChest = new VarbitRequirement(1384, 2, Operation.GREATER_EQUAL);
+		handedInJournal = new VarbitRequirement(1384, 4);
 		handedInEverything = new Conditions(handedInJournal, handedInScroll, talkedToDron);
 		finishedFrem = talkedToDron;
 		finishedGhost = new Conditions(LogicType.OR, handedInScroll, gotScroll);
@@ -197,7 +238,7 @@ public class MakingHistory extends BasicQuestHelper
 		talkToDron.addDialogStep("12, but what does that have to do with anything?");
 
 
-		talkToDroalak = new NpcStep(this, NpcID.DROALAK_3494, new WorldPoint(3659, 3468, 0), "Enter Port Phasmatys and talk to Droalak outside the general store.", ghostSpeakAmulet);
+		talkToDroalak = new NpcStep(this, NpcID.DROALAK_3494, new WorldPoint(3659, 3468, 0), "Enter Port Phasmatys and talk to Droalak outside the general store.", ghostSpeakAmulet, portPhasmatysEntry);
 		talkToMelina = new NpcStep(this, NpcID.MELINA_3492, new WorldPoint(3674, 3479, 0), "Give Melina a sapphire amulet in the house north east of the general store.", saphAmulet, ghostSpeakAmulet);
 		returnToDroalak = new NpcStep(this, NpcID.DROALAK_3494, new WorldPoint(3659, 3468, 0), "Return to Droalak outside the general store.");
 		returnToJorral = new NpcStep(this, NpcID.JORRAL, new WorldPoint(2436, 3346, 0), "Return to Jorral north of West Ardougne with the scroll and journal.", scroll, journal);
@@ -211,7 +252,7 @@ public class MakingHistory extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(spade);
@@ -221,34 +262,43 @@ public class MakingHistory extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(ardougneTeleport);
 		reqs.add(ectophial);
 		reqs.add(ringOfDueling);
 		reqs.add(passage);
+		reqs.add(rellekaTeleport);
+		reqs.add(runRestoreItems);
 		return reqs;
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Collections.singletonList(talkToJorral))));
-		PanelDetails chestPanel = new PanelDetails("Find the book", new ArrayList<>(Arrays.asList(talkToSilverMerchant, dig, openChest)), spade);
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Collections.singletonList(talkToJorral)));
+		PanelDetails chestPanel = new PanelDetails("Find the book", Arrays.asList(talkToSilverMerchant, dig, openChest), spade);
 		chestPanel.setLockingStep(keySteps);
-		PanelDetails fremPanel = new PanelDetails("Fremennik tale", new ArrayList<>(Arrays.asList(talkToBlanin, talkToDron)));
+		PanelDetails fremPanel = new PanelDetails("Fremennik tale", Arrays.asList(talkToBlanin, talkToDron));
 		fremPanel.setLockingStep(dronSteps);
-		PanelDetails ghostPanel = new PanelDetails("Find the scroll", new ArrayList<>(Arrays.asList(talkToDroalak, talkToMelina, returnToDroalak)), saphAmulet, ghostSpeakAmulet);
+		PanelDetails ghostPanel = new PanelDetails("Find the scroll", Arrays.asList(talkToDroalak, talkToMelina, returnToDroalak), saphAmulet, ghostSpeakAmulet, portPhasmatysEntry);
 		ghostPanel.setLockingStep(ghostSteps);
 
-		PanelDetails finishingPanel = new PanelDetails("Finishing off", new ArrayList<>(Arrays.asList(returnToJorral, talkToLathas, finishQuest)));
+		PanelDetails finishingPanel = new PanelDetails("Finishing off", Arrays.asList(returnToJorral, talkToLathas, finishQuest));
 
 		allSteps.add(chestPanel);
 		allSteps.add(fremPanel);
 		allSteps.add(ghostPanel);
 		allSteps.add(finishingPanel);
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		return Arrays.asList(new QuestRequirement(QuestHelperQuest.PRIEST_IN_PERIL, QuestState.FINISHED),
+			new QuestRequirement(QuestHelperQuest.THE_RESTLESS_GHOST, QuestState.IN_PROGRESS));
 	}
 }

@@ -25,21 +25,22 @@
 package com.questhelper.quests.dragonslayerii;
 
 import com.google.inject.Inject;
-import com.questhelper.requirements.ItemRequirement;
 import com.questhelper.Zone;
 import com.questhelper.questhelpers.QuestHelper;
+import com.questhelper.questhelpers.QuestUtil;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.DetailedOwnerStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.Client;
 import net.runelite.api.ItemID;
@@ -72,14 +73,14 @@ public class CryptPuzzle extends DetailedOwnerStep
 
 	private final HashMap<Integer, QuestStep> getBustSteps = new HashMap<>();
 	private final HashMap<Integer, ItemRequirement> items = new HashMap<>();
-	private final HashMap<Integer, ItemRequirementCondition> bustsConditions = new HashMap<>();
+	private final HashMap<Integer, ItemRequirements> bustsConditions = new HashMap<>();
 
 
 	private boolean solutionFound;
 
 	ItemRequirement aivasBust, camorraBust, robertBust, tristanBust;
 
-	ConditionForStep inFirstFloor, inBasement, inSecondFloor, hasAivasBust, hasRobertBust, hasCamorraBust, hasTristanBust;
+	Requirement inFirstFloor, inBasement, inSecondFloor, hasAivasBust, hasRobertBust, hasCamorraBust, hasTristanBust;
 
 	DetailedQuestStep takeCamorraBust, takeAivasBust, takeRobertBust, takeTristanBust, placeBustNorth, placeBustSouth, placeBustEast, placeBustWest, inspectTomb;
 
@@ -110,10 +111,10 @@ public class CryptPuzzle extends DetailedOwnerStep
 		getBustSteps.put(ROBERT, takeRobertBust);
 		getBustSteps.put(TRISTAN, takeTristanBust);
 
-		bustsConditions.put(AIVAS, new ItemRequirementCondition(aivasBust));
-		bustsConditions.put(CAMORRA, new ItemRequirementCondition(camorraBust));
-		bustsConditions.put(ROBERT, new ItemRequirementCondition(robertBust));
-		bustsConditions.put(TRISTAN, new ItemRequirementCondition(tristanBust));
+		bustsConditions.put(AIVAS, new ItemRequirements(aivasBust));
+		bustsConditions.put(CAMORRA, new ItemRequirements(camorraBust));
+		bustsConditions.put(ROBERT, new ItemRequirements(robertBust));
+		bustsConditions.put(TRISTAN, new ItemRequirements(tristanBust));
 
 		items.put(AIVAS, aivasBust);
 		items.put(CAMORRA, camorraBust);
@@ -154,7 +155,7 @@ public class CryptPuzzle extends DetailedOwnerStep
 
 		if (currentNorthBust != northBust)
 		{
-			if (!bustsConditions.get(northBust).checkCondition(client))
+			if (!bustsConditions.get(northBust).check(client))
 			{
 				startUpStep(getBustSteps.get(northBust));
 			}
@@ -165,7 +166,7 @@ public class CryptPuzzle extends DetailedOwnerStep
 		}
 		else if (currentEastBust != eastBust)
 		{
-			if (!bustsConditions.get(eastBust).checkCondition(client))
+			if (!bustsConditions.get(eastBust).check(client))
 			{
 				startUpStep(getBustSteps.get(eastBust));
 			}
@@ -176,7 +177,7 @@ public class CryptPuzzle extends DetailedOwnerStep
 		}
 		else if (currentSouthBust != southBust)
 		{
-			if (!bustsConditions.get(southBust).checkCondition(client))
+			if (!bustsConditions.get(southBust).check(client))
 			{
 				startUpStep(getBustSteps.get(southBust));
 			}
@@ -187,7 +188,7 @@ public class CryptPuzzle extends DetailedOwnerStep
 		}
 		else if (currentWestBust != westBust)
 		{
-			if (!bustsConditions.get(westBust).checkCondition(client))
+			if (!bustsConditions.get(westBust).check(client))
 			{
 				startUpStep(getBustSteps.get(westBust));
 			}
@@ -216,14 +217,14 @@ public class CryptPuzzle extends DetailedOwnerStep
 
 	private void setupConditions()
 	{
-		inFirstFloor = new ZoneCondition(firstFloor);
-		inSecondFloor = new ZoneCondition(secondFloor);
-		inBasement = new ZoneCondition(basement);
+		inFirstFloor = new ZoneRequirement(firstFloor);
+		inSecondFloor = new ZoneRequirement(secondFloor);
+		inBasement = new ZoneRequirement(basement);
 
-		hasAivasBust = new ItemRequirementCondition(aivasBust);
-		hasRobertBust = new ItemRequirementCondition(robertBust);
-		hasCamorraBust = new ItemRequirementCondition(camorraBust);
-		hasTristanBust = new ItemRequirementCondition(tristanBust);
+		hasAivasBust = new ItemRequirements(aivasBust);
+		hasRobertBust = new ItemRequirements(robertBust);
+		hasCamorraBust = new ItemRequirements(camorraBust);
+		hasTristanBust = new ItemRequirements(tristanBust);
 	}
 
 	@Override
@@ -256,7 +257,7 @@ public class CryptPuzzle extends DetailedOwnerStep
 	{
 		if (!solutionFound && widgetLoaded.getGroupId() == 74)
 		{
-			ArrayList<Integer> potentialBusts = new ArrayList<>(Arrays.asList(AIVAS, CAMORRA, ROBERT, TRISTAN));
+			List<Integer> potentialBusts = QuestUtil.toArrayList(AIVAS, CAMORRA, ROBERT, TRISTAN);
 
 			Widget northWidget = client.getWidget(74, 6);
 			Widget southAndWestWidget = client.getWidget(74, 7);
@@ -291,13 +292,13 @@ public class CryptPuzzle extends DetailedOwnerStep
 
 				eastBust = potentialBusts.iterator().next();
 
-				placeBustNorth.addItemRequirements(new ArrayList<>(Collections.singletonList(items.get(northBust))));
+				placeBustNorth.addItemRequirements(Collections.singletonList(items.get(northBust)));
 				placeBustNorth.addIcon(items.get(northBust).getId());
-				placeBustEast.addItemRequirements(new ArrayList<>(Collections.singletonList(items.get(eastBust))));
+				placeBustEast.addItemRequirements(Collections.singletonList(items.get(eastBust)));
 				placeBustEast.addIcon(items.get(eastBust).getId());
-				placeBustSouth.addItemRequirements(new ArrayList<>(Collections.singletonList(items.get(southBust))));
+				placeBustSouth.addItemRequirements(Collections.singletonList(items.get(southBust)));
 				placeBustSouth.addIcon(items.get(southBust).getId());
-				placeBustWest.addItemRequirements(new ArrayList<>(Collections.singletonList(items.get(westBust))));
+				placeBustWest.addItemRequirements(Collections.singletonList(items.get(westBust)));
 				placeBustWest.addIcon(items.get(westBust).getId());
 				solutionFound = true;
 			}

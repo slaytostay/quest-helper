@@ -29,19 +29,28 @@ import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.player.FavourRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ZoneCondition;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import net.runelite.api.Favour;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
 @QuestDescriptor(
@@ -49,6 +58,7 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class TheQueenOfThieves extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement stew, hughesLetter;
 
 	QuestStep talkToLawry, talkToPoorLookingPerson, talkToOReilly, talkToDevan, exitWarrens, killConrad,
@@ -56,9 +66,11 @@ public class TheQueenOfThieves extends BasicQuestHelper
 	talkToShauna;
 
 	ObjectStep enterWarrens, enterWarrens2, enterWarrens3, enterWarrens4;
+
 	NpcStep talkToQueenOfThieves;
 
-	ZoneCondition inWarrens, inUpstairsHughesHouse;
+	//Zones
+	ZoneRequirement inWarrens, inUpstairsHughesHouse;
 	Zone warrens, kingstown, upstairsHughesHouse;
 
 	@Override
@@ -122,7 +134,7 @@ public class TheQueenOfThieves extends BasicQuestHelper
 	public void setupItemRequirements() {
 		stew = new ItemRequirement("Stew", ItemID.STEW);
 		hughesLetter = new ItemRequirement("Letter", ItemID.LETTER_21774);
-		hughesLetter.setTip("You can get another letter by searching the chest upstairs in Hughes' house in Kingstown.");
+		hughesLetter.setTooltip("You can get another letter by searching the chest upstairs in Hughes' house in Kingstown.");
 	}
 
 	public void loadZones() {
@@ -133,8 +145,8 @@ public class TheQueenOfThieves extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inWarrens = new ZoneCondition(warrens);
-		inUpstairsHughesHouse = new ZoneCondition(upstairsHughesHouse);
+		inWarrens = new ZoneRequirement(warrens);
+		inUpstairsHughesHouse = new ZoneRequirement(upstairsHughesHouse);
 	}
 
 	public void setupSteps() {
@@ -194,24 +206,28 @@ public class TheQueenOfThieves extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(stew));
+		return Collections.singletonList(stew);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<Requirement> getGeneralRequirements()
 	{
-		return new ArrayList<>(Arrays.asList());
+		return Arrays.asList(
+			new SkillRequirement(Skill.THIEVING, 20),
+			new FavourRequirement(Favour.PISCARILIUS, 20),
+			new QuestRequirement(QuestHelperQuest.CLIENT_OF_KOUREND, QuestState.FINISHED)
+		);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Investigation", new ArrayList<>(Arrays.asList(talkToLawry, talkToPoorLookingPerson, talkToOReilly)), stew));
-		allSteps.add(new PanelDetails("Gaining Trust", new ArrayList<>(Arrays.asList(enterWarrens, talkToDevan, exitWarrens, killConrad, enterWarrens2, tellDevanAboutConrad))));
-		allSteps.add(new PanelDetails("Exposing Hughes", new ArrayList<>(Arrays.asList(enterWarrens3, talkToQueenOfThieves, exitWarrens2, goToKingstown, openChest, leaveKingstown, talkToLawry2, enterWarrens4, talkToShauna))));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Investigation", Arrays.asList(talkToLawry, talkToPoorLookingPerson, talkToOReilly), stew));
+		allSteps.add(new PanelDetails("Gaining Trust", Arrays.asList(enterWarrens, talkToDevan, exitWarrens, killConrad, enterWarrens2, tellDevanAboutConrad)));
+		allSteps.add(new PanelDetails("Exposing Hughes", Arrays.asList(enterWarrens3, talkToQueenOfThieves, exitWarrens2, goToKingstown, openChest, leaveKingstown, talkToLawry2, enterWarrens4, talkToShauna)));
 		return allSteps;
 	}
 }

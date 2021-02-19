@@ -24,46 +24,54 @@
  */
 package com.questhelper.quests.dragonslayer;
 
+import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestPointRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.var.VarplayerRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.ObjectCondition;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.ObjectCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.VarplayerCondition;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.ConditionalStep;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.ZoneCondition;
 
 @QuestDescriptor(
-	quest = QuestHelperQuest.DRAGON_SLAYER
+	quest = QuestHelperQuest.DRAGON_SLAYER_I
 )
 public class DragonSlayer extends BasicQuestHelper
 {
-	ItemRequirement unfiredBowl, mindBomb, lobsterPot, silk, telegrabOrTenK, hammer, antidragonShield, planks3, planks2, planks1, nails90, nails60, nails30, twoThousandCoins,
-		mapPart1, mapPart2, mapPart3, fullMap, melzarsKey, ratKey, ghostKey, skeletonKey, zombieKey, melzarKey, demonKey, combatGear, antidragonShieldEquipped, antifirePotion,
-		ringsOfRecoil, chronicle, edgevilleTeleport, rimmingtonTeleport;
+	//Items Recommended
+	ItemRequirement chronicle, edgevilleTeleport, rimmingtonTeleport, antidragonShieldEquipped, antifirePotion, ringsOfRecoil;
 
-	ConditionForStep askedAboutShip, askedAboutShield, askedAboutMelzar, askedAboutThalzar, askedAboutLozar, askedAllQuestions, askedOracleAboutMap,
+	//Items Required
+	ItemRequirement unfiredBowl, mindBomb, lobsterPot, silk, telegrabOrTenK, hammer, antidragonShield, planks3, planks2, planks1,
+		nails90, nails60, nails30, twoThousandCoins, mapPart1, mapPart2, mapPart3, fullMap, melzarsKey, ratKey, ghostKey,
+		skeletonKey, zombieKey, melzarKey, demonKey, combatGear, food;
+
+	Requirement askedAboutShip, askedAboutShield, askedAboutMelzar, askedAboutThalzar, askedAboutLozar, askedAllQuestions, askedOracleAboutMap,
 		inDwarvenMines, silkUsed, lobsterPotUsed, mindBombUsed, unfiredBowlUsed, thalzarDoorOpened, thalzarChest2Nearby, hasMapPart1, hasMapPart2,
 		hasMapPart3, inMelzarsMaze, inRatRoom, inPostRatRoom, inGhostRoom, inPostGhostRoom, inSkeletonRoom, inPostSkeletonRoom, hasRatKey,
 		hasGhostKey, hasSkeletonKey, hasZombieKey, hasMelzarKey, hasDemonKey, inLadderRoom, inRoomToBasement, inZombieRoom, inMelzarRoom,
@@ -80,6 +88,7 @@ public class DragonSlayer extends BasicQuestHelper
 		goDownShipLadder, repairShip, repairShip2, repairShip3, repairMap, talkToNed, boardShipToGo, talkToNedOnShip, enterCrandorHole, unlockShortcut,
 		returnThroughShortcut, enterElvargArea, goDownIntoKaramjaVolcano, repairShipAgainAndSail, killElvarg, finishQuest;
 
+	//Zones
 	Zone dwarvenMines, melzarsMaze, melzarsBasement, ratRoom1, ratRoom2, ratRoom3, postRatRoom1, postRatRoom2, ghostRoom1, ghostRoom2,
 		postGhostRoom1, postGhostRoom2, skeletonRoom1, skeletonRoom2, postSkeletonRoom1, postSkeletonRoom2, postSkeletonRoom3, ladderRoom,
 		roomToBasement1, roomToBasement2, zombieRoom, melzarRoom1, melzarRoom2, demonRoom1, demonRoom2, lastMelzarRoom1, lastMelzarRoom2,
@@ -189,12 +198,14 @@ public class DragonSlayer extends BasicQuestHelper
 	public void setupItemRequirements()
 	{
 		unfiredBowl = new ItemRequirement("Unfired bowl", ItemID.UNFIRED_BOWL);
-		unfiredBowl.setTip("You can make one with soft clay at a Potter's Wheel with 8 Crafting.");
+		unfiredBowl.setTooltip("You can make one with soft clay at a Potter's Wheel with 8 Crafting.");
 		mindBomb = new ItemRequirement("Wizard's mind bomb", ItemID.WIZARDS_MIND_BOMB);
-		mindBomb.setTip("You can buy one from the Rising Sun Inn in Falador.");
+		mindBomb.setTooltip("You can buy one from the Rising Sun Inn in Falador.");
 		lobsterPot = new ItemRequirement("Lobster pot", ItemID.LOBSTER_POT);
 		silk = new ItemRequirement("Silk", ItemID.SILK);
-		telegrabOrTenK = new ItemRequirement("Either 1. 33 Magic for Telegrab and a ranged/mage weapon, or 2. 10,000 coins", -1, -1);
+		ItemRequirement telegrab = new ItemRequirement("Telekinetic grab", ItemID.TELEKINETIC_GRAB, 1);
+		telegrabOrTenK = new ItemRequirements(LogicType.OR, "Either 1. 33 Magic for Telegrab and a ranged/mage weapon, or 2. 10,000 coins",
+			new ItemRequirement("Coins", ItemID.COINS_995, 10000), telegrab);
 		ringsOfRecoil = new ItemRequirement("Rings of Recoil for Elvarg", ItemID.RING_OF_RECOIL, -1);
 		chronicle = new ItemRequirement("The Chronicle for teleports to Champions' Guild", ItemID.CHRONICLE);
 		antifirePotion = new ItemRequirement("Antifire potion for Elvarg", ItemID.ANTIFIRE_POTION4, -1);
@@ -205,14 +216,16 @@ public class DragonSlayer extends BasicQuestHelper
 		mapPart2 = new ItemRequirement("Map part", ItemID.MAP_PART_1536);
 		mapPart3 = new ItemRequirement("Map part", ItemID.MAP_PART);
 		melzarsKey = new ItemRequirement("Maze key", ItemID.MAZE_KEY);
-		melzarsKey.setTip("You can get another maze key from the Guildmaster in the Champions' Guild.");
+		melzarsKey.setTooltip("You can get another maze key from the Guildmaster in the Champions' Guild.");
 		ratKey = new ItemRequirement("Key", ItemID.KEY_1543);
 		ghostKey = new ItemRequirement("Key", ItemID.KEY_1544);
 		skeletonKey = new ItemRequirement("Key", ItemID.KEY_1545);
 		zombieKey = new ItemRequirement("Key", ItemID.KEY_1546);
 		melzarKey = new ItemRequirement("Key", ItemID.KEY_1547);
 		demonKey = 	new ItemRequirement("Key", ItemID.KEY_1548);
-		combatGear = new ItemRequirement("Combat equipment and food", -1, -1);
+		combatGear = new ItemRequirement("Combat equipment", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
+		food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
 		antidragonShield = new ItemRequirement("Anti-dragon shield", ItemID.ANTIDRAGON_SHIELD);
 		antidragonShieldEquipped = new ItemRequirement("Anti-dragon shield", ItemID.ANTIDRAGON_SHIELD, 1, true);
 		planks3 = new ItemRequirement("Planks", ItemID.PLANK, 3);
@@ -273,61 +286,61 @@ public class DragonSlayer extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		askedAboutMelzar = new VarplayerCondition(177, false, 11);
-		askedAboutThalzar = new VarplayerCondition(177, false, 12);
-		askedAboutLozar = new VarplayerCondition(177, false, 13);
-		askedAboutShip = new VarplayerCondition(177, false, 14);
-		askedAboutShield = new VarplayerCondition(177, false, 15);
+		askedAboutMelzar = new VarplayerRequirement(177, false, 11);
+		askedAboutThalzar = new VarplayerRequirement(177, false, 12);
+		askedAboutLozar = new VarplayerRequirement(177, false, 13);
+		askedAboutShip = new VarplayerRequirement(177, false, 14);
+		askedAboutShield = new VarplayerRequirement(177, false, 15);
 		askedAllQuestions = new Conditions(askedAboutShip, askedAboutShield, askedAboutMelzar, askedAboutThalzar, askedAboutLozar);
-		askedOracleAboutMap = new VarbitCondition(1832, 1);
-		inDwarvenMines = new ZoneCondition(dwarvenMines);
-		silkUsed = new VarplayerCondition(177, true, 17);
-		unfiredBowlUsed = new VarplayerCondition(177, true, 18);
-		lobsterPotUsed = new VarplayerCondition(177, true, 19);
-		mindBombUsed = new VarplayerCondition(177, true, 20);
+		askedOracleAboutMap = new VarbitRequirement(1832, 1);
+		inDwarvenMines = new ZoneRequirement(dwarvenMines);
+		silkUsed = new VarplayerRequirement(177, true, 17);
+		unfiredBowlUsed = new VarplayerRequirement(177, true, 18);
+		lobsterPotUsed = new VarplayerRequirement(177, true, 19);
+		mindBombUsed = new VarplayerRequirement(177, true, 20);
 		thalzarDoorOpened = new Conditions(silkUsed, unfiredBowlUsed, lobsterPotUsed, mindBombUsed);
 		thalzarChest2Nearby = new ObjectCondition(ObjectID.CHEST_2588);
-		hasFullMap = new ItemRequirementCondition(fullMap);
-		hasMapPart1 = new Conditions(LogicType.OR, hasFullMap, new ItemRequirementCondition(mapPart1));
-		hasMapPart2 = new Conditions(LogicType.OR, hasFullMap, new ItemRequirementCondition(mapPart2));
-		hasMapPart3 = new Conditions(LogicType.OR, hasFullMap, new ItemRequirementCondition(mapPart3));
+		hasFullMap = new ItemRequirements(fullMap);
+		hasMapPart1 = new Conditions(LogicType.OR, hasFullMap, new ItemRequirements(mapPart1));
+		hasMapPart2 = new Conditions(LogicType.OR, hasFullMap, new ItemRequirements(mapPart2));
+		hasMapPart3 = new Conditions(LogicType.OR, hasFullMap, new ItemRequirements(mapPart3));
 
-		inMelzarsMaze = new ZoneCondition(melzarsMaze, melzarsBasement);
-		inRatRoom = new ZoneCondition(ratRoom1, ratRoom2, ratRoom3);
-		hasRatKey = new ItemRequirementCondition(ratKey);
-		hasGhostKey = new ItemRequirementCondition(ghostKey);
-		hasSkeletonKey = new ItemRequirementCondition(skeletonKey);
-		hasZombieKey = new ItemRequirementCondition(zombieKey);
-		hasMelzarKey = new ItemRequirementCondition(melzarKey);
-		hasDemonKey = new ItemRequirementCondition(demonKey);
-		inPostRatRoom = new ZoneCondition(postRatRoom1, postRatRoom2);
-		inGhostRoom = new ZoneCondition(ghostRoom1, ghostRoom2);
-		inPostGhostRoom = new ZoneCondition(postGhostRoom1, postGhostRoom2);
-		inSkeletonRoom = new ZoneCondition(skeletonRoom1, skeletonRoom2);
-		inPostSkeletonRoom = new ZoneCondition(postSkeletonRoom1, postSkeletonRoom2, postSkeletonRoom3);
-		inLadderRoom = new ZoneCondition(ladderRoom);
-		inRoomToBasement = new ZoneCondition(roomToBasement1, roomToBasement2);
-		inZombieRoom = new ZoneCondition(zombieRoom);
-		inMelzarRoom = new ZoneCondition(melzarRoom1, melzarRoom2);
-		inDemonRoom = new ZoneCondition(demonRoom1, demonRoom2);
-		inLastMelzarRoom = new ZoneCondition(lastMelzarRoom1, lastMelzarRoom2);
+		inMelzarsMaze = new ZoneRequirement(melzarsMaze, melzarsBasement);
+		inRatRoom = new ZoneRequirement(ratRoom1, ratRoom2, ratRoom3);
+		hasRatKey = new ItemRequirements(ratKey);
+		hasGhostKey = new ItemRequirements(ghostKey);
+		hasSkeletonKey = new ItemRequirements(skeletonKey);
+		hasZombieKey = new ItemRequirements(zombieKey);
+		hasMelzarKey = new ItemRequirements(melzarKey);
+		hasDemonKey = new ItemRequirements(demonKey);
+		inPostRatRoom = new ZoneRequirement(postRatRoom1, postRatRoom2);
+		inGhostRoom = new ZoneRequirement(ghostRoom1, ghostRoom2);
+		inPostGhostRoom = new ZoneRequirement(postGhostRoom1, postGhostRoom2);
+		inSkeletonRoom = new ZoneRequirement(skeletonRoom1, skeletonRoom2);
+		inPostSkeletonRoom = new ZoneRequirement(postSkeletonRoom1, postSkeletonRoom2, postSkeletonRoom3);
+		inLadderRoom = new ZoneRequirement(ladderRoom);
+		inRoomToBasement = new ZoneRequirement(roomToBasement1, roomToBasement2);
+		inZombieRoom = new ZoneRequirement(zombieRoom);
+		inMelzarRoom = new ZoneRequirement(melzarRoom1, melzarRoom2);
+		inDemonRoom = new ZoneRequirement(demonRoom1, demonRoom2);
+		inLastMelzarRoom = new ZoneRequirement(lastMelzarRoom1, lastMelzarRoom2);
 
-		hasShield = new Conditions(new ItemRequirementCondition(antidragonShield));
+		hasShield = new Conditions(new ItemRequirements(antidragonShield));
 
-		onShipDeck = new ZoneCondition(shipDeck);
-		inShipHull = new ZoneCondition(shipHull);
-		hasBoughtBoat = new VarplayerCondition(176, 3);
+		onShipDeck = new ZoneRequirement(shipDeck);
+		inShipHull = new ZoneRequirement(shipHull);
+		hasBoughtBoat = new VarplayerRequirement(176, 3);
 
-		hasRepairedHullOnce = new VarbitCondition(1835, 1);
-		hasRepairedHullTwice = new VarbitCondition(1836, 1);
-		fullyRepairedHull = new VarbitCondition(1837, 1);
+		hasRepairedHullOnce = new VarbitRequirement(1835, 1);
+		hasRepairedHullTwice = new VarbitRequirement(1836, 1);
+		fullyRepairedHull = new VarbitRequirement(1837, 1);
 
-		onCrandorSurface = new ZoneCondition(crandorSurface);
-		inCrandorUnderground = new ZoneCondition(crandorUnderground);
-		inElvargArea = new ZoneCondition(elvargArea);
-		inKaramjaVolcano = new ZoneCondition(karamjaVolcano);
+		onCrandorSurface = new ZoneRequirement(crandorSurface);
+		inCrandorUnderground = new ZoneRequirement(crandorUnderground);
+		inElvargArea = new ZoneRequirement(elvargArea);
+		inKaramjaVolcano = new ZoneRequirement(karamjaVolcano);
 
-		unlockedShortcut = new VarplayerCondition(177, true, 6);
+		unlockedShortcut = new VarplayerRequirement(177, true, 6);
 	}
 
 	public void setupSteps()
@@ -459,7 +472,7 @@ public class DragonSlayer extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Zombie rats (level 3)");
@@ -474,7 +487,7 @@ public class DragonSlayer extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(unfiredBowl);
@@ -491,7 +504,7 @@ public class DragonSlayer extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 
@@ -505,47 +518,56 @@ public class DragonSlayer extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(startQuest, talkToOziach, returnToGuildmaster))));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(startQuest, talkToOziach, returnToGuildmaster)));
 
 		PanelDetails thalzarPanel = new PanelDetails("Thalzar's map piece",
-			new ArrayList<>(Arrays.asList(talkToOracle, goIntoDwarvenMine, useSilkOnDoor, usePotOnDoor, useUnfiredBowlOnDoor, useMindBombOnDoor, searchThalzarChest)), silk, lobsterPot, unfiredBowl, mindBomb);
+			Arrays.asList(talkToOracle, goIntoDwarvenMine, useSilkOnDoor, usePotOnDoor, useUnfiredBowlOnDoor, useMindBombOnDoor, searchThalzarChest), silk, lobsterPot, unfiredBowl, mindBomb);
 		thalzarPanel.setLockingStep(getThalzarPiece);
 		allSteps.add(thalzarPanel);
 
 		PanelDetails lozarPanel = new PanelDetails("Lozar's map piece",
-			new ArrayList<>(Collections.singletonList(optionsForLozarPiece)), telegrabOrTenK);
+			Collections.singletonList(optionsForLozarPiece), telegrabOrTenK);
 		lozarPanel.setLockingStep(getLozarPiece);
 
 		allSteps.add(lozarPanel);
 
 		PanelDetails melzarPanel = new PanelDetails("Melzar's map piece",
-			new ArrayList<>(Arrays.asList(enterMelzarsMaze, killRat, openRedDoor, goUpRatLadder, killGhost, openOrangeDoor, goUpGhostLadder, killSkeleton, openYellowDoor, goDownSkeletonLadder,
-				goDownLadderRoomLadder, goDownBasementEntryLadder, killZombie, openBlueDoor, killMelzar, openMagntaDoor, killLesserDemon, openGreenDoor, openMelzarChest)), melzarsKey, combatGear);
+			Arrays.asList(enterMelzarsMaze, killRat, openRedDoor, goUpRatLadder, killGhost, openOrangeDoor, goUpGhostLadder,
+				killSkeleton, openYellowDoor, goDownSkeletonLadder, goDownLadderRoomLadder, goDownBasementEntryLadder, killZombie,
+				openBlueDoor, killMelzar, openMagntaDoor, killLesserDemon, openGreenDoor, openMelzarChest),
+			melzarsKey, combatGear, food);
 		melzarPanel.setLockingStep(getMelzarPiece);
 
 		allSteps.add(melzarPanel);
 
-		PanelDetails antiDragonPanel = new PanelDetails("Get an anti-dragon shield", new ArrayList<>(Collections.singletonList(getShield)));
+		PanelDetails antiDragonPanel = new PanelDetails("Get an anti-dragon shield", Collections.singletonList(getShield));
 		antiDragonPanel.setLockingStep(getShieldSteps);
 
 		allSteps.add(antiDragonPanel);
 
 		PanelDetails boatPanel = new PanelDetails("Get a boat",
-			new ArrayList<>(Arrays.asList(talkToKlarense, boardShip1, goDownShipLadder, repairShip)), hammer, planks3, nails90, twoThousandCoins);
+			Arrays.asList(talkToKlarense, boardShip1, goDownShipLadder, repairShip), hammer, planks3, nails90, twoThousandCoins);
 
 		allSteps.add(boatPanel);
 
-		PanelDetails captainPanel = new PanelDetails("Get a captain ready", new ArrayList<>(Arrays.asList(repairMap, talkToNed)));
+		PanelDetails captainPanel = new PanelDetails("Get a captain ready", Arrays.asList(repairMap, talkToNed));
 
 		allSteps.add(captainPanel);
 
-		allSteps.add(new PanelDetails("Slaying Elvarg", new ArrayList<>(Arrays.asList(boardShipToGo, enterCrandorHole, unlockShortcut, returnThroughShortcut, enterElvargArea, killElvarg)), combatGear, antidragonShield));
+		allSteps.add(new PanelDetails("Slaying Elvarg", Arrays.asList(boardShipToGo, enterCrandorHole, unlockShortcut,
+			returnThroughShortcut, enterElvargArea, killElvarg), combatGear, antidragonShield, food));
 
-		allSteps.add(new PanelDetails("Finish the quest", new ArrayList<>(Collections.singletonList(finishQuest))));
+		allSteps.add(new PanelDetails("Finish the quest", Collections.singletonList(finishQuest)));
 
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		return Collections.singletonList(new QuestPointRequirement(32));
 	}
 }

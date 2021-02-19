@@ -24,41 +24,48 @@
  */
 package com.questhelper.quests.asoulsbane;
 
+import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.LogicType;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.A_SOULS_BANE
 )
 public class ASoulsBane extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement rope, combatGear, angerSword, angerSpear, angerMace, angerBattleaxe;
 
-	ConditionForStep ropeUsed, inAngerRoom, hasWeapon, hasSword, hasSpear, hasMace, hasBattleaxe, watchedTolnaLeavingCutscene, inHole0, inHole1,
+	//Items Recommended
+	ItemRequirement food, digsiteTeleport, antipoison;
+
+	Requirement ropeUsed, inAngerRoom, hasWeapon, hasSword, hasSpear, hasMace, hasBattleaxe, watchedTolnaLeavingCutscene, inHole0, inHole1,
 		inHole2, inHole3, inHole4, inHole5, inFearRoom, reaperNearby, inConfusionRoom, inHopelessRoom, inHopeRoom, inTolnaRoom;
 
 	DetailedQuestStep talkToLauna, useRopeOnRift, enterRift, takeWeapon, killAnimals, killBears, killRats, killUnicorn, killGoblins, leaveAngerRoom,
@@ -67,6 +74,7 @@ public class ASoulsBane extends BasicQuestHelper
 
 	NpcStep killHopelessCreatures, killHeads;
 
+	//Zones
 	Zone rageRoom, fearRoom, confusionRoom, hopelessRoom, hopeRoom, tolnaRoom;
 
 	@Override
@@ -135,39 +143,46 @@ public class ASoulsBane extends BasicQuestHelper
 		rope = new ItemRequirement("Rope", ItemID.ROPE);
 		rope.setHighlightInInventory(true);
 		combatGear = new ItemRequirement("Combat gear + food", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 
 		angerBattleaxe = new ItemRequirement("Anger battleaxe", ItemID.ANGER_BATTLEAXE);
 		angerMace = new ItemRequirement("Anger mace", ItemID.ANGER_MACE);
 		angerSpear = new ItemRequirement("Anger spear", ItemID.ANGER_SPEAR);
 		angerSword = new ItemRequirement("Anger sword", ItemID.ANGER_SWORD);
+
+		food = new ItemRequirement("Food", -1, -1);
+		food.setDisplayItemId(BankSlotIcons.getFood());
+		digsiteTeleport = new ItemRequirement("Digsite Teleport", ItemID.DIGSITE_TELEPORT);
+		digsiteTeleport.addAlternates(ItemCollections.getDigsitePendants());
+		antipoison = new ItemRequirement("Antipoison (or equivalent)", ItemCollections.getAntipoisons());
 	}
 
 	public void setupConditions()
 	{
-		ropeUsed = new VarbitCondition(2032, 1);
-		hasWeapon = new ItemRequirementCondition(LogicType.OR, angerBattleaxe, angerMace, angerSpear, angerSword);
-		hasSword = new VarbitCondition(2029, 1);
-		hasSpear = new VarbitCondition(2029, 2);
-		hasMace = new VarbitCondition(2029, 3);
-		hasBattleaxe = new VarbitCondition(2029, 4);
+		ropeUsed = new VarbitRequirement(2032, 1);
+		hasWeapon = new ItemRequirements(LogicType.OR, "", angerBattleaxe, angerMace, angerSpear, angerSword);
+		hasSword = new VarbitRequirement(2029, 1);
+		hasSpear = new VarbitRequirement(2029, 2);
+		hasMace = new VarbitRequirement(2029, 3);
+		hasBattleaxe = new VarbitRequirement(2029, 4);
 
-		inAngerRoom = new ZoneCondition(rageRoom);
-		inFearRoom = new ZoneCondition(fearRoom);
-		inConfusionRoom = new ZoneCondition(confusionRoom);
-		inHopelessRoom = new ZoneCondition(hopelessRoom);
-		inHopeRoom = new ZoneCondition(hopeRoom);
-		inTolnaRoom = new ZoneCondition(tolnaRoom);
+		inAngerRoom = new ZoneRequirement(rageRoom);
+		inFearRoom = new ZoneRequirement(fearRoom);
+		inConfusionRoom = new ZoneRequirement(confusionRoom);
+		inHopelessRoom = new ZoneRequirement(hopelessRoom);
+		inHopeRoom = new ZoneRequirement(hopeRoom);
+		inTolnaRoom = new ZoneRequirement(tolnaRoom);
 
-		watchedTolnaLeavingCutscene = new VarbitCondition(2560, 1);
+		watchedTolnaLeavingCutscene = new VarbitRequirement(2560, 1);
 
-		inHole0 = new VarbitCondition(2012, 0);
-		inHole1 = new VarbitCondition(2012, 1);
-		inHole2 = new VarbitCondition(2012, 2);
-		inHole3 = new VarbitCondition(2012, 3);
-		inHole4 = new VarbitCondition(2012, 4);
-		inHole5 = new VarbitCondition(2012, 5);
+		inHole0 = new VarbitRequirement(2012, 0);
+		inHole1 = new VarbitRequirement(2012, 1);
+		inHole2 = new VarbitRequirement(2012, 2);
+		inHole3 = new VarbitRequirement(2012, 3);
+		inHole4 = new VarbitRequirement(2012, 4);
+		inHole5 = new VarbitRequirement(2012, 5);
 
-		reaperNearby = new VarbitCondition(2035, 1);
+		reaperNearby = new VarbitRequirement(2035, 1);
 	}
 
 	public void loadZones()
@@ -191,32 +206,32 @@ public class ASoulsBane extends BasicQuestHelper
 		enterRift = new ObjectStep(this, NullObjectID.NULL_13968, new WorldPoint(3310, 3452, 0), "Enter the rift.", combatGear);
 
 		takeWeapon = new ObjectStep(this, NullObjectID.NULL_13993, new WorldPoint(3012, 5244, 0), "Take a weapon from the weapon rack. Kill the angry monsters with the appropriate weapon:");
-		takeWeapon.setText(new ArrayList<>(Arrays.asList("Take a weapon from the weapon rack. Kill the angry monsters with the appropriate weapon:",
-			"Sword - Unicorn",
-			"Spear - Bear",
-			"Mace - Rat",
-			"Battleaxe - Goblin")));
-
-
-		ArrayList<String> killText = new ArrayList<>(Arrays.asList("Kill animals with appropriate weapons until the Rage Metre fills.",
+		takeWeapon.setText(Arrays.asList("Take a weapon from the weapon rack. Kill the angry monsters with the appropriate weapon:",
 			"Sword - Unicorn",
 			"Spear - Bear",
 			"Mace - Rat",
 			"Battleaxe - Goblin"));
 
+
+		List<String> killText = Arrays.asList("Kill animals with appropriate weapons until the Rage Metre fills.",
+			"Sword - Unicorn",
+			"Spear - Bear",
+			"Mace - Rat",
+			"Battleaxe - Goblin");
+
 		killAnimals = new DetailedQuestStep(this, "");
 		killAnimals.setText(killText);
 
-		killBears = new NpcStep(this, NpcID.ANGRY_BEAR, new WorldPoint(3027, 5232, 0),  "", true);
+		killBears = new NpcStep(this, NpcID.ANGRY_BEAR, new WorldPoint(3027, 5232, 0), "", true);
 		killBears.setText(killText);
 
-		killGoblins = new NpcStep(this, NpcID.ANGRY_GOBLIN, new WorldPoint(3027, 5232, 0),  "", true);
+		killGoblins = new NpcStep(this, NpcID.ANGRY_GOBLIN, new WorldPoint(3027, 5232, 0), "", true);
 		killGoblins.setText(killText);
 
-		killRats = new NpcStep(this, NpcID.ANGRY_GIANT_RAT, new WorldPoint(3027, 5232, 0),  "", true);
+		killRats = new NpcStep(this, NpcID.ANGRY_GIANT_RAT, new WorldPoint(3027, 5232, 0), "", true);
 		killRats.setText(killText);
 
-		killUnicorn = new NpcStep(this, NpcID.ANGRY_UNICORN, new WorldPoint(3027, 5232, 0),  "", true);
+		killUnicorn = new NpcStep(this, NpcID.ANGRY_UNICORN, new WorldPoint(3027, 5232, 0), "", true);
 		killUnicorn.setText(killText);
 
 		killAnimals.addSubSteps(killBears, killGoblins, killRats, killUnicorn);
@@ -254,32 +269,44 @@ public class ASoulsBane extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(rope, combatGear));
+		return Arrays.asList(rope, combatGear);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		return Arrays.asList(digsiteTeleport, antipoison);
+	}
+
+	@Override
+	public List<String> getCombatRequirements()
+	{
+		return Arrays.asList("Multiple level 40-46 enemies");
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
 		allSteps.add(new PanelDetails("Starting off",
-			new ArrayList<>(Arrays.asList(talkToLauna, useRopeOnRift, enterRift)), rope, combatGear));
+			Arrays.asList(talkToLauna, useRopeOnRift, enterRift), rope, combatGear));
 
 		allSteps.add(new PanelDetails("Anger room",
-			new ArrayList<>(Arrays.asList(takeWeapon, killAnimals, leaveAngerRoom)), combatGear));
+			Arrays.asList(takeWeapon, killAnimals, leaveAngerRoom), combatGear));
 
 		allSteps.add(new PanelDetails("Fear room",
-			new ArrayList<>(Arrays.asList(lookInsideHole0, leaveFearRoom)), combatGear));
+			Arrays.asList(lookInsideHole0, leaveFearRoom), combatGear));
 
 		allSteps.add(new PanelDetails("Confusion room",
-			new ArrayList<>(Arrays.asList(killRealConfusionBeast, leaveConfusionRoom)), combatGear));
+			Arrays.asList(killRealConfusionBeast, leaveConfusionRoom), combatGear));
 
 		allSteps.add(new PanelDetails("Hopelessness room",
-			new ArrayList<>(Arrays.asList(killHopelessCreatures, leaveHopelessRoom)), combatGear));
+			Arrays.asList(killHopelessCreatures, leaveHopelessRoom), combatGear));
 
 		allSteps.add(new PanelDetails("Save Tolna",
-			new ArrayList<>(Arrays.asList(killHeads, talkToTolna, talkToTolnaAgain)), combatGear));
+			Arrays.asList(killHeads, talkToTolna, talkToTolnaAgain), combatGear));
 
 		return allSteps;
 	}

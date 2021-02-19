@@ -28,6 +28,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import lombok.Setter;
 import net.runelite.api.widgets.Widget;
 import com.questhelper.QuestHelperPlugin;
@@ -37,7 +38,7 @@ import net.runelite.api.widgets.WidgetItem;
 public class WidgetStep extends DetailedQuestStep
 {
 	@Setter
-	protected ArrayList<WidgetDetails> widgetDetails = new ArrayList<>();
+	protected List<WidgetDetails> widgetDetails = new ArrayList<>();
 
 	public WidgetStep(QuestHelper questHelper, String text, int groupID, int childID)
 	{
@@ -45,16 +46,10 @@ public class WidgetStep extends DetailedQuestStep
 		widgetDetails.add(new WidgetDetails(groupID, childID, -1));
 	}
 
-	public WidgetStep(QuestHelper questHelper, String text, int groupID, int childID, int childChildID)
-	{
-		super(questHelper, text);
-		widgetDetails.add(new WidgetDetails(groupID, childID, childChildID));
-	}
-
 	public WidgetStep(QuestHelper questHelper, String text, WidgetDetails... widgetDetails)
 	{
 		super(questHelper, text);
-		this.widgetDetails = new ArrayList(Arrays.asList(widgetDetails));
+		this.widgetDetails.addAll(Arrays.asList(widgetDetails));
 	}
 
 	@Override
@@ -79,16 +74,20 @@ public class WidgetStep extends DetailedQuestStep
 				else
 				{
 					WidgetItem widgetItem = widget.getWidgetItem(widgetDetail.childChildID);
-					graphics.setColor(new Color(0, 255, 255, 65));
+					graphics.setColor(new Color(questHelper.getConfig().targetOverlayColor().getRed(),
+						questHelper.getConfig().targetOverlayColor().getGreen(),
+						questHelper.getConfig().targetOverlayColor().getBlue(), 65));
 					graphics.fill(widgetItem.getCanvasBounds());
-					graphics.setColor(Color.CYAN);
+					graphics.setColor(questHelper.getConfig().targetOverlayColor());
 					graphics.draw(widgetItem.getCanvasBounds());
 					continue;
 				}
 			}
-			graphics.setColor(new Color(0, 255, 255, 65));
+			graphics.setColor(new Color(questHelper.getConfig().targetOverlayColor().getRed(),
+				questHelper.getConfig().targetOverlayColor().getGreen(),
+				questHelper.getConfig().targetOverlayColor().getBlue(), 65));
 			graphics.fill(widget.getBounds());
-			graphics.setColor(Color.CYAN);
+			graphics.setColor(questHelper.getConfig().targetOverlayColor());
 			graphics.draw(widget.getBounds());
 		}
 	}

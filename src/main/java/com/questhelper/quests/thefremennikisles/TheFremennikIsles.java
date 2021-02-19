@@ -26,29 +26,34 @@ package com.questhelper.quests.thefremennikisles;
 
 import com.questhelper.ItemCollections;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.LogicType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
 import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
 import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 
@@ -57,11 +62,12 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class TheFremennikIsles extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement tuna, ores, jesterHat, jesterTights, jesterTop, jesterBoots, arcticLogs8, splitLogs8,
 		knife, rope8, rope4, splitLogs4, yakTop, yakBottom, royalDecree, roundShield, yakTopWorn, yakBottomWorn,
 		shieldWorn, meleeWeapon, food, head, needle, thread, coins15, bronzeNail, hammer, rope, axe, rope9;
 
-	ConditionForStep inIslands, inJatizso, inNeitiznot, inTrollLands, hasJesterOutfit, jestering1, repairedBridge1,
+	Requirement inIslands, inJatizso, inNeitiznot, inTrollLands, hasJesterOutfit, jestering1, repairedBridge1,
 		repairedBridge2, inNeitiznotOrTrollLands, collectedFlosi, collectedHring, collectedSkuli,
 		collectedValigga, collectedKeepa, collectedRaum, inTrollCave, inKingCave, killedTrolls, haveHead;
 
@@ -76,11 +82,12 @@ public class TheFremennikIsles extends BasicQuestHelper
 		returnToRellekkaFromJatizsoWithDecree, travelToNeitiznotWithDecree, talkToMawnisWithDecree, getYakArmour, returnToRellekkaFromJatizsoAfterDecree,
 		travelToNeitiznotAfterDecree, talkToMawnisAfterDecree, makeShield, enterCave, killTrolls, enterKingRoom, killKing, decapitateKing, finishQuest, finishQuestGivenHead;
 
+	//Zones
 	Zone islands, jatizso1, jatizso2, neitiznot1, neitiznot2, trollLands, trollCave, kingCave;
 
 	PanelDetails prepareForRepairPanel, prepareForCombatPanel;
 
-	ArrayList<ItemRequirement> items;
+	List<ItemRequirement> items;
 
 	@Override
 	public Map<Integer, QuestStep> loadSteps()
@@ -288,11 +295,12 @@ public class TheFremennikIsles extends BasicQuestHelper
 		yakBottomWorn = new ItemRequirement("Yak-hide armour (bottom)", ItemID.YAKHIDE_ARMOUR_10824, 1, true);
 		shieldWorn = new ItemRequirement("Neitiznot shield", ItemID.NEITIZNOT_SHIELD, 1, true);
 		meleeWeapon = new ItemRequirement("Melee gear", -1, -1);
-		food = new ItemRequirement("Food + potions", -1, -1);
+		meleeWeapon.setDisplayItemId(BankSlotIcons.getCombatGear());
+		food = new ItemRequirement("Food + potions", ItemCollections.getGoodEatingFood(), -1);
 		tuna = new ItemRequirement("Raw tuna", ItemID.RAW_TUNA);
 		axe = new ItemRequirement("Any axe", ItemCollections.getAxes());
 
-		tuna.setTip("You can buy some from Flosi in east Jatizso, or fish some from the pier.");
+		tuna.setTooltip("You can buy some from Flosi in east Jatizso, or fish some from the pier.");
 		if (client.getRealSkillLevel(Skill.MINING) >= 55)
 		{
 			ores = new ItemRequirement("Mithril ore", ItemID.MITHRIL_ORE, 6);
@@ -305,7 +313,7 @@ public class TheFremennikIsles extends BasicQuestHelper
 		{
 			ores = new ItemRequirement("Tin ore", ItemID.TIN_ORE, 8);
 		}
-		ores.setTip("You can mine some in the underground mine north west of Jatizso.");
+		ores.setTooltip("You can mine some in the underground mine north west of Jatizso.");
 
 		jesterHat = new ItemRequirement("Silly jester hat", ItemID.SILLY_JESTER_HAT, 1, true);
 		jesterTop = new ItemRequirement("Silly jester body", ItemID.SILLY_JESTER_TOP, 1, true);
@@ -320,36 +328,36 @@ public class TheFremennikIsles extends BasicQuestHelper
 
 		if (client.getAccountType().isIronman())
 		{
-			splitLogs8.setTip("Cut down the arctic pines nearby, and split them on the woodcutting stump in central Neitiznot");
-			splitLogs4.setTip("Cut down the arctic pines nearby, and split them on the woodcutting stump in central Neitiznot");
-			yakTop.setTip("Kill yaks for 2 hides, have Thakkrad next to Mawnis cure them, and use a thread + needle to craft");
-			yakBottom.setTip("Kill yaks for a hide, have Thakkrad next to Mawnis cure them, and use a thread + needle to craft");
-			roundShield.setTip("Get 2 arctic pine logs, a bronze nail, a hammer, and a rope, and make the shield on the woodcutting stump in central Neitiznot");
+			splitLogs8.setTooltip("Cut down the arctic pines nearby, and split them on the woodcutting stump in central Neitiznot");
+			splitLogs4.setTooltip("Cut down the arctic pines nearby, and split them on the woodcutting stump in central Neitiznot");
+			yakTop.setTooltip("Kill yaks for 2 hides, have Thakkrad next to Mawnis cure them, and use a thread + needle to craft");
+			yakBottom.setTooltip("Kill yaks for a hide, have Thakkrad next to Mawnis cure them, and use a thread + needle to craft");
+			roundShield.setTooltip("Get 2 arctic pine logs, a bronze nail, a hammer, and a rope, and make the shield on the woodcutting stump in central Neitiznot");
 		}
 		else
 		{
 			if (client.getRealSkillLevel(Skill.WOODCUTTING) >= 56)
 			{
-				splitLogs8.setTip("Buy some from the GE, or cut down the arctic pines nearby, and split them on the woodcutting stump in central Neitiznot");
-				splitLogs4.setTip("Buy some from the GE, or cut down the arctic pines nearby, and split them on the woodcutting stump in central Neitiznot");
+				splitLogs8.setTooltip("Buy some from the GE, or cut down the arctic pines nearby, and split them on the woodcutting stump in central Neitiznot");
+				splitLogs4.setTooltip("Buy some from the GE, or cut down the arctic pines nearby, and split them on the woodcutting stump in central Neitiznot");
 			}
 			else
 			{
-				splitLogs8.setTip("Buy some from the GE, or get level 56 Woodcutting");
-				splitLogs4.setTip("Buy some from the GE, or get level 56 Woodcutting");
+				splitLogs8.setTooltip("Buy some from the GE, or get level 56 Woodcutting");
+				splitLogs4.setTooltip("Buy some from the GE, or get level 56 Woodcutting");
 			}
 
 			if (client.getRealSkillLevel(Skill.CRAFTING) >= 46)
 			{
-				yakTop.setTip("Buy from the GE, or kill yaks for 2 hides, have Thakkrad next to Mawnis cure them, and use a thread + needle to craft");
-				yakBottom.setTip("Buy from the GE, or kill yaks for a hide, have Thakkrad next to Mawnis cure them, and use a thread + needle to craft");
-				roundShield.setTip("Buy from the GE, or get 2 arctic pine logs, a bronze nail, a hammer, and a rope, and make the shield on the woodcutting stump in central Neitiznot");
+				yakTop.setTooltip("Buy from the GE, or kill yaks for 2 hides, have Thakkrad next to Mawnis cure them, and use a thread + needle to craft");
+				yakBottom.setTooltip("Buy from the GE, or kill yaks for a hide, have Thakkrad next to Mawnis cure them, and use a thread + needle to craft");
+				roundShield.setTooltip("Buy from the GE, or get 2 arctic pine logs, a bronze nail, a hammer, and a rope, and make the shield on the woodcutting stump in central Neitiznot");
 			}
 			else
 			{
-				yakBottom.setTip("Buy from the GE, or get 46 crafting");
-				yakTop.setTip("Buy from the GE, or get 46 crafting");
-				roundShield.setTip("Buy from the GE, or get 46 crafting");
+				yakBottom.setTooltip("Buy from the GE, or get 46 crafting");
+				yakTop.setTooltip("Buy from the GE, or get 46 crafting");
+				roundShield.setTooltip("Buy from the GE, or get 46 crafting");
 			}
 		}
 		knife = new ItemRequirement("Knife", ItemID.KNIFE);
@@ -357,10 +365,10 @@ public class TheFremennikIsles extends BasicQuestHelper
 		rope4 = new ItemRequirement("Rope", ItemID.ROPE, 4);
 
 		royalDecree = new ItemRequirement("Royal decree", ItemID.ROYAL_DECREE);
-		royalDecree.setTip("You can get another from Gjuki on Jatizso");
+		royalDecree.setTooltip("You can get another from Gjuki on Jatizso");
 
 		head = new ItemRequirement("Decapitated head", ItemID.DECAPITATED_HEAD_10842);
-		head.setTip("You can get another from the corpse of the Ice Troll King");
+		head.setTooltip("You can get another from the corpse of the Ice Troll King");
 	}
 
 	public void loadZones()
@@ -377,27 +385,27 @@ public class TheFremennikIsles extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inIslands = new ZoneCondition(islands);
-		inNeitiznot = new ZoneCondition(neitiznot1, neitiznot2);
-		inNeitiznotOrTrollLands = new ZoneCondition(neitiznot1, neitiznot1, trollLands);
-		inJatizso = new ZoneCondition(jatizso1, jatizso2);
-		inTrollLands = new ZoneCondition(trollLands);
-		inTrollCave = new ZoneCondition(trollCave);
-		inKingCave = new ZoneCondition(kingCave);
-		hasJesterOutfit = new ItemRequirementCondition(jesterBoots, jesterHat, jesterTights, jesterTop);
-		jestering1 = new VarbitCondition(6719, 2);
-		repairedBridge1 = new VarbitCondition(3313, 1);
-		repairedBridge2 = new VarbitCondition(3314, 1);
+		inIslands = new ZoneRequirement(islands);
+		inNeitiznot = new ZoneRequirement(neitiznot1, neitiznot2);
+		inNeitiznotOrTrollLands = new ZoneRequirement(neitiznot1, neitiznot1, trollLands);
+		inJatizso = new ZoneRequirement(jatizso1, jatizso2);
+		inTrollLands = new ZoneRequirement(trollLands);
+		inTrollCave = new ZoneRequirement(trollCave);
+		inKingCave = new ZoneRequirement(kingCave);
+		hasJesterOutfit = new ItemRequirements(jesterBoots, jesterHat, jesterTights, jesterTop);
+		jestering1 = new VarbitRequirement(6719, 2);
+		repairedBridge1 = new VarbitRequirement(3313, 1);
+		repairedBridge2 = new VarbitRequirement(3314, 1);
 
-		collectedHring = new VarbitCondition(3321, 1);
-		collectedSkuli = new VarbitCondition(3320, 1);
-		collectedValigga = new VarbitCondition(3324, 1);
-		collectedKeepa = new VarbitCondition(3325, 1);
-		collectedRaum = new VarbitCondition(3323, 1);
-		collectedFlosi = new VarbitCondition(3322, 1);
+		collectedHring = new VarbitRequirement(3321, 1);
+		collectedSkuli = new VarbitRequirement(3320, 1);
+		collectedValigga = new VarbitRequirement(3324, 1);
+		collectedKeepa = new VarbitRequirement(3325, 1);
+		collectedRaum = new VarbitRequirement(3323, 1);
+		collectedFlosi = new VarbitRequirement(3322, 1);
 
-		killedTrolls = new VarbitCondition(3312, 0);
-		haveHead = new ItemRequirementCondition(head);
+		killedTrolls = new VarbitRequirement(3312, 0);
+		haveHead = new ItemRequirements(head);
 	}
 
 	public void setupSteps()
@@ -461,7 +469,7 @@ public class TheFremennikIsles extends BasicQuestHelper
 		talkToGjukiToReport.addSubSteps(travelToJatizsoToReport, leaveNeitiznotToReport);
 
 		collectFromHring = new NpcStep(this, NpcID.HRING_HRING, new WorldPoint(2397, 3797, 0), "Collect 8000 coins from Hring Hring in south west Jatizso.");
-		collectFromHring.addDialogStep("But, rules are rules. Pay up!");
+		collectFromHring.addDialogStep("But rules are rules. Pay up!");
 		collectFromSkuli = new NpcStep(this, NpcID.SKULI_MYRKA, new WorldPoint(2395, 3804, 0), "Collect 6000 coins from Skuli in north west Jatizso.");
 		collectFromSkuli.addDialogStep("But, rules are rules. Pay up!");
 		collectFromVanligga = new NpcStep(this, NpcID.VANLIGGA_GASTFRIHET, new WorldPoint(2405, 3813, 0), "Collect 5000 coins from Vanligga north of Gjuki's building.");
@@ -479,7 +487,7 @@ public class TheFremennikIsles extends BasicQuestHelper
 		collectFromKeepaAgain.addDialogStep("But rules are rules. Pay up!");
 		collectFromFlosi = new NpcStep(this, NpcID.FLOSI_DALKSSON, new WorldPoint(2418, 3813, 0), "Collect tax from Flossi in north east Jatizso.");
 		collectFromFlosi.addDialogStep("But rules are rules. Pay up!");
-		talkToGjukiAfterCollection2 =  new NpcStep(this, NpcID.KING_GJUKI_SORVOTT_IV, new WorldPoint(2407, 3804, 0), "Report back to King Gjuki Sorvott IV on Jatizso.");
+		talkToGjukiAfterCollection2 = new NpcStep(this, NpcID.KING_GJUKI_SORVOTT_IV, new WorldPoint(2407, 3804, 0), "Report back to King Gjuki Sorvott IV on Jatizso.");
 
 		travelToNeitiznotToSpyAgain = new NpcStep(this, NpcID.MARIA_GUNNARS_1883, new WorldPoint(2644, 3710, 0), "Travel to Neitiznot with Maria Gunnars.");
 		returnToRellekkaFromJatizsoToSpyAgain = new NpcStep(this, NpcID.MORD_GUNNARS_1940, new WorldPoint(2420, 3781, 0), "Return to Rellekka with Mord.");
@@ -531,37 +539,54 @@ public class TheFremennikIsles extends BasicQuestHelper
 	{
 		if (client.getAccountType().isIronman())
 		{
-			prepareForRepairPanel = new PanelDetails("Helping Mawnis", new ArrayList<>(Arrays.asList(talkToMawnis, talkToMawnisWithLogs, repairBridge1, talkToMawnisAfterRepair)), rope8, axe, knife);
-			prepareForCombatPanel = new PanelDetails("Preparing to fight", new ArrayList<>(Arrays.asList(getYakArmour, makeShield)), needle, thread, coins15, bronzeNail, hammer, rope);
-			items = new ArrayList<>(Arrays.asList(tuna, ores, rope9, knife, axe, hammer, bronzeNail, needle, thread, meleeWeapon, food));
+			prepareForRepairPanel = new PanelDetails("Helping Mawnis", Arrays.asList(talkToMawnis, talkToMawnisWithLogs, repairBridge1, talkToMawnisAfterRepair), rope8, axe, knife);
+			prepareForCombatPanel = new PanelDetails("Preparing to fight", Arrays.asList(getYakArmour, makeShield), needle, thread, coins15, bronzeNail, hammer, rope);
+			items = Arrays.asList(tuna, ores, rope9, knife, axe, hammer, bronzeNail, needle, thread, meleeWeapon, food);
 		}
 		else
 		{
-			prepareForCombatPanel = new PanelDetails("Preparing to fight", new ArrayList<>(Arrays.asList(getYakArmour, makeShield)), yakBottom, yakTop, roundShield);
-			prepareForRepairPanel = new PanelDetails("Helping Mawnis", new ArrayList<>(Arrays.asList(talkToMawnis, talkToMawnisWithLogs, repairBridge1, talkToMawnisAfterRepair)), rope8, splitLogs8);
-			items = new ArrayList<>(Arrays.asList(tuna, ores, rope9, splitLogs8, roundShield, yakTop, yakBottom, meleeWeapon, food));
+			prepareForCombatPanel = new PanelDetails("Preparing to fight", Arrays.asList(getYakArmour, makeShield), yakBottom, yakTop, roundShield);
+			prepareForRepairPanel = new PanelDetails("Helping Mawnis", Arrays.asList(talkToMawnis, talkToMawnisWithLogs, repairBridge1, talkToMawnisAfterRepair), rope8, splitLogs8);
+			items = Arrays.asList(tuna, ores, rope9, knife, splitLogs8, roundShield, yakTop, yakBottom, meleeWeapon, food);
 		}
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		return items;
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<String> getCombatRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Travel to Jatizso", new ArrayList<>(Arrays.asList(talkToMord, travelToJatizso)), tuna));
-		allSteps.add(new PanelDetails("Helping Gjuki", new ArrayList<>(Arrays.asList(talkToGjuki, bringOreToGjuki, getJesterOutfit))));
-		allSteps.add(new PanelDetails("Spy on Mawnis", new ArrayList<>(Arrays.asList(talkToSlug, goSpyOnMawnis, tellSlugReport1))));
+		return Arrays.asList("10 Ice Trolls (level 74-82)", "Ice Troll King (level 122)");
+	}
+
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.THE_FREMENNIK_TRIALS, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.AGILITY, 40, true));
+		req.add(new SkillRequirement(Skill.CONSTRUCTION, 20, true));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Travel to Jatizso", Arrays.asList(talkToMord, travelToJatizso), tuna));
+		allSteps.add(new PanelDetails("Helping Gjuki", Arrays.asList(talkToGjuki, bringOreToGjuki, getJesterOutfit)));
+		allSteps.add(new PanelDetails("Spy on Mawnis", Arrays.asList(talkToSlug, goSpyOnMawnis, tellSlugReport1)));
 		allSteps.add(prepareForRepairPanel);
-		allSteps.add(new PanelDetails("Collecting window tax", new ArrayList<>(Arrays.asList(talkToGjukiToReport, collectFromKeepa, collectFromVanligga, collectFromSkuli, collectFromHring, talkToGjukiAfterCollection1))));
-		allSteps.add(new PanelDetails("Collecting beard tax", new ArrayList<>(Arrays.asList(collectFromHringAgain, collectFromRaum, collectFromSkuliAgain, collectFromKeepaAgain, collectFromFlosi, talkToGjukiAfterCollection2))));
-		allSteps.add(new PanelDetails("Spy on Mawnis again", new ArrayList<>(Arrays.asList(talkToSlugToSpyAgain, goSpyOnMawnisAgain, reportBackToSlugAgain, talkToGjukiAfterSpy2, talkToMawnisWithDecree))));
+		allSteps.add(new PanelDetails("Collecting window tax", Arrays.asList(talkToGjukiToReport, collectFromKeepa, collectFromVanligga, collectFromSkuli, collectFromHring, talkToGjukiAfterCollection1)));
+		allSteps.add(new PanelDetails("Collecting beard tax", Arrays.asList(collectFromHringAgain, collectFromRaum, collectFromSkuliAgain, collectFromKeepaAgain, collectFromFlosi, talkToGjukiAfterCollection2)));
+		allSteps.add(new PanelDetails("Spy on Mawnis again", Arrays.asList(talkToSlugToSpyAgain, goSpyOnMawnisAgain, reportBackToSlugAgain, talkToGjukiAfterSpy2, talkToMawnisWithDecree)));
 		allSteps.add(prepareForCombatPanel);
-		allSteps.add(new PanelDetails("Killing the king", new ArrayList<>(Arrays.asList(enterCave, killTrolls, enterKingRoom, killKing, decapitateKing, finishQuest)), yakBottom, yakTop, roundShield, meleeWeapon, food));
+		allSteps.add(new PanelDetails("Killing the king", Arrays.asList(enterCave, killTrolls, enterKingRoom, killKing, decapitateKing, finishQuest), yakBottom, yakTop, roundShield, meleeWeapon, food));
 
 		return allSteps;
 	}

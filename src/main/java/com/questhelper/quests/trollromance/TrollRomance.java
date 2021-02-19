@@ -24,39 +24,46 @@
  */
 package com.questhelper.quests.trollromance;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.NpcCondition;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.NpcCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.TROLL_ROMANCE
 )
 public class TrollRomance extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement ironBar, mapleLog, rope, cakeTin, swampTar, bucketOfWax, wax, sled, waxedSled, trollweissFlowers, combatGear, sledEquipped;
 
-	ConditionForStep inStrongholdFloor1, inStrongholdFloor2, inPrison, inTrollweiss, atFlowerLocation, hasWax, hasWaxedSled, hasFlower, inTrollCave,
+	Requirement inStrongholdFloor1, inStrongholdFloor2, inPrison, inTrollweiss, atFlowerLocation, hasWax, hasWaxedSled, hasFlower, inTrollCave,
 		isSledEquipped, fightableArrgNearby;
 
 	DetailedQuestStep enterStronghold, goDownToUg, goUpToUg, talkToUg, talkToAga, talkToTenzing, talkToDunstan, talkToDunstanAgain, useTarOnWax,
@@ -65,6 +72,7 @@ public class TrollRomance extends BasicQuestHelper
 
 	ObjectStep pickFlowers;
 
+	//Zones
 	Zone strongholdFloor1, strongholdFloor2, prison, trollweiss, flowerLocation, trollCave;
 
 	@Override
@@ -140,16 +148,17 @@ public class TrollRomance extends BasicQuestHelper
 		wax = new ItemRequirement("Wax", ItemID.WAX);
 		wax.setHighlightInInventory(true);
 		sled = new ItemRequirement("Sled", ItemID.SLED);
-		sled.setTip("You can have Dunstan make another. Bring him a maple log, a rope and an iron bar");
+		sled.setTooltip("You can have Dunstan make another. Bring him a maple log, a rope and an iron bar");
 		sled.setHighlightInInventory(true);
 		waxedSled = new ItemRequirement("Sled", ItemID.SLED_4084);
-		waxedSled.setTip("You can have Dunstan make another. Bring him a maple log, a rope and an iron bar. You then can apply some wax to it");
+		waxedSled.setTooltip("You can have Dunstan make another. Bring him a maple log, a rope and an iron bar. You then can apply some wax to it");
 		sledEquipped = new ItemRequirement("Sled", ItemID.SLED_4084, 1, true);
 		sledEquipped.setHighlightInInventory(true);
-		sledEquipped.setTip("You can have Dunstan make another. Bring him a maple log, a rope and an iron bar. You then can apply some wax to it");
+		sledEquipped.setTooltip("You can have Dunstan make another. Bring him a maple log, a rope and an iron bar. You then can apply some wax to it");
 		trollweissFlowers = new ItemRequirement("Trollweiss", ItemID.TROLLWEISS);
-		trollweissFlowers.setTip("You can get another from the Trollweiss mountain");
+		trollweissFlowers.setTooltip("You can get another from the Trollweiss mountain");
 		combatGear = new ItemRequirement("Combat gear, food, and potions", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
 	}
 
 	public void loadZones()
@@ -164,16 +173,16 @@ public class TrollRomance extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inStrongholdFloor1 = new ZoneCondition(strongholdFloor1);
-		inStrongholdFloor2 = new ZoneCondition(strongholdFloor2);
-		inPrison = new ZoneCondition(prison);
-		inTrollweiss = new ZoneCondition(trollweiss);
-		inTrollCave = new ZoneCondition(trollCave);
-		atFlowerLocation = new ZoneCondition(flowerLocation);
-		hasWax = new ItemRequirementCondition(wax);
-		hasWaxedSled = new ItemRequirementCondition(waxedSled);
-		hasFlower = new ItemRequirementCondition(trollweissFlowers);
-		isSledEquipped = new ItemRequirementCondition(sledEquipped);
+		inStrongholdFloor1 = new ZoneRequirement(strongholdFloor1);
+		inStrongholdFloor2 = new ZoneRequirement(strongholdFloor2);
+		inPrison = new ZoneRequirement(prison);
+		inTrollweiss = new ZoneRequirement(trollweiss);
+		inTrollCave = new ZoneRequirement(trollCave);
+		atFlowerLocation = new ZoneRequirement(flowerLocation);
+		hasWax = new ItemRequirements(wax);
+		hasWaxedSled = new ItemRequirements(waxedSled);
+		hasFlower = new ItemRequirements(trollweissFlowers);
+		isSledEquipped = new ItemRequirements(sledEquipped);
 		fightableArrgNearby = new NpcCondition(NpcID.ARRG_643);
 	}
 
@@ -252,14 +261,14 @@ public class TrollRomance extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(ironBar, mapleLog, rope, cakeTin, swampTar, bucketOfWax, combatGear));
+		return Arrays.asList(ironBar, mapleLog, rope, cakeTin, swampTar, bucketOfWax, combatGear);
 	}
 
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
 		ArrayList<String> reqs = new ArrayList<>();
 		reqs.add("Arrg (level 113)");
@@ -267,13 +276,22 @@ public class TrollRomance extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(talkToUg, talkToAga))));
-		allSteps.add(new PanelDetails("Make a sled", new ArrayList<>(Arrays.asList(talkToTenzing, talkToDunstan, talkToDunstanAgain, useTarOnWax, useWaxOnSled)), mapleLog, ironBar, rope, swampTar, bucketOfWax, cakeTin));
-		allSteps.add(new PanelDetails("Get flowers", new ArrayList<>(Arrays.asList(enterTrollCave, leaveTrollCave, equipSled, sledSouth, pickFlowers)), waxedSled));
-		allSteps.add(new PanelDetails("Fighting for Aga", new ArrayList<>(Arrays.asList(talkToUgWithFlowers, challengeArrg, killArrg, returnToUg)), trollweissFlowers, combatGear));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.TROLL_STRONGHOLD, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.AGILITY, 28));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(talkToUg, talkToAga)));
+		allSteps.add(new PanelDetails("Make a sled", Arrays.asList(talkToTenzing, talkToDunstan, talkToDunstanAgain, useTarOnWax, useWaxOnSled), mapleLog, ironBar, rope, swampTar, bucketOfWax, cakeTin));
+		allSteps.add(new PanelDetails("Get flowers", Arrays.asList(enterTrollCave, leaveTrollCave, equipSled, sledSouth, pickFlowers), waxedSled));
+		allSteps.add(new PanelDetails("Fighting for Aga", Arrays.asList(talkToUgWithFlowers, challengeArrg, killArrg, returnToUg), trollweissFlowers, combatGear));
 
 
 		return allSteps;

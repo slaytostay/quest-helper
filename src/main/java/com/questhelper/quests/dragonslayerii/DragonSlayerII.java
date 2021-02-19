@@ -25,57 +25,70 @@
 package com.questhelper.quests.dragonslayerii;
 
 import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
-import com.questhelper.requirements.ItemRequirements;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestPointRequirement;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.WidgetModelRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.ObjectCondition;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.ObjectCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.WidgetModelCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.DRAGON_SLAYER_II
 )
 public class DragonSlayerII extends BasicQuestHelper
 {
-	ItemRequirement pickaxe, axe, oakPlank8, swampPaste10, nails12OrMore, hammer, machete, saw, catspeakAmulet, ghostspeakOrMory2, goutweed, dragonstone,
-		moltenGlass2, glassblowingPipe, chisel, spade, astralRune, sealOfPassage, tinderbox, pestleAndMortarHighlighted, runesForFireWaveOrSurge3, fireRune7, fireRune21, bloodRune1,
-		bloodRune3, airRune5, airRune15, wrathRune1, wrathRune3, fireRune10, fireRune30, airRune7, airRune21, fireWaveRunes, fireWave3Runes, fireSurgeRunes, fireSurge3Runes,
-		runesForFireWaveOrSurge, combatGear, pickaxeHighlighted, aivasDiary, dreamVial, dreamVialWater, dreamVialWithGoutweed, dreamPotion, astralRuneHighlighted, astralRuneShards,
-		groundAstralRune, hammerHighlighted, dreamPotionHighlighted, food, lightSource, rangedCombatGear, dragonfireProtection, venomProtection, salveE, kourendKeyPiece, varrocKeyPiece,
-		karamjaKeyPiece, fremennikKeyPiece, varrockCensusRecords, inertLocator, glassblowingPipeHighlighted, dragonstoneHighlighted, locator, ancientKey, dragonKey, antifireShield, teleports;
+	//Items Recommended
+	ItemRequirement ardougneTeleport, varrockTeleport, faladorTeleport, morytaniaTeleport, karamjaTeleport, rellekkaTeleport;
 
-	ItemRequirement map1, map2, map3, map4, map5, map6, map7, map8, map9, map10, map11, map12, map13, map14, map15, map16, map17, map18, map19, map20, map21, map22, map23, map24;
+	//Items Required
+	ItemRequirement pickaxe, axe, oakPlank8, swampPaste10, nails12OrMore, hammer, machete, saw, catspeakAmulet, ghostspeakOrMory2,
+		goutweed, dragonstone, moltenGlass2, glassblowingPipe, chisel, spade, astralRune, sealOfPassage, tinderbox,
+		pestleAndMortarHighlighted, runesForFireWaveOrSurge3, fireRune7, fireRune21, bloodRune1, bloodRune3,
+		airRune5, airRune15, wrathRune1, wrathRune3, fireRune10, fireRune30, airRune7, airRune21, fireWaveRunes,
+		fireWave3Runes, fireSurgeRunes, fireSurge3Runes, runesForFireWaveOrSurge, combatGear, pickaxeHighlighted,
+		aivasDiary, dreamVial, dreamVialWater, dreamVialWithGoutweed, dreamPotion, astralRuneHighlighted, astralRuneShards,
+		groundAstralRune, hammerHighlighted, dreamPotionHighlighted, food, lightSource, rangedCombatGear, dragonfireProtection,
+		venomProtection, salveE, kourendKeyPiece, varrocKeyPiece, karamjaKeyPiece, fremennikKeyPiece, varrockCensusRecords,
+		inertLocator, glassblowingPipeHighlighted, dragonstoneHighlighted, locator, ancientKey, dragonKey, antifireShield;
 
-	ConditionForStep inCrandorUnderground, inElvargArea, inKaramjaVolcano, inMuralRoom, inHouseGroundFloor, inHouseFirstFloor, inLithkrenGroundFloor, inLithkrenFirstFloor, inLithkrenUnderground,
+	ItemRequirement map1, map2, map3, map4, map5, map6, map7, map8, map9, map10, map11, map12, map13, map14, map15, map16, map17,
+		map18, map19, map20, map21, map22, map23, map24;
+
+	Requirement inCrandorUnderground, inElvargArea, inKaramjaVolcano, inMuralRoom, inHouseGroundFloor, inHouseFirstFloor, inLithkrenGroundFloor, inLithkrenFirstFloor, inLithkrenUnderground,
 		inLithkrenGroundFloorRoom, inDream, hasAivasDiary, hasVialWater, hasVialGout, hasAstralShard, hasAstralPowder, hasDreamPotion, litBrazier, hasTheKourendKeyPiece, hasTheVarrockKeyPiece, hasTheFremennikKeyPiece,
 		hasTheKaramjaKeyPiece, inDeepLithkren, recruitedBrundt, recruitedLathas, recruitedAmik, inArdougneCastle, inFaladorF1, inFaladorF2, onBoat, inBattle;
 
-	ConditionForStep hadChest1MapPieces, hadChest2MapPieces, hadFungiMapPieces, hadBriarMapPieces, hadMushtreeMapPieces, hadMap1, hadMap2, hadMap3, hadMap4, hadMap5, hadMap6, hadMap7, hadMap8, hadMap9, hadMap10, hadMap11, hadMap12, hadMap13, hadMap14,
+	Requirement hadChest1MapPieces, hadChest2MapPieces, hadFungiMapPieces, hadBriarMapPieces, hadMushtreeMapPieces, hadMap1, hadMap2, hadMap3, hadMap4, hadMap5, hadMap6, hadMap7, hadMap8, hadMap9, hadMap10, hadMap11, hadMap12, hadMap13, hadMap14,
 		hadMap15, hadMap16, hadMap17, hadMap18, hadMap19, hadMap20, hadMap21, hadMap22, hadMap23, hadMap24, inMapPuzzle, onUngael, inUngaelUnderground, inUngaelKeyRoom,
 		inKhazariMaze, openedMithrilDoor, inMithDragonEntranceArea, inMithDragonGroundArea, inMithDragonUpperArea, inMithDragonOrbRoom, inMithDragonFurnaceArea, litFurnace;
 
@@ -102,13 +115,13 @@ public class DragonSlayerII extends BasicQuestHelper
 
 	DetailedQuestStep talkToReldo, searchBookcase, talkToReldoAgain, talkToReldoAgainNoBook, talkToSarah, talkToAva, usePipeOnDragonstone, talkToAvaAgain,
 		talkToAvaAgainNoOrb, useLocatorInSwamp;
-	ConditionForStep talkedToReldo, foundCensus, talkedToReldoAgain, givenReldoBook, talkedToSarah, talkedToAva, haveInertLocator, givenAvaOrb, talkedToAvaAgain;
+	Requirement talkedToReldo, foundCensus, talkedToReldoAgain, givenReldoBook, talkedToSarah, talkedToAva, haveInertLocator, givenAvaOrb, talkedToAvaAgain;
 
 	DetailedQuestStep talkToBrundt, talkToTorfinn, killVorkath, enterVorkathCave, pullLeverInVorkathCave, enterEastVorkathRoom, searchStoneChestForVorkathKey;
-	ConditionForStep talkedToBrundt, defeatedVorkath, pulledLever;
+	Requirement talkedToBrundt, defeatedVorkath, pulledLever;
 
 	QuestStep talkToAmelia, enterCrypt, goDownInCryptF2ToF1, goDownInCryptF1ToF0, searchTombInCrypt, solveCryptPuzzle, searchTombForCryptKey;
-	ConditionForStep talkedToAmelia, inCryptF0, inCryptF1, inCryptF2, inspectedTomb, openedTomb;
+	Requirement talkedToAmelia, inCryptF0, inCryptF1, inCryptF2, inspectedTomb, openedTomb;
 
 	DetailedQuestStep enterAncientCavern, goDownToBrutalGreenDragons, goUpToMithrilDragons, openMithrilDoor, castFireOnHead, leaveMithrilRoom,
 		goDownFromMithDragons, climbUpSouthWestStairsAncientCavern, forgeDragonKey, useKeyOnGrandioseDoors, talkToDallasAfterDoors, talkToBobAfterRelease;
@@ -408,12 +421,12 @@ public class DragonSlayerII extends BasicQuestHelper
 		machete = new ItemRequirement("Any machete", ItemCollections.getMachete());
 		saw = new ItemRequirement("Saw", ItemID.SAW);
 		catspeakAmulet = new ItemRequirement("Catspeak amulet (e)", ItemID.CATSPEAK_AMULETE, 1, true);
-		catspeakAmulet.setTip("You can get another basic amulet from the Sphinx (bring a cat), and then get it enchanted by Hild in Burthorpe for 5 death runes");
-		ghostspeakOrMory2 = new ItemRequirement("Ghostspeak amulet", ItemID.GHOSTSPEAK_AMULET);
-		ghostspeakOrMory2.addAlternates(ItemID.MORYTANIA_LEGS_2, ItemID.MORYTANIA_LEGS_3, ItemID.MORYTANIA_LEGS_4);
+		catspeakAmulet.setTooltip("You can get another basic amulet from the Sphinx (bring a cat), and then get it enchanted by Hild in Burthorpe for 5 death runes");
+		ghostspeakOrMory2 = new ItemRequirement("Ghostspeak amulet", ItemCollections.getGhostspeak(), 1, true);
+		ghostspeakOrMory2.setTooltip("Morytania Legs 2 and above are also valid.");
 		goutweed = new ItemRequirement("Goutweed", ItemID.GOUTWEED);
 		goutweed.setHighlightInInventory(true);
-		goutweed.setTip("You can get this from the Troll Stronghold Kitchen Storeroom");
+		goutweed.setTooltip("You can get this from the Troll Stronghold Kitchen Storeroom");
 		dragonstone = new ItemRequirement("Dragonstone", ItemID.DRAGONSTONE);
 		moltenGlass2 = new ItemRequirement("Molten glass", ItemID.MOLTEN_GLASS, 2);
 		glassblowingPipe = new ItemRequirement("Glassblowing pipe", ItemID.GLASSBLOWING_PIPE);
@@ -446,14 +459,17 @@ public class DragonSlayerII extends BasicQuestHelper
 		runesForFireWaveOrSurge3 = new ItemRequirements(LogicType.OR, "3 casts of Fire Wave or Fire Surge", fireWave3Runes, fireSurge3Runes);
 
 		combatGear = new ItemRequirement("Combat gear, food and potions", -1, -1);
-		food = new ItemRequirement("Food", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
+
+		food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
 		lightSource = new ItemRequirement("A light source", ItemCollections.getLightSources());
 
 		rangedCombatGear = new ItemRequirement("Ranged combat gear", -1, -1);
-		dragonfireProtection = new ItemRequirement("Protection from dragonfire", -1, -1);
+		rangedCombatGear.setDisplayItemId(BankSlotIcons.getRangedCombatGear());
+
+		dragonfireProtection = new ItemRequirement("Protection from dragonfire", ItemCollections.getAntifireShields());
 		venomProtection = new ItemRequirement("Anti venom", ItemCollections.getAntivenoms());
-		salveE = new ItemRequirement("Salve amulet", ItemID.SALVE_AMULET);
-		salveE.addAlternates(ItemID.SALVE_AMULET_E, ItemID.SALVE_AMULETEI, ItemID.SALVE_AMULETI);
+		salveE = new ItemRequirement("Salve amulet", ItemCollections.getSalveAmulet());
 
 		// Chest 1 map pieces
 		map1 = new ItemRequirement("Map piece", ItemID.MAP_PIECE);
@@ -512,13 +528,13 @@ public class DragonSlayerII extends BasicQuestHelper
 		varrockCensusRecords = new ItemRequirement("Varrock census records", ItemID.VARROCK_CENSUS_RECORDS);
 
 		kourendKeyPiece = new ItemRequirement("Dragon key piece (Kourend)", ItemID.DRAGON_KEY_PIECE_22089);
-		kourendKeyPiece.setTip("You can get another from the tomb in the Shayzien Crypt");
+		kourendKeyPiece.setTooltip("You can get another from the tomb in the Shayzien Crypt");
 		varrocKeyPiece = new ItemRequirement("Dragon key piece (Varrock)", ItemID.DRAGON_KEY_PIECE_22090);
-		varrocKeyPiece.setTip("You can get another by digging in Mort Myre");
+		varrocKeyPiece.setTooltip("You can get another by digging in Mort Myre");
 		fremennikKeyPiece = new ItemRequirement("Dragon key piece (Fremmennik)", ItemID.DRAGON_KEY_PIECE);
-		fremennikKeyPiece.setTip("You can get another from Ungael");
+		fremennikKeyPiece.setTooltip("You can get another from Ungael");
 		karamjaKeyPiece = new ItemRequirement("Dragon key piece (Khazari)", ItemID.DRAGON_KEY_PIECE_22091);
-		karamjaKeyPiece.setTip("You can get another from the middle of the Khazari dungeon");
+		karamjaKeyPiece.setTooltip("You can get another from the middle of the Khazari dungeon");
 
 		inertLocator = new ItemRequirement("Inert locator orb", ItemID.INERT_LOCATOR_ORB);
 		glassblowingPipeHighlighted = new ItemRequirement("Glassblowing pipe", ItemID.GLASSBLOWING_PIPE);
@@ -527,17 +543,22 @@ public class DragonSlayerII extends BasicQuestHelper
 		dragonstoneHighlighted.setHighlightInInventory(true);
 
 		locator = new ItemRequirement("Locator orb", ItemID.LOCATOR_ORB);
-		locator.setTip("You can get another from Ava");
+		locator.setTooltip("You can get another from Ava");
 
 		ancientKey = new ItemRequirement("Ancient key", ItemID.ANCIENT_KEY);
-		ancientKey.setTip("You can get another from under Ungael");
+		ancientKey.setTooltip("You can get another from under Ungael");
 
 		dragonKey = new ItemRequirement("Dragon key", ItemID.DRAGON_KEY);
-		dragonKey.setTip("If you've lost it you'll need to recover the 4 pieces and reforge it");
+		dragonKey.setTooltip("If you've lost it you'll need to recover the 4 pieces and reforge it");
 
 		antifireShield = new ItemRequirement("Antifire shield", ItemCollections.getAntifireShields(), 1, true);
 
-		teleports = new ItemRequirement("Teleports to Ardougne, Varrock, Falador, Morytania, Karamja, and Rellekka", -1, -1);
+		ardougneTeleport = new ItemRequirement("Ardougne teleport", ItemID.ARDOUGNE_TELEPORT);
+		varrockTeleport = new ItemRequirement("Varrock teleport", ItemID.VARROCK_TELEPORT);
+		faladorTeleport = new ItemRequirement("Falador teleport", ItemID.FALADOR_TELEPORT);
+		morytaniaTeleport = new ItemRequirement("Port Phasmatys teleport", ItemID.ECTOPHIAL);
+		karamjaTeleport = new ItemRequirement("Karamja teleport", ItemID.TAI_BWO_WANNAI_TELEPORT);
+		rellekkaTeleport = new ItemRequirement("Rellekka teleport", ItemID.RELLEKKA_TELEPORT);
 	}
 
 	public void setupZones()
@@ -571,127 +592,127 @@ public class DragonSlayerII extends BasicQuestHelper
 		faladorF1 = new Zone(new WorldPoint(2952, 3326, 1), new WorldPoint(3000, 3356, 1));
 		faladorF2 = new Zone(new WorldPoint(2952, 3326, 2), new WorldPoint(3000, 3356, 2));
 		boat = new Zone(new WorldPoint(1694, 5528, 1), new WorldPoint(1710, 5558, 1));
-		battle = new Zone(new WorldPoint(1600, 5600, 0), new WorldPoint(1700, 5750, 2));
+		battle = new Zone(new WorldPoint(1600, 5600, 0), new WorldPoint(1726, 5758, 3));
 	}
 
 	public void setupConditions()
 	{
-		inCrandorUnderground = new ZoneCondition(crandorUnderground);
-		inElvargArea = new ZoneCondition(elvargArea);
-		inKaramjaVolcano = new ZoneCondition(karamjaVolcano);
-		inMuralRoom = new ZoneCondition(muralRoom);
-		inHouseGroundFloor = new ZoneCondition(houseGroundFloor);
-		inHouseFirstFloor = new ZoneCondition(houseFirstFloor);
-		inLithkrenGroundFloor = new ZoneCondition(lithkrenGroundFloor);
-		inLithkrenFirstFloor = new ZoneCondition(lithkrenFirstFloor);
-		inLithkrenGroundFloorRoom = new ZoneCondition(lithkrenGroundFloorRoom);
-		inLithkrenUnderground = new ZoneCondition(lithkrenUnderground);
-		inDream = new ZoneCondition(dream);
-		inCryptF0 = new ZoneCondition(cryptF0);
-		inCryptF1 = new ZoneCondition(cryptF1);
-		inCryptF2 = new ZoneCondition(cryptF2);
-		onUngael = new ZoneCondition(ungael);
-		inUngaelUnderground = new ZoneCondition(ungaelUnderground);
-		inUngaelKeyRoom = new ZoneCondition(ungaelKeyRoom);
-		inKhazariMaze = new ZoneCondition(khazariMaze);
-		inMithDragonEntranceArea = new ZoneCondition(mithDragonEntranceArea);
-		inMithDragonGroundArea = new ZoneCondition(mithDragonGroundArea);
-		inMithDragonOrbRoom = new ZoneCondition(mithDragonOrbRoom);
-		inMithDragonUpperArea = new ZoneCondition(mithDragonUpperArea);
-		inMithDragonFurnaceArea = new ZoneCondition(mithDragonFurnaceArea);
-		inDeepLithkren = new ZoneCondition(deepLithkren);
-		inArdougneCastle = new ZoneCondition(ardougneCastle);
-		inFaladorF1 = new ZoneCondition(faladorF1);
-		inFaladorF2 = new ZoneCondition(faladorF2);
-		onBoat = new ZoneCondition(boat);
-		inBattle = new ZoneCondition(battle);
+		inCrandorUnderground = new ZoneRequirement(crandorUnderground);
+		inElvargArea = new ZoneRequirement(elvargArea);
+		inKaramjaVolcano = new ZoneRequirement(karamjaVolcano);
+		inMuralRoom = new ZoneRequirement(muralRoom);
+		inHouseGroundFloor = new ZoneRequirement(houseGroundFloor);
+		inHouseFirstFloor = new ZoneRequirement(houseFirstFloor);
+		inLithkrenGroundFloor = new ZoneRequirement(lithkrenGroundFloor);
+		inLithkrenFirstFloor = new ZoneRequirement(lithkrenFirstFloor);
+		inLithkrenGroundFloorRoom = new ZoneRequirement(lithkrenGroundFloorRoom);
+		inLithkrenUnderground = new ZoneRequirement(lithkrenUnderground);
+		inDream = new ZoneRequirement(dream);
+		inCryptF0 = new ZoneRequirement(cryptF0);
+		inCryptF1 = new ZoneRequirement(cryptF1);
+		inCryptF2 = new ZoneRequirement(cryptF2);
+		onUngael = new ZoneRequirement(ungael);
+		inUngaelUnderground = new ZoneRequirement(ungaelUnderground);
+		inUngaelKeyRoom = new ZoneRequirement(ungaelKeyRoom);
+		inKhazariMaze = new ZoneRequirement(khazariMaze);
+		inMithDragonEntranceArea = new ZoneRequirement(mithDragonEntranceArea);
+		inMithDragonGroundArea = new ZoneRequirement(mithDragonGroundArea);
+		inMithDragonOrbRoom = new ZoneRequirement(mithDragonOrbRoom);
+		inMithDragonUpperArea = new ZoneRequirement(mithDragonUpperArea);
+		inMithDragonFurnaceArea = new ZoneRequirement(mithDragonFurnaceArea);
+		inDeepLithkren = new ZoneRequirement(deepLithkren);
+		inArdougneCastle = new ZoneRequirement(ardougneCastle);
+		inFaladorF1 = new ZoneRequirement(faladorF1);
+		inFaladorF2 = new ZoneRequirement(faladorF2);
+		onBoat = new ZoneRequirement(boat);
+		inBattle = new ZoneRequirement(battle);
 
-		hadMap1 = new Conditions(LogicType.OR, new ItemRequirementCondition(map1), new VarbitCondition(6116, 1));
-		hadMap2 = new Conditions(LogicType.OR, new ItemRequirementCondition(map2), new VarbitCondition(6117, 1));
-		hadMap3 = new Conditions(LogicType.OR, new ItemRequirementCondition(map3), new VarbitCondition(6118, 1));
-		hadMap4 = new Conditions(LogicType.OR, new ItemRequirementCondition(map4), new VarbitCondition(6119, 1));
-		hadMap5 = new Conditions(LogicType.OR, new ItemRequirementCondition(map5), new VarbitCondition(6120, 1));
+		hadMap1 = new Conditions(LogicType.OR, new ItemRequirements(map1), new VarbitRequirement(6116, 1));
+		hadMap2 = new Conditions(LogicType.OR, new ItemRequirements(map2), new VarbitRequirement(6117, 1));
+		hadMap3 = new Conditions(LogicType.OR, new ItemRequirements(map3), new VarbitRequirement(6118, 1));
+		hadMap4 = new Conditions(LogicType.OR, new ItemRequirements(map4), new VarbitRequirement(6119, 1));
+		hadMap5 = new Conditions(LogicType.OR, new ItemRequirements(map5), new VarbitRequirement(6120, 1));
 		hadChest1MapPieces = new Conditions(hadMap1, hadMap2, hadMap3, hadMap4, hadMap5);
 
-		hadMap6 = new Conditions(LogicType.OR, new ItemRequirementCondition(map6), new VarbitCondition(6121, 1));
-		hadMap7 = new Conditions(LogicType.OR, new ItemRequirementCondition(map7), new VarbitCondition(6122, 1));
-		hadMap8 = new Conditions(LogicType.OR, new ItemRequirementCondition(map8), new VarbitCondition(6123, 1));
+		hadMap6 = new Conditions(LogicType.OR, new ItemRequirements(map6), new VarbitRequirement(6121, 1));
+		hadMap7 = new Conditions(LogicType.OR, new ItemRequirements(map7), new VarbitRequirement(6122, 1));
+		hadMap8 = new Conditions(LogicType.OR, new ItemRequirements(map8), new VarbitRequirement(6123, 1));
 		hadChest2MapPieces = new Conditions(hadMap6, hadMap7, hadMap8);
 
-		hadMap9 = new Conditions(LogicType.OR, new ItemRequirementCondition(map9), new VarbitCondition(6124, 1));
-		hadMap10 = new Conditions(LogicType.OR, new ItemRequirementCondition(map10), new VarbitCondition(6125, 1));
-		hadMap11 = new Conditions(LogicType.OR, new ItemRequirementCondition(map11), new VarbitCondition(6126, 1));
-		hadMap12 = new Conditions(LogicType.OR, new ItemRequirementCondition(map12), new VarbitCondition(6127, 1));
+		hadMap9 = new Conditions(LogicType.OR, new ItemRequirements(map9), new VarbitRequirement(6124, 1));
+		hadMap10 = new Conditions(LogicType.OR, new ItemRequirements(map10), new VarbitRequirement(6125, 1));
+		hadMap11 = new Conditions(LogicType.OR, new ItemRequirements(map11), new VarbitRequirement(6126, 1));
+		hadMap12 = new Conditions(LogicType.OR, new ItemRequirements(map12), new VarbitRequirement(6127, 1));
 		hadFungiMapPieces = new Conditions(hadMap9, hadMap10, hadMap11, hadMap12);
 
-		hadMap13 = new Conditions(LogicType.OR, new ItemRequirementCondition(map13), new VarbitCondition(6128, 1));
-		hadMap14 = new Conditions(LogicType.OR, new ItemRequirementCondition(map14), new VarbitCondition(6129, 1));
-		hadMap15 = new Conditions(LogicType.OR, new ItemRequirementCondition(map15), new VarbitCondition(6130, 1));
-		hadMap16 = new Conditions(LogicType.OR, new ItemRequirementCondition(map16), new VarbitCondition(6131, 1));
-		hadMap17 = new Conditions(LogicType.OR, new ItemRequirementCondition(map17), new VarbitCondition(6132, 1));
-		hadMap18 = new Conditions(LogicType.OR, new ItemRequirementCondition(map18), new VarbitCondition(6133, 1));
-		hadMap19 = new Conditions(LogicType.OR, new ItemRequirementCondition(map19), new VarbitCondition(6134, 1));
+		hadMap13 = new Conditions(LogicType.OR, new ItemRequirements(map13), new VarbitRequirement(6128, 1));
+		hadMap14 = new Conditions(LogicType.OR, new ItemRequirements(map14), new VarbitRequirement(6129, 1));
+		hadMap15 = new Conditions(LogicType.OR, new ItemRequirements(map15), new VarbitRequirement(6130, 1));
+		hadMap16 = new Conditions(LogicType.OR, new ItemRequirements(map16), new VarbitRequirement(6131, 1));
+		hadMap17 = new Conditions(LogicType.OR, new ItemRequirements(map17), new VarbitRequirement(6132, 1));
+		hadMap18 = new Conditions(LogicType.OR, new ItemRequirements(map18), new VarbitRequirement(6133, 1));
+		hadMap19 = new Conditions(LogicType.OR, new ItemRequirements(map19), new VarbitRequirement(6134, 1));
 		hadBriarMapPieces = new Conditions(hadMap13, hadMap14, hadMap15, hadMap16, hadMap17, hadMap18, hadMap19);
 
-		hadMap20 = new Conditions(LogicType.OR, new ItemRequirementCondition(map20), new VarbitCondition(6135, 1));
-		hadMap21 = new Conditions(LogicType.OR, new ItemRequirementCondition(map21), new VarbitCondition(6136, 1));
-		hadMap22 = new Conditions(LogicType.OR, new ItemRequirementCondition(map22), new VarbitCondition(6137, 1));
-		hadMap23 = new Conditions(LogicType.OR, new ItemRequirementCondition(map23), new VarbitCondition(6138, 1));
-		hadMap24 = new Conditions(LogicType.OR, new ItemRequirementCondition(map23), new VarbitCondition(6138, 1));
+		hadMap20 = new Conditions(LogicType.OR, new ItemRequirements(map20), new VarbitRequirement(6135, 1));
+		hadMap21 = new Conditions(LogicType.OR, new ItemRequirements(map21), new VarbitRequirement(6136, 1));
+		hadMap22 = new Conditions(LogicType.OR, new ItemRequirements(map22), new VarbitRequirement(6137, 1));
+		hadMap23 = new Conditions(LogicType.OR, new ItemRequirements(map23), new VarbitRequirement(6138, 1));
+		hadMap24 = new Conditions(LogicType.OR, new ItemRequirements(map23), new VarbitRequirement(6138, 1));
 		hadMushtreeMapPieces = new Conditions(hadMap20, hadMap21, hadMap22, hadMap23, hadMap24);
 
-		inMapPuzzle = new WidgetModelCondition(305, 1, 35060);
+		inMapPuzzle = new WidgetModelRequirement(305, 1, 35060);
 
-		hasAivasDiary = new ItemRequirementCondition(aivasDiary);
+		hasAivasDiary = new ItemRequirements(aivasDiary);
 
-		hasVialWater = new ItemRequirementCondition(dreamVialWater);
-		hasVialGout = new ItemRequirementCondition(dreamVialWithGoutweed);
-		hasAstralShard = new ItemRequirementCondition(astralRuneShards);
-		hasAstralPowder = new ItemRequirementCondition(groundAstralRune);
-		hasDreamPotion = new ItemRequirementCondition(dreamPotion);
+		hasVialWater = new ItemRequirements(dreamVialWater);
+		hasVialGout = new ItemRequirements(dreamVialWithGoutweed);
+		hasAstralShard = new ItemRequirements(astralRuneShards);
+		hasAstralPowder = new ItemRequirements(groundAstralRune);
+		hasDreamPotion = new ItemRequirements(dreamPotion);
 
-		litBrazier = new VarbitCondition(2430, 1);
+		litBrazier = new VarbitRequirement(2430, 1);
 
-		hasTheKourendKeyPiece = new VarbitCondition(6105, 35, Operation.GREATER_EQUAL);
-		hasTheKaramjaKeyPiece = new VarbitCondition(6106, 20, Operation.GREATER_EQUAL);
-		hasTheVarrockKeyPiece = new VarbitCondition(6107, 55, Operation.GREATER_EQUAL);
-		hasTheFremennikKeyPiece = new VarbitCondition(6108, 35, Operation.GREATER_EQUAL);
+		hasTheKourendKeyPiece = new VarbitRequirement(6105, 35, Operation.GREATER_EQUAL);
+		hasTheKaramjaKeyPiece = new VarbitRequirement(6106, 20, Operation.GREATER_EQUAL);
+		hasTheVarrockKeyPiece = new VarbitRequirement(6107, 55, Operation.GREATER_EQUAL);
+		hasTheFremennikKeyPiece = new VarbitRequirement(6108, 35, Operation.GREATER_EQUAL);
 
 
 		// Kourend key piece
-		talkedToAmelia = new VarbitCondition(6105, 20, Operation.GREATER_EQUAL);
-		inspectedTomb = new VarbitCondition(6105, 25, Operation.GREATER_EQUAL);
-		openedTomb = new VarbitCondition(6105, 30, Operation.GREATER_EQUAL);
+		talkedToAmelia = new VarbitRequirement(6105, 20, Operation.GREATER_EQUAL);
+		inspectedTomb = new VarbitRequirement(6105, 25, Operation.GREATER_EQUAL);
+		openedTomb = new VarbitRequirement(6105, 30, Operation.GREATER_EQUAL);
 		// 6105 35->36 placed key on door
 
 		// Varrock key piece
-		talkedToReldo = new VarbitCondition(6107, 10, Operation.GREATER_EQUAL);
-		foundCensus = new VarbitCondition(6107, 15, Operation.GREATER_EQUAL);
-		givenReldoBook = new VarbitCondition(6107, 20, Operation.GREATER_EQUAL);
-		talkedToReldoAgain = new VarbitCondition(6107, 25, Operation.GREATER_EQUAL);
-		talkedToSarah = new VarbitCondition(6107, 35, Operation.GREATER_EQUAL);
-		talkedToAva = new VarbitCondition(6107, 40, Operation.GREATER_EQUAL);
-		givenAvaOrb = new VarbitCondition(6107, 46, Operation.GREATER_EQUAL);
-		talkedToAvaAgain = new VarbitCondition(6107, 50, Operation.GREATER_EQUAL);
-		haveInertLocator = new ItemRequirementCondition(inertLocator);
+		talkedToReldo = new VarbitRequirement(6107, 10, Operation.GREATER_EQUAL);
+		foundCensus = new VarbitRequirement(6107, 15, Operation.GREATER_EQUAL);
+		givenReldoBook = new VarbitRequirement(6107, 20, Operation.GREATER_EQUAL);
+		talkedToReldoAgain = new VarbitRequirement(6107, 25, Operation.GREATER_EQUAL);
+		talkedToSarah = new VarbitRequirement(6107, 35, Operation.GREATER_EQUAL);
+		talkedToAva = new VarbitRequirement(6107, 40, Operation.GREATER_EQUAL);
+		givenAvaOrb = new VarbitRequirement(6107, 46, Operation.GREATER_EQUAL);
+		talkedToAvaAgain = new VarbitRequirement(6107, 50, Operation.GREATER_EQUAL);
+		haveInertLocator = new ItemRequirements(inertLocator);
 		// 6141, presumbly represents location of treasure
 		// 11: 3442, 3421, 0
 
 		// Fremennik key piece
-		talkedToBrundt = new VarbitCondition(6108, 10, Operation.GREATER_EQUAL);
-		defeatedVorkath = new VarbitCondition(6108, 30, Operation.GREATER_EQUAL);
+		talkedToBrundt = new VarbitRequirement(6108, 10, Operation.GREATER_EQUAL);
+		defeatedVorkath = new VarbitRequirement(6108, 30, Operation.GREATER_EQUAL);
 		pulledLever = new ObjectCondition(ObjectID.LEVER_32055, new WorldPoint(2260, 10464, 0));
 
-		openedMithrilDoor = new VarbitCondition(6108, 40, Operation.GREATER_EQUAL);
+		openedMithrilDoor = new VarbitRequirement(6108, 40, Operation.GREATER_EQUAL);
 
 		// West dragon lit, 6109 = 1
 		// North dragon lit, 6110 = 1
 		// East dragon lit, 6111 = 1
-		litFurnace = new Conditions(new VarbitCondition(6109, 1), new VarbitCondition(6110, 1), new VarbitCondition(6111, 1));
+		litFurnace = new Conditions(new VarbitRequirement(6109, 1), new VarbitRequirement(6110, 1), new VarbitRequirement(6111, 1));
 
-		recruitedBrundt = new VarbitCondition(6114, 1);
-		recruitedAmik = new VarbitCondition(6115, 1);
-		recruitedLathas = new VarbitCondition(6113, 1);
+		recruitedBrundt = new VarbitRequirement(6114, 1);
+		recruitedAmik = new VarbitRequirement(6115, 1);
+		recruitedLathas = new VarbitRequirement(6113, 1);
 	}
 
 	public void setupSteps()
@@ -754,13 +775,13 @@ public class DragonSlayerII extends BasicQuestHelper
 		readDiary = new DetailedQuestStep(this, "Read Aivas' Diary.", aivasDiary);
 		talkToDallasAfterDiary = new NpcStep(this, NpcID.DALLAS_JONES, new WorldPoint(3549, 10419, 0), "Talk to Dallas again.");
 
-		talkToBob = new NpcStep(this, NpcID.BOB_8034, "Use a catspeak amulet (e) to locate Bob the Cat and talk to him.", catspeakAmulet);
+		talkToBob = new NpcStep(this, NpcID.BOB_8034, "Use a catspeak amulet (e) to locate Bob the Cat and talk to him. He's often in Catherby Archery Shop or at the Varrock Anvil.", catspeakAmulet);
 		talkToSphinx = new NpcStep(this, NpcID.SPHINX_4209, new WorldPoint(3301, 2785, 0), "Talk to the Sphinx in Sophanem.");
 		talkToSphinx.addDialogStep("Ask the Sphinx for help with Bob's memories.");
 		// Sphinx allows you to always talk to cats: 6144 0->1, 6145 1->0
 
 		talkToOneiromancer = new NpcStep(this, NpcID.ONEIROMANCER, new WorldPoint(2151, 3867, 0), "Talk to the Oneiromancer in the south east of Lunar Isle.", sealOfPassage);
-		talkToOneiromancer.addDialogStep("No thanks.");
+		talkToOneiromancer.addDialogSteps("Bob's memories", "No thanks.");
 		fillDreamVial = new ObjectStep(this, ObjectID.SINK_16705, new WorldPoint(2091, 3922, 0), "Fill the vial with water.", dreamVial);
 		fillDreamVial.addIcon(ItemID.DREAM_VIAL_EMPTY);
 
@@ -844,7 +865,7 @@ public class DragonSlayerII extends BasicQuestHelper
 		// Karamja key piece
 		enterKhazariMaze = new ObjectStep(this, ObjectID.CAVE_32479, new WorldPoint(2944, 2895, 0), "Go down the staircase in the south east of the Khazari Jungle. MAKE SURE TO HAVE AUTO-RETALIATE OFF BEFORE ENTERING.");
 		getToCentreOfMaze = new ObjectStep(this, NullObjectID.NULL_30730, new WorldPoint(2848, 9248, 0), "Navigate to the middle of the maze, disarming any traps in the way.");
-		getToCentreOfMaze.setLinePoints(new ArrayList<>(Arrays.asList(
+		getToCentreOfMaze.setLinePoints(Arrays.asList(
 			new WorldPoint(2847, 9284, 0),
 			new WorldPoint(2847, 9276, 0),
 			new WorldPoint(2843, 9274, 0),
@@ -887,7 +908,7 @@ public class DragonSlayerII extends BasicQuestHelper
 			new WorldPoint(2856, 9256, 0),
 			new WorldPoint(2848, 9256, 0),
 			new WorldPoint(2848, 9249, 0)
-		)));
+		));
 
 		boardBoat = new ObjectStep(this, NullObjectID.NULL_29916, new WorldPoint(3659, 3849, 0), "Board the boat.");
 		talkToDallasAfterBoatRepair.addSubSteps(boardBoat);
@@ -937,11 +958,11 @@ public class DragonSlayerII extends BasicQuestHelper
 		takeBoatToUngael = new NpcStep(this, NpcID.TORFINN_10405, new WorldPoint(2640, 3696, 0), "Talk to Torfinn on the Rellekka docks to go to Ungael. Be prepared for a lot of fighting.", combatGear, antifireShield);
 		takeBoatToUngael.addDialogSteps("Yes please.", "Yes.");
 		keepShipAfloat = new ObjectStep(this, ObjectID.FIRE_32297, "Keep the boat afloat by filling leaks, putting out fires, healing warriors and repairing the masts.");
-		((ObjectStep)(keepShipAfloat)).addAlternateObjects(ObjectID.LEAK, ObjectID.FREMENNIK_WARRIOR_32302, ObjectID.FREMENNIK_WARRIOR_32300, ObjectID.DAMAGED_MAST);
+		((ObjectStep) (keepShipAfloat)).addAlternateObjects(ObjectID.LEAK, ObjectID.FREMENNIK_WARRIOR_32302, ObjectID.FREMENNIK_WARRIOR_32300, ObjectID.DAMAGED_MAST);
 
 		getToMainShip = new NpcStep(this, NpcID.RED_DRAGON_8079, "Travel to the main ship, killing dragons along the way.", true);
-		((NpcStep)(getToMainShip)).addAlternateNpcs(NpcID.IRON_DRAGON_8080, NpcID.BRUTAL_GREEN_DRAGON_8081);
-		getToMainShip.setLinePoints(new ArrayList<>(Arrays.asList(
+		((NpcStep) (getToMainShip)).addAlternateNpcs(NpcID.IRON_DRAGON_8080, NpcID.BRUTAL_GREEN_DRAGON_8081);
+		getToMainShip.setLinePoints(Arrays.asList(
 			new WorldPoint(1695, 5665, 2),
 			new WorldPoint(1688, 5665, 1),
 			new WorldPoint(1679, 5665, 1),
@@ -1022,20 +1043,21 @@ public class DragonSlayerII extends BasicQuestHelper
 			new WorldPoint(1645, 5701, 0),
 			new WorldPoint(1640, 5706, 0),
 			new WorldPoint(1637, 5706, 0)
-		)));
+		));
 
 		kill2Blue2Green = new NpcStep(this, NpcID.BLUE_DRAGON_8083, "Kill the blue and green dragons.", true);
-		((NpcStep)(kill2Blue2Green)).addAlternateNpcs(NpcID.GREEN_DRAGON_8082);
+		((NpcStep) (kill2Blue2Green)).addAlternateNpcs(NpcID.GREEN_DRAGON_8082);
 
-		killBlackSteelBrutalRedDragon = new NpcStep(this, NpcID.BLACK_DRAGON_8084, "Kill the black, steel, and brutal red dragon. Occasionally Gorvek will shoot a fireball in the air, move to avoid it.", true);
-		((NpcStep)(killBlackSteelBrutalRedDragon)).addAlternateNpcs(NpcID.BLACK_DRAGON_8085, NpcID.BRUTAL_RED_DRAGON_8087, NpcID.STEEL_DRAGON_8086);
+		killBlackSteelBrutalRedDragon = new NpcStep(this, NpcID.BLACK_DRAGON_8084, "Kill the black, steel, and brutal" +
+			" red dragon. Occasionally Galvek will shoot a fireball in the air, move to avoid it.", true);
+		((NpcStep) (killBlackSteelBrutalRedDragon)).addAlternateNpcs(NpcID.BLACK_DRAGON_8085, NpcID.BRUTAL_RED_DRAGON_8087, NpcID.STEEL_DRAGON_8086);
 
 		killMithAddyAndRuneDragons = new NpcStep(this, NpcID.MITHRIL_DRAGON_8088, "Kill the metal dragons.", true);
-		killMithAddyAndRuneDragons.addText("Occasionally Gorvek will shoot a fireball in the air, move to avoid it.");
+		killMithAddyAndRuneDragons.addText("Occasionally Galvek will shoot a fireball in the air, move to avoid it.");
 		killMithAddyAndRuneDragons.addText("");
-		((NpcStep)(killMithAddyAndRuneDragons)).addAlternateNpcs(NpcID.MITHRIL_DRAGON_8089, NpcID.ADAMANT_DRAGON, NpcID.ADAMANT_DRAGON_8090, NpcID.RUNE_DRAGON, NpcID.RUNE_DRAGON_8091);
+		((NpcStep) (killMithAddyAndRuneDragons)).addAlternateNpcs(NpcID.MITHRIL_DRAGON_8089, NpcID.ADAMANT_DRAGON, NpcID.ADAMANT_DRAGON_8090, NpcID.RUNE_DRAGON, NpcID.RUNE_DRAGON_8091);
 		killGalvek = new NpcStep(this, NpcID.GALVEK_8095, new WorldPoint(1631, 5735, 2), "Kill Galvek. This is a hard fight, so it's recommended you check a video to see what you'll have to do.", true);
-		((NpcStep)(killGalvek)).addAlternateNpcs(NpcID.GALVEK_8096, NpcID.GALVEK_8097, NpcID.GALVEK_8098);
+		((NpcStep) (killGalvek)).addAlternateNpcs(NpcID.GALVEK_8096, NpcID.GALVEK_8097, NpcID.GALVEK_8098);
 		killGalvek.addText("Avoid the ground-targeted fireballs.");
 		killGalvek.addText("The pink attack turns off prayer.");
 		killGalvek.addText("Use Protect from Magic in phase 1, use Protect from Missiles otherwise.");
@@ -1048,11 +1070,11 @@ public class DragonSlayerII extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(pickaxe, axe, oakPlank8, swampPaste10, nails12OrMore, hammer, machete, saw, catspeakAmulet, lightSource, goutweed,
+		return Arrays.asList(pickaxe, axe, oakPlank8, swampPaste10, nails12OrMore, hammer, machete, saw, catspeakAmulet, lightSource, goutweed,
 			astralRune, sealOfPassage, tinderbox, pestleAndMortarHighlighted, dragonstone, moltenGlass2, glassblowingPipe, ghostspeakOrMory2, chisel, spade,
-			runesForFireWaveOrSurge3, antifireShield));
+			runesForFireWaveOrSurge3, antifireShield);
 	}
 
 	public void setupConditionalSteps()
@@ -1098,45 +1120,46 @@ public class DragonSlayerII extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Collections.singletonList(teleports));
+		return Arrays.asList(ardougneTeleport, varrockTeleport, faladorTeleport, morytaniaTeleport,
+			karamjaTeleport, rellekkaTeleport);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("Spawn (level 100)", "Robert the Strong (level 194)", "Vorkath (level 392)", "Numerous chromatic and metal dragons", "Galvek (level 608)"));
+		return Arrays.asList("Spawn (level 100)", "Robert the Strong (level 194)", "Vorkath (level 392)", "Numerous chromatic and metal dragons", "Galvek (level 608)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(talkToAlec, talkToDallas, talkToDallasOnCrandor, usePickaxeOnBlockage, enterBlockage, investigateMural, killSpawn,
-			investigateMuralAgain)), pickaxe, combatGear));
-		allSteps.add(new PanelDetails("Investigating Fossil Island", new ArrayList<>(Arrays.asList(enterHouseOnTheHill, talkToDallasInHouse, searchNorthChest,
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(talkToAlec, talkToDallas, talkToDallasOnCrandor, usePickaxeOnBlockage, enterBlockage, investigateMural, killSpawn,
+			investigateMuralAgain, talkToDallasAfterMural), pickaxe, combatGear));
+		allSteps.add(new PanelDetails("Investigating Fossil Island", Arrays.asList(enterHouseOnTheHill, talkToDallasInHouse, searchNorthChest,
 			goUpstairsForMap, searchStoneChestNorth, leaveHouseForMap, searchFungi, searchBriar, searchMushtree, enterHouseWithMapPieces, startMapPuzzle,
-			talkToDallasAfterSolvingMap))));
-		allSteps.add(new PanelDetails("Investigating Lithkren", new ArrayList<>(Arrays.asList(talkToJardricInMuseumCamp, buildRowBoat, talkToDallasAfterBoatRepair,
-			climbCourtyardStairs, climbDownLithkrenTrapdoor, climbDownLithkrenNorthStairs, talkToDallasInLithkren, searchSkeleton, readDiary, talkToDallasAfterDiary)), oakPlank8, swampPaste10, nails12OrMore, hammer, saw));
+			talkToDallasAfterSolvingMap)));
+		allSteps.add(new PanelDetails("Investigating Lithkren", Arrays.asList(talkToJardricInMuseumCamp, buildRowBoat, talkToDallasAfterBoatRepair,
+			climbCourtyardStairs, climbDownLithkrenTrapdoor, climbDownLithkrenNorthStairs, talkToDallasInLithkren, searchSkeleton, readDiary, talkToDallasAfterDiary), oakPlank8, swampPaste10, nails12OrMore, hammer, saw));
 
-		allSteps.add(new PanelDetails("Contacting Bob", new ArrayList<>(Arrays.asList(talkToBob, talkToSphinx)), catspeakAmulet));
+		allSteps.add(new PanelDetails("Contacting Bob", Arrays.asList(talkToBob, talkToSphinx), catspeakAmulet));
 
-		allSteps.add(new PanelDetails("Entering a dream", new ArrayList<>(Arrays.asList(talkToOneiromancer, fillDreamVial, addGoutweed, crushAstralRune, grindAstralShards, addGroundAstral,
-			lightBrazier, usePotionOnFlame, talkToBobInDream, killRobertTheStrong, talkToBobAfterRobertFight)), sealOfPassage, goutweed, astralRune, hammer, pestleAndMortarHighlighted, tinderbox, combatGear));
+		allSteps.add(new PanelDetails("Entering a dream", Arrays.asList(talkToOneiromancer, fillDreamVial, addGoutweed, crushAstralRune, grindAstralShards, addGroundAstral,
+			lightBrazier, usePotionOnFlame, talkToBobInDream, killRobertTheStrong, talkToBobAfterRobertFight), sealOfPassage, goutweed, astralRune, hammer, pestleAndMortarHighlighted, tinderbox, combatGear));
 
-		PanelDetails karamjaKeyPanel = new PanelDetails("Karamja key piece", new ArrayList<>(Arrays.asList(enterKhazariMaze, getToCentreOfMaze)), machete, axe, food);
+		PanelDetails karamjaKeyPanel = new PanelDetails("Karamja key piece", Arrays.asList(enterKhazariMaze, getToCentreOfMaze), machete, axe, food);
 		karamjaKeyPanel.setLockingStep(gettingTheKaramjaKey);
 
-		PanelDetails varrockKeyPanel = new PanelDetails("Varrock key piece", new ArrayList<>(Arrays.asList(talkToReldo, searchBookcase, talkToReldoAgain, talkToSarah,
-			talkToAva, usePipeOnDragonstone, talkToAvaAgain, useLocatorInSwamp)), ghostspeakOrMory2, dragonstone, moltenGlass2, glassblowingPipe, spade);
+		PanelDetails varrockKeyPanel = new PanelDetails("Varrock key piece", Arrays.asList(talkToReldo, searchBookcase, talkToReldoAgain, talkToSarah,
+			talkToAva, usePipeOnDragonstone, talkToAvaAgain, useLocatorInSwamp), ghostspeakOrMory2, dragonstone, moltenGlass2, glassblowingPipe, spade);
 		varrockKeyPanel.setLockingStep(gettingTheVarrockKey);
 
-		PanelDetails kourendKeyPanel = new PanelDetails("Kourend key piece", new ArrayList<>(Arrays.asList(talkToAmelia, enterCrypt, goDownInCryptF2ToF1, searchTombInCrypt, solveCryptPuzzle, searchTombForCryptKey)), combatGear, lightSource);
+		PanelDetails kourendKeyPanel = new PanelDetails("Kourend key piece", Arrays.asList(talkToAmelia, enterCrypt, goDownInCryptF2ToF1, searchTombInCrypt, solveCryptPuzzle, searchTombForCryptKey), combatGear, lightSource);
 		kourendKeyPanel.setLockingStep(gettingTheKourendKey);
 
-		PanelDetails fremennikKeyPanel = new PanelDetails("Fremennik key piece", new ArrayList<>(Arrays.asList(talkToBrundt, talkToTorfinn, killVorkath, enterVorkathCave, pullLeverInVorkathCave, enterEastVorkathRoom, searchStoneChestForVorkathKey)), combatGear);
+		PanelDetails fremennikKeyPanel = new PanelDetails("Fremennik key piece", Arrays.asList(talkToBrundt, talkToTorfinn, killVorkath, enterVorkathCave, pullLeverInVorkathCave, enterEastVorkathRoom, searchStoneChestForVorkathKey), combatGear);
 		fremennikKeyPanel.setLockingStep(gettingTheFremennikKey);
 
 		allSteps.add(kourendKeyPanel);
@@ -1144,15 +1167,39 @@ public class DragonSlayerII extends BasicQuestHelper
 		allSteps.add(fremennikKeyPanel);
 		allSteps.add(karamjaKeyPanel);
 
-		allSteps.add(new PanelDetails("Unlocking the door", new ArrayList<>(Arrays.asList(goEnterMithDoorFirstTime, castFireOnHead, goSmithKey,
-			goOpenDoorWithKey, openDoorWithoutKey, goTalkToBobAfterRelease)),
+		allSteps.add(new PanelDetails("Unlocking the door", Arrays.asList(goEnterMithDoorFirstTime, castFireOnHead, goSmithKey,
+			goOpenDoorWithKey, openDoorWithoutKey, goTalkToBobAfterRelease),
 			ancientKey, runesForFireWaveOrSurge3, fremennikKeyPiece, karamjaKeyPiece, varrocKeyPiece, kourendKeyPiece, hammer));
 
-		allSteps.add(new PanelDetails("Creating an army", new ArrayList<>(Arrays.asList(talkToRoald, talkToBrundtAboutThreat, talkToAmik, talkToLathasOrThoros, enterVarrockDiningRoom, talkToBobAfterDiningRoom))));
+		allSteps.add(new PanelDetails("Creating an army", Arrays.asList(talkToRoald, talkToBrundtAboutThreat, talkToAmik, talkToLathasOrThoros, enterVarrockDiningRoom, talkToBobAfterDiningRoom)));
 
-		allSteps.add(new PanelDetails("Final showdown", new ArrayList<>(Arrays.asList(takeBoatToUngael, keepShipAfloat, getToMainShip, kill2Blue2Green, killBlackSteelBrutalRedDragon,
-			killMithAddyAndRuneDragons, killGalvek, talkToAlecToFinish)), combatGear, antifireShield));
+		allSteps.add(new PanelDetails("Final showdown", Arrays.asList(takeBoatToUngael, keepShipAfloat, getToMainShip, kill2Blue2Green, killBlackSteelBrutalRedDragon,
+			killMithAddyAndRuneDragons, killGalvek, talkToAlecToFinish), combatGear, antifireShield));
 
 		return allSteps;
+	}
+
+	@Override
+	public List<Requirement> getGeneralRequirements()
+	{
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestPointRequirement(200));
+		req.add(new QuestRequirement(QuestHelperQuest.LEGENDS_QUEST, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.DREAM_MENTOR, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.A_TAIL_OF_TWO_CATS, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.ANIMAL_MAGNETISM, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.GHOSTS_AHOY, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.BONE_VOYAGE, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.CLIENT_OF_KOUREND, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.MAGIC, 75));
+		req.add(new SkillRequirement(Skill.SMITHING, 70));
+		req.add(new SkillRequirement(Skill.MINING, 68));
+		req.add(new SkillRequirement(Skill.CRAFTING, 62));
+		req.add(new SkillRequirement(Skill.AGILITY, 60, false, "60 Agility (higher recommended)"));
+		req.add(new SkillRequirement(Skill.THIEVING, 60));
+		req.add(new SkillRequirement(Skill.CONSTRUCTION, 50));
+		req.add(new SkillRequirement(Skill.HITPOINTS, 50));
+		req.add(new ItemRequirement("Unlocked the Ancient Caverns during Barbarian Training", -1, -1));
+		return req;
 	}
 }

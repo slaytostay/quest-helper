@@ -24,36 +24,39 @@
  */
 package com.questhelper.quests.thedigsite;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.conditional.ObjectCondition;
+import com.questhelper.requirements.WidgetTextRequirement;
+import com.questhelper.requirements.util.LogicType;
+import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ItemStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.ObjectCondition;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.WidgetTextCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.ConditionalStep;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 import net.runelite.api.widgets.WidgetInfo;
 
 @QuestDescriptor(
@@ -61,11 +64,12 @@ import net.runelite.api.widgets.WidgetInfo;
 )
 public class TheDigSite extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement pestleAndMortar, vialHighlighted, tinderbox, tea, ropes2, rope, opal, charcoal, leatherBoots, leatherGloves, specimenBrush, specimenJar, panningTray,
 		trowel, varrock2, digsiteTeleports, sealedLetter, specialCup, teddybear, skull, nitro, nitrate, chemicalCompound, groundCharcoal, invitation, talisman,
 		mixedChemicals, mixedChemicals2, arcenia, powder, liquid, tablet, key, unstampedLetter, pick, trowelHighlighted, tinderboxHighlighted, chemicalCompoundHighlighted;
 
-	ConditionForStep hasTeddy, hasTray, hasSkull, hasBrush, hasSpecialCup, talkedToFemaleStudent, talkedToOrangeStudent, talkedToGreenStudent, talkedToGuide, letterStamped,
+	Requirement hasTeddy, hasTray, hasSkull, hasBrush, hasSpecialCup, talkedToFemaleStudent, talkedToOrangeStudent, talkedToGreenStudent, talkedToGuide, letterStamped,
 		femaleStudentQ1Learnt, orangeStudentQ1Learnt, greenStudentQ1Learnt, femaleStudentQ2Learnt, orangeStudentQ2Learnt, greenStudentQ2Learnt, femaleStudentQ3Learnt,
 		femaleExtorting, orangeStudentQ3Learnt, greenStudentQ3Learnt, syncedUp, syncedUp2, syncedUp3, hasJar, hasPick, hasTalisman, givenTalismanIn, rope1Added, rope2Added,
 		inUndergroundTemple1, inDougRoom, hasArcenia, hasChemicalCompound, hasMixedChemicals2, hasMixedChemicals, hasNitrate, hasNitro, hasPowder, hasLiquid, openedBarrel,
@@ -78,6 +82,7 @@ public class TheDigSite extends BasicQuestHelper
 		useLiquidOnExpert, mixNitroWithNitrate, addCharcoal, addRoot, goDownToExplode, useCompound, useTinderbox, takeTablet, useTabletOnExpert, syncStep, talkToFemaleStudent5,
 		talkToOrangeStudent4, talkToGreenStudent4, useRopeOnWinch2, goDownToExplode2, goDownForTablet, goUpWithTablet;
 
+	//Zones
 	Zone undergroundTemple1, dougRoom, undergroundTemple2;
 
 	@Override
@@ -190,12 +195,12 @@ public class TheDigSite extends BasicQuestHelper
 		tinderbox = new ItemRequirement("Tinderbox", ItemID.TINDERBOX);
 		tinderboxHighlighted = new ItemRequirement("Tinderbox", ItemID.TINDERBOX);
 		tinderboxHighlighted.setHighlightInInventory(true);
-		tea = new ItemRequirement("Cup of tea", ItemID.CUP_OF_TEA);
+		tea = new ItemRequirement("Cup of tea", ItemID.CUP_OF_TEA_1978);
 		ropes2 = new ItemRequirement("Rope", ItemID.ROPE, 2);
 		rope = new ItemRequirement("Rope", ItemID.ROPE);
 		rope.setHighlightInInventory(true);
 		opal = new ItemRequirement("Opal", ItemID.OPAL);
-		opal.setTip("You can get one by panning at the Digsite");
+		opal.setTooltip("You can get one by panning at the Digsite");
 		opal.addAlternates(ItemID.UNCUT_OPAL);
 		charcoal = new ItemRequirement("Charcoal", ItemID.CHARCOAL);
 		leatherBoots = new ItemRequirement("Leather boots", ItemID.LEATHER_BOOTS, 1, true);
@@ -205,15 +210,15 @@ public class TheDigSite extends BasicQuestHelper
 		panningTray = new ItemRequirement("Panning tray", ItemID.PANNING_TRAY);
 		panningTray.addAlternates(ItemID.PANNING_TRAY_678, ItemID.PANNING_TRAY_679);
 		trowel = new ItemRequirement("Trowel", ItemID.TROWEL);
-		trowel.setTip("You can get another from one of the Examiners");
+		trowel.setTooltip("You can get another from one of the Examiners");
 		trowelHighlighted = new ItemRequirement("Trowel", ItemID.TROWEL);
 		trowelHighlighted.setHighlightInInventory(true);
-		trowelHighlighted.setTip("You can get another from one of the Examiners");
+		trowelHighlighted.setTooltip("You can get another from one of the Examiners");
 		pick = new ItemRequirement("Rock pick", ItemID.ROCK_PICK);
 		varrock2 = new ItemRequirement("Varrock teleports", ItemID.VARROCK_TELEPORT, 2);
-		digsiteTeleports = new ItemRequirement("Digsite teleports", -1, -1);
+		digsiteTeleports = new ItemRequirement("Digsite teleports", ItemID.DIGSITE_TELEPORT, 2);
 		sealedLetter = new ItemRequirement("Sealed letter", ItemID.SEALED_LETTER);
-		sealedLetter.setTip("You can get another from Curator Haig in the Varrock Museum");
+		sealedLetter.setTooltip("You can get another from Curator Haig in the Varrock Museum");
 		specialCup = new ItemRequirement("Special cup", ItemID.SPECIAL_CUP);
 		teddybear = new ItemRequirement("Teddy", ItemID.TEDDY);
 		skull = new ItemRequirement("Animal skull", ItemID.ANIMAL_SKULL);
@@ -225,10 +230,10 @@ public class TheDigSite extends BasicQuestHelper
 		chemicalCompoundHighlighted = new ItemRequirement("Chemical compound", ItemID.CHEMICAL_COMPOUND);
 		chemicalCompoundHighlighted.setHighlightInInventory(true);
 		groundCharcoal = new ItemRequirement("Ground charcoal", ItemID.GROUND_CHARCOAL);
-		groundCharcoal.setTip("You can make this by use a pestle and mortar on some charcoal. You can get charcoal from one of the specimen trays in the Digsite");
+		groundCharcoal.setTooltip("You can make this by use a pestle and mortar on some charcoal. You can get charcoal from one of the specimen trays in the Digsite");
 		groundCharcoal.setHighlightInInventory(true);
 		invitation = new ItemRequirement("Invitation letter", ItemID.INVITATION_LETTER);
-		invitation.setTip("You can get another from the Archaeological expert");
+		invitation.setTooltip("You can get another from the Archaeological expert");
 		invitation.setHighlightInInventory(true);
 		talisman = new ItemRequirement("Ancient talisman", ItemID.ANCIENT_TALISMAN);
 		mixedChemicals = new ItemRequirement("Mixed chemicals", ItemID.MIXED_CHEMICALS);
@@ -247,7 +252,7 @@ public class TheDigSite extends BasicQuestHelper
 		key = new ItemRequirement("Chest key", ItemID.CHEST_KEY_709);
 		key.setHighlightInInventory(true);
 		unstampedLetter = new ItemRequirement("Unstamped letter", ItemID.UNSTAMPED_LETTER);
-		unstampedLetter.setTip("You can get another from the Exam Centre's examiners");
+		unstampedLetter.setTooltip("You can get another from the Exam Centre's examiners");
 	}
 
 	public void loadZones()
@@ -259,121 +264,121 @@ public class TheDigSite extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		inUndergroundTemple1 = new ZoneCondition(undergroundTemple1);
-		inUndergroundTemple2 = new ZoneCondition(undergroundTemple2);
-		inDougRoom = new ZoneCondition(dougRoom);
+		inUndergroundTemple1 = new ZoneRequirement(undergroundTemple1);
+		inUndergroundTemple2 = new ZoneRequirement(undergroundTemple2);
+		inDougRoom = new ZoneRequirement(dougRoom);
 
-		syncedUp = new Conditions(true, new WidgetTextCondition(119, 2, "The Dig Site"));
-		syncedUp2 = new Conditions(true, LogicType.OR, new WidgetTextCondition(119, 2, "The Dig Site"),
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "You got all the questions correct. Well done!"),
-			new WidgetTextCondition(217, 4, "Hey! Excellent!"));
-		syncedUp3 = new Conditions(true, LogicType.OR, new WidgetTextCondition(119, 2, "The Dig Site"),
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "You got all the questions correct, well done!"),
-			new WidgetTextCondition(217, 4, "Great, I'm getting good at this."));
+		syncedUp = new Conditions(true, new WidgetTextRequirement(119, 2, "The Dig Site"));
+		syncedUp2 = new Conditions(true, LogicType.OR, new WidgetTextRequirement(119, 2, "The Dig Site"),
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "You got all the questions correct. Well done!"),
+			new WidgetTextRequirement(217, 4, "Hey! Excellent!"));
+		syncedUp3 = new Conditions(true, LogicType.OR, new WidgetTextRequirement(119, 2, "The Dig Site"),
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "You got all the questions correct, well done!"),
+			new WidgetTextRequirement(217, 4, "Great, I'm getting good at this."));
 
-		talkedToGuide = new VarbitCondition(2544, 1);
+		talkedToGuide = new VarbitRequirement(2544, 1);
 
 		// Exam questions 1
 		talkedToFemaleStudent = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "Hey! My lucky mascot!"),
-			new WidgetTextCondition(119, 3, true, "I should talk to her to see if she can help"));
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "Hey! My lucky mascot!"),
+			new WidgetTextRequirement(119, 3, true, "I should talk to her to see if she can help"));
 		femaleStudentQ1Learnt = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "The proper health and safety points are"),
-			new WidgetTextCondition(119, 3, true, "She gave me an answer"));
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "The proper health and safety points are"),
+			new WidgetTextRequirement(119, 3, true, "She gave me an answer"));
 
-		WidgetTextCondition orangeGivenAnswer1Diary = new WidgetTextCondition(119, 3, true, "He gave me an answer to one of the questions");
+		WidgetTextRequirement orangeGivenAnswer1Diary = new WidgetTextRequirement(119, 3, true, "He gave me an answer to one of the questions");
 		orangeGivenAnswer1Diary.addRange(20, 35);
 		talkedToOrangeStudent = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(217, 4, "Look what I found!"),
-			new WidgetTextCondition(119, 3, true, "<str>to find it and return it to him."));
+			new WidgetTextRequirement(217, 4, "Look what I found!"),
+			new WidgetTextRequirement(119, 3, true, "<str>to find it and return it to him."));
 		orangeStudentQ1Learnt = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "The people eligible to use the digsite are:"),
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "The people eligible to use the digsite are:"),
 			orangeGivenAnswer1Diary);
 
-		WidgetTextCondition greenGivenAnswer1Diary = new WidgetTextCondition(119, 3, true, "He gave me an answer to one of the questions");
+		WidgetTextRequirement greenGivenAnswer1Diary = new WidgetTextRequirement(119, 3, true, "He gave me an answer to one of the questions");
 		greenGivenAnswer1Diary.addRange(0, 19);
 
 		talkedToGreenStudent = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "Oh wow! You've found it!"),
-			new WidgetTextCondition(119, 3, true, "<str>to him; maybe someone has picked it up?"));
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "Oh wow! You've found it!"),
+			new WidgetTextRequirement(119, 3, true, "<str>to him; maybe someone has picked it up?"));
 		greenStudentQ1Learnt = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "The study of Earth Sciences is:"),
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "The study of Earth Sciences is:"),
 			greenGivenAnswer1Diary);
 
 		// Exam questions 2
-		WidgetTextCondition femaleGivenAnswer2Diary = new WidgetTextCondition(119, 3, true, "<str>I need to speak to the student in the purple skirt about");
+		WidgetTextRequirement femaleGivenAnswer2Diary = new WidgetTextRequirement(119, 3, true, "<str>I need to speak to the student in the purple skirt about");
 		femaleGivenAnswer2Diary.addRange(43, 52);
 		femaleStudentQ2Learnt = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "Finds handling: Finds must"),
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "Finds handling: Finds must"),
 			femaleGivenAnswer2Diary);
 
-		WidgetTextCondition orangeGivenAnswer2Diary = new WidgetTextCondition(119, 3, true, "<str>I need to speak to the student in the orange top about the");
+		WidgetTextRequirement orangeGivenAnswer2Diary = new WidgetTextRequirement(119, 3, true, "<str>I need to speak to the student in the orange top about the");
 		orangeGivenAnswer2Diary.addRange(43, 52);
 		orangeStudentQ2Learnt = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "Correct sample transportation: "),
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "Correct sample transportation: "),
 			orangeGivenAnswer2Diary);
 
-		WidgetTextCondition greenGivenAnswer2Diary = new WidgetTextCondition(119, 3, true, "<str>I need to speak to the student in the green top about the");
+		WidgetTextRequirement greenGivenAnswer2Diary = new WidgetTextRequirement(119, 3, true, "<str>I need to speak to the student in the green top about the");
 		greenGivenAnswer2Diary.addRange(43, 52);
 		greenStudentQ2Learnt = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "Correct rock pick usage: Always handle"),
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "Correct rock pick usage: Always handle"),
 			greenGivenAnswer2Diary);
 
 		// Exam questions 3
 		femaleExtorting = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(217, 4, "OK, I'll see what I can turn up for you."),
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "Well, I have seen people get them from panning"),
-			new WidgetTextCondition(119, 3, true, "I need to bring her an opal"));
-		WidgetTextCondition femaleGivenAnswer3Diary = new WidgetTextCondition(119, 3, true, "<str>I need to speak to the student in the purple skirt about");
+			new WidgetTextRequirement(217, 4, "OK, I'll see what I can turn up for you."),
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "Well, I have seen people get them from panning"),
+			new WidgetTextRequirement(119, 3, true, "I need to bring her an opal"));
+		WidgetTextRequirement femaleGivenAnswer3Diary = new WidgetTextRequirement(119, 3, true, "<str>I need to speak to the student in the purple skirt about");
 		femaleGivenAnswer3Diary.addRange(56, 63);
 		femaleStudentQ3Learnt = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "Sample preparation: Samples cleaned"),
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "Sample preparation: Samples cleaned"),
 			femaleGivenAnswer3Diary);
 
-		WidgetTextCondition orangeGivenAnswer3Diary = new WidgetTextCondition(119, 3, true, "<str>I need to speak to the student in the orange top about the");
+		WidgetTextRequirement orangeGivenAnswer3Diary = new WidgetTextRequirement(119, 3, true, "<str>I need to speak to the student in the orange top about the");
 		orangeGivenAnswer3Diary.addRange(56, 63);
 		orangeStudentQ3Learnt = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "The proper technique for handling bones is: Handle"),
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "The proper technique for handling bones is: Handle"),
 			orangeGivenAnswer3Diary);
 
-		WidgetTextCondition greenGivenAnswer3Diary = new WidgetTextCondition(119, 3, true, "<str>I need to speak to the student in the green top about the");
+		WidgetTextRequirement greenGivenAnswer3Diary = new WidgetTextRequirement(119, 3, true, "<str>I need to speak to the student in the green top about the");
 		greenGivenAnswer3Diary.addRange(56, 63);
 		greenStudentQ3Learnt = new Conditions(true, LogicType.OR,
-			new WidgetTextCondition(WidgetInfo.DIALOG_NPC_TEXT, "Specimen brush use: Brush carefully"),
+			new WidgetTextRequirement(WidgetInfo.DIALOG_NPC_TEXT, "Specimen brush use: Brush carefully"),
 			greenGivenAnswer3Diary);
 
 		// 2550 = 1, gotten invite
 		// 3644 = 1, gotten invite
-		givenTalismanIn = new VarbitCondition(2550, 1);
-		rope1Added = new VarbitCondition(2545, 1);
-		rope2Added = new VarbitCondition(2546, 1);
+		givenTalismanIn = new VarbitRequirement(2550, 1);
+		rope1Added = new VarbitRequirement(2545, 1);
+		rope2Added = new VarbitRequirement(2546, 1);
 
 		// 45 - 54
-		hasTray = new ItemRequirementCondition(panningTray);
-		hasTeddy = new Conditions(LogicType.OR, new ItemRequirementCondition(teddybear), talkedToFemaleStudent);
-		hasSkull = new Conditions(LogicType.OR, new ItemRequirementCondition(skull), talkedToGreenStudent);
-		hasSpecialCup = new Conditions(LogicType.OR, new ItemRequirementCondition(specialCup), talkedToOrangeStudent);
-		hasBrush = new ItemRequirementCondition(specimenBrush);
-		letterStamped = new VarbitCondition(2552, 1);
-		hasJar = new ItemRequirementCondition(specimenJar);
-		hasPick = new ItemRequirementCondition(pick);
-		hasTalisman = new ItemRequirementCondition(talisman);
-		hasArcenia = new ItemRequirementCondition(arcenia);
-		hasChemicalCompound = new ItemRequirementCondition(chemicalCompound);
-		hasMixedChemicals2 = new ItemRequirementCondition(mixedChemicals2);
-		hasMixedChemicals = new ItemRequirementCondition(mixedChemicals);
-		hasNitrate = new ItemRequirementCondition(nitrate);
-		hasNitro = new ItemRequirementCondition(nitro);
-		hasPowder = new ItemRequirementCondition(powder);
-		hasLiquid = new ItemRequirementCondition(liquid);
-		hasTablet = new ItemRequirementCondition(tablet);
+		hasTray = new ItemRequirements(panningTray);
+		hasTeddy = new Conditions(LogicType.OR, new ItemRequirements(teddybear), talkedToFemaleStudent);
+		hasSkull = new Conditions(LogicType.OR, new ItemRequirements(skull), talkedToGreenStudent);
+		hasSpecialCup = new Conditions(LogicType.OR, new ItemRequirements(specialCup), talkedToOrangeStudent);
+		hasBrush = new ItemRequirements(specimenBrush);
+		letterStamped = new VarbitRequirement(2552, 1);
+		hasJar = new ItemRequirements(specimenJar);
+		hasPick = new ItemRequirements(pick);
+		hasTalisman = new ItemRequirements(talisman);
+		hasArcenia = new ItemRequirements(arcenia);
+		hasChemicalCompound = new ItemRequirements(chemicalCompound);
+		hasMixedChemicals2 = new ItemRequirements(mixedChemicals2);
+		hasMixedChemicals = new ItemRequirements(mixedChemicals);
+		hasNitrate = new ItemRequirements(nitrate);
+		hasNitro = new ItemRequirements(nitro);
+		hasPowder = new ItemRequirements(powder);
+		hasLiquid = new ItemRequirements(liquid);
+		hasTablet = new ItemRequirements(tablet);
 
-		searchedBricks = new VarbitCondition(2549, 1);
+		searchedBricks = new VarbitRequirement(2549, 1);
 		openPowderChestNearby = new ObjectCondition(ObjectID.CHEST_2360);
-		openedBarrel = new VarbitCondition(2547, 1);
+		openedBarrel = new VarbitRequirement(2547, 1);
 
 		hasKeyOrPowderOrMixtures = new Conditions(LogicType.OR,
-			new ItemRequirementCondition(key),
+			new ItemRequirements(key),
 			hasPowder, hasNitrate, hasMixedChemicals, hasMixedChemicals2, hasChemicalCompound, openPowderChestNearby);
 	}
 
@@ -381,7 +386,7 @@ public class TheDigSite extends BasicQuestHelper
 	{
 		talkToExaminer = new NpcStep(this, NpcID.EXAMINER, new WorldPoint(3362, 3337, 0), "Talk to an Examiner in the Exam Centre south east of Varrock.", unstampedLetter);
 		talkToExaminer.addDialogStep("Can I take an exam?");
-		((NpcStep)(talkToExaminer)).addAlternateNpcs(NpcID.EXAMINER_3636, NpcID.EXAMINER_3637);
+		((NpcStep) (talkToExaminer)).addAlternateNpcs(NpcID.EXAMINER_3636, NpcID.EXAMINER_3637);
 		talkToHaig = new NpcStep(this, NpcID.CURATOR_HAIG_HALEN, new WorldPoint(3257, 3448, 0), "Talk to Curator Haig in the Varrock Museum.");
 		talkToExaminer2 = new NpcStep(this, NpcID.EXAMINER, new WorldPoint(3362, 3337, 0), "Return to an Examiner in the Exam Centre south east of Varrock.", sealedLetter);
 
@@ -390,8 +395,8 @@ public class TheDigSite extends BasicQuestHelper
 		talkToGuide = new NpcStep(this, NpcID.PANNING_GUIDE, new WorldPoint(3385, 3386, 0), "Talk to the Panning Guide nearby.", tea);
 		panWater = new ObjectStep(this, ObjectID.PANNING_POINT, new WorldPoint(3384, 3381, 0), "Pan in the river for a special cup.", panningTray);
 		pickpocketWorkmen = new NpcStep(this, NpcID.DIGSITE_WORKMAN, new WorldPoint(3372, 3390, 0), "Pickpocket workmen until you get an animal skull and a specimen brush.", true);
-		((NpcStep)(pickpocketWorkmen)).addAlternateNpcs(NpcID.DIGSITE_WORKMAN_3630, NpcID.DIGSITE_WORKMAN_3631);
-		((NpcStep)(pickpocketWorkmen)).setMaxRoamRange(100);
+		((NpcStep) (pickpocketWorkmen)).addAlternateNpcs(NpcID.DIGSITE_WORKMAN_3630, NpcID.DIGSITE_WORKMAN_3631);
+		((NpcStep) (pickpocketWorkmen)).setMaxRoamRange(100);
 		talkToFemaleStudent = new NpcStep(this, NpcID.STUDENT_3634, new WorldPoint(3345, 3425, 0), "Talk to the female student in the north west of the Digsite twice.", teddybear);
 		talkToOrangeStudent = new NpcStep(this, NpcID.STUDENT_3633, new WorldPoint(3369, 3419, 0), "Talk to the student in an orange shirt in the north east of the Digsite twice.", specialCup);
 		talkToGreenStudent = new NpcStep(this, NpcID.STUDENT, new WorldPoint(3362, 3398, 0), "Talk to the student in a green shirt in the south of the Digsite twice.", skull);
@@ -422,12 +427,12 @@ public class TheDigSite extends BasicQuestHelper
 			"Brush carefully and slowly using short strokes.", "Handle bones very carefully and keep them away from other samples.");
 
 		getJar = new ObjectStep(this, ObjectID.CUPBOARD_17302, new WorldPoint(3355, 3332, 0), "Search the cupboard on the south wall of the west room of the Exam Centre for a specimen jar.");
-		((ObjectStep)(getJar)).addAlternateObjects(ObjectID.CUPBOARD_17303);
+		((ObjectStep) (getJar)).addAlternateObjects(ObjectID.CUPBOARD_17303);
 		getPick = new ObjectStep(this, ObjectID.CUPBOARD_17300, new WorldPoint(3356, 3337, 0), "Search the cupboard on the north wall of the west room of the Exam Centre for a rock pick.");
-		((ObjectStep)(getPick)).addAlternateObjects(ObjectID.CUPBOARD_17301);
+		((ObjectStep) (getPick)).addAlternateObjects(ObjectID.CUPBOARD_17301);
 		getBrush = new NpcStep(this, NpcID.DIGSITE_WORKMAN, new WorldPoint(3372, 3390, 0), "Pickpocket workmen until you get a specimen brush.", true);
-		((NpcStep)(getBrush)).addAlternateNpcs(NpcID.DIGSITE_WORKMAN_3630, NpcID.DIGSITE_WORKMAN_3631);
-		((NpcStep)(getBrush)).setMaxRoamRange(100);
+		((NpcStep) (getBrush)).addAlternateNpcs(NpcID.DIGSITE_WORKMAN_3630, NpcID.DIGSITE_WORKMAN_3631);
+		((NpcStep) (getBrush)).setMaxRoamRange(100);
 		digForTalisman = new ObjectStep(this, ObjectID.SOIL_2377, new WorldPoint(3374, 3438, 0), "Dig in the north east dig spot in the Digsite until you get a talisman.", trowelHighlighted, leatherBoots, leatherGloves);
 		digForTalisman.addIcon(ItemID.TROWEL);
 		talkToExpert = new NpcStep(this, NpcID.ARCHAEOLOGICAL_EXPERT, new WorldPoint(3357, 3334, 0), "Talk Archaeological expert in the Exam Centre.", talisman);
@@ -435,8 +440,8 @@ public class TheDigSite extends BasicQuestHelper
 		useInvitationOnWorkman = new NpcStep(this, NpcID.DIGSITE_WORKMAN, new WorldPoint(3360, 3415, 0), "Use the invitation on any workman.", true, invitation);
 		useInvitationOnWorkman.addIcon(ItemID.INVITATION_LETTER);
 		useInvitationOnWorkman.addDialogStep("I lost the letter you gave me.");
-		((NpcStep)(useInvitationOnWorkman)).addAlternateNpcs(NpcID.DIGSITE_WORKMAN_3630, NpcID.DIGSITE_WORKMAN_3631);
-		((NpcStep)(useInvitationOnWorkman)).setMaxRoamRange(100);
+		((NpcStep) (useInvitationOnWorkman)).addAlternateNpcs(NpcID.DIGSITE_WORKMAN_3630, NpcID.DIGSITE_WORKMAN_3631);
+		((NpcStep) (useInvitationOnWorkman)).setMaxRoamRange(100);
 		useRopeOnWinch = new ObjectStep(this, ObjectID.WINCH_2350, new WorldPoint(3353, 3417, 0), "Use a rope on the west winch.", rope);
 		useRopeOnWinch.addIcon(ItemID.ROPE);
 		goDownWinch = new ObjectStep(this, ObjectID.WINCH_2350, new WorldPoint(3353, 3417, 0), "Climb down the west winch.");
@@ -486,37 +491,41 @@ public class TheDigSite extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getNotes()
+	public List<String> getNotes()
 	{
-		return new ArrayList<>(Collections.singletonList("This quest helper is susceptible to getting out of sync with the actual quest. If this happens to you, opening up the quest's journal should fix it."));
+		return Collections.singletonList("This quest helper is susceptible to getting out of sync with the actual quest. If this happens to you, opening up the quest's journal should fix it.");
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(pestleAndMortar, vialHighlighted, tinderbox, tea, ropes2, opal, charcoal, leatherBoots, leatherGloves));
+		return Arrays.asList(pestleAndMortar, vialHighlighted, tinderbox, tea, ropes2, opal, charcoal, leatherBoots, leatherGloves);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<Requirement> getGeneralRequirements()
 	{
-		return new ArrayList<>();
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new SkillRequirement(Skill.AGILITY, 10, true));
+		req.add(new SkillRequirement(Skill.HERBLORE, 10, true));
+		req.add(new SkillRequirement(Skill.THIEVING, 25));
+		return req;
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Arrays.asList(talkToExaminer, talkToHaig, talkToExaminer2, searchBush, takeTray, talkToGuide, panWater, pickpocketWorkmen, talkToFemaleStudent, talkToFemaleStudent2,
-			talkToOrangeStudent, talkToOrangeStudent2, talkToGreenStudent, talkToGreenStudent2, takeTest1))));
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Starting off", Arrays.asList(talkToExaminer, talkToHaig, talkToExaminer2, searchBush, takeTray, talkToGuide, panWater, pickpocketWorkmen, talkToFemaleStudent, talkToFemaleStudent2,
+			talkToOrangeStudent, talkToOrangeStudent2, talkToGreenStudent, talkToGreenStudent2, takeTest1)));
 
-		allSteps.add(new PanelDetails("Exam 2", new ArrayList<>(Arrays.asList(talkToFemaleStudent3, talkToOrangeStudent3, talkToGreenStudent3, takeTest2))));
-		allSteps.add(new PanelDetails("Exam 3", new ArrayList<>(Arrays.asList(talkToFemaleStudent4, talkToFemaleStudent5, talkToOrangeStudent4,
-			talkToGreenStudent4, takeTest3)), opal));
-		allSteps.add(new PanelDetails("Discovery", new ArrayList<>(Arrays.asList(getJar, getPick, digForTalisman, talkToExpert, useInvitationOnWorkman)), trowel, specimenBrush, leatherBoots, leatherGloves));
-		allSteps.add(new PanelDetails("Digging deeper", new ArrayList<>(Arrays.asList(useRopeOnWinch, goDownWinch, pickUpRoot, searchBricks, goUpRope, useRopeOnWinch2, goDownToDoug,
+		allSteps.add(new PanelDetails("Exam 2", Arrays.asList(talkToFemaleStudent3, talkToOrangeStudent3, talkToGreenStudent3, takeTest2)));
+		allSteps.add(new PanelDetails("Exam 3", Arrays.asList(talkToFemaleStudent4, talkToFemaleStudent5, talkToOrangeStudent4,
+			talkToGreenStudent4, takeTest3), opal));
+		allSteps.add(new PanelDetails("Discovery", Arrays.asList(getJar, getPick, digForTalisman, talkToExpert, useInvitationOnWorkman), trowel, specimenBrush, leatherBoots, leatherGloves));
+		allSteps.add(new PanelDetails("Digging deeper", Arrays.asList(useRopeOnWinch, goDownWinch, pickUpRoot, searchBricks, goUpRope, useRopeOnWinch2, goDownToDoug,
 			talkToDoug, goUpFromDoug, unlockChest, searchChest, useTrowelOnBarrel, useVialOnBarrel, useLiquidOnExpert, usePowderOnExpert, mixNitroWithNitrate, grindCharcoal, addCharcoal, addRoot, goDownToExplode,
-			useCompound, useTinderbox, takeTablet, useTabletOnExpert)), ropes2, pestleAndMortar, vialHighlighted, tinderboxHighlighted, charcoal));
+			useCompound, useTinderbox, takeTablet, useTabletOnExpert), ropes2, pestleAndMortar, vialHighlighted, tinderboxHighlighted, charcoal));
 
 		return allSteps;
 	}

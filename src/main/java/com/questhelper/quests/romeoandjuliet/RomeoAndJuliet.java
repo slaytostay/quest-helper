@@ -26,18 +26,19 @@ package com.questhelper.quests.romeoandjuliet;
 
 import com.questhelper.QuestHelperQuest;
 import com.questhelper.Zone;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.ZoneRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.requirements.conditional.Conditions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import com.questhelper.requirements.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
 import com.questhelper.QuestDescriptor;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.BasicQuestHelper;
@@ -52,12 +53,14 @@ import net.runelite.api.coords.WorldPoint;
 )
 public class RomeoAndJuliet extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement cadavaBerry, letter, potion;
 
-	ConditionForStep inJulietRoom, hasPotion;
+	Requirement inJulietRoom, hasPotion;
 
 	QuestStep talkToRomeo, goUpToJuliet, talkToJuliet, giveLetterToRomeo, talkToLawrence, talkToApothecary, goUpToJuliet2, givePotionToJuliet, finishQuest;
 
+	//Zones
 	Zone julietRoom;
 
 	@Override
@@ -92,16 +95,16 @@ public class RomeoAndJuliet extends BasicQuestHelper
 	public void setupItemRequirements()
 	{
 		cadavaBerry = new ItemRequirement("Cadava berries", ItemID.CADAVA_BERRIES);
-		cadavaBerry.setTip("You can pick some from bushes south east of Varrock");
+		cadavaBerry.setTooltip("You can pick some from bushes south east of Varrock");
 		letter = new ItemRequirement("Message", ItemID.MESSAGE);
-		letter.setTip("You can get another from Juliet");
+		letter.setTooltip("You can get another from Juliet");
 		potion = new ItemRequirement("Cadava potion", ItemID.CADAVA_POTION);
 	}
 
 	public void setupConditions()
 	{
-		inJulietRoom = new ZoneCondition(julietRoom);
-		hasPotion = new ItemRequirementCondition(potion);
+		inJulietRoom = new ZoneRequirement(julietRoom);
+		hasPotion = new ItemRequirements(potion);
 	}
 
 	public void setupZones()
@@ -134,7 +137,7 @@ public class RomeoAndJuliet extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(cadavaBerry);
@@ -142,13 +145,13 @@ public class RomeoAndJuliet extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<PanelDetails> getPanels()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-		allSteps.add(new PanelDetails("Helping Romeo", new ArrayList<>(Arrays.asList(talkToRomeo, talkToJuliet, giveLetterToRomeo))));
-		allSteps.add(new PanelDetails("Hatching a plan", new ArrayList<>(Arrays.asList(talkToLawrence, talkToApothecary)), cadavaBerry));
-		allSteps.add(new PanelDetails("Enact the plan", new ArrayList<>(Arrays.asList(givePotionToJuliet, finishQuest))));
+		allSteps.add(new PanelDetails("Helping Romeo", Arrays.asList(talkToRomeo, talkToJuliet, giveLetterToRomeo)));
+		allSteps.add(new PanelDetails("Hatching a plan", Arrays.asList(talkToLawrence, talkToApothecary), cadavaBerry));
+		allSteps.add(new PanelDetails("Enact the plan", Arrays.asList(givePotionToJuliet, finishQuest)));
 		return allSteps;
 	}
 }

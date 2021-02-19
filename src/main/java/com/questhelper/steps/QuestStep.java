@@ -28,33 +28,37 @@ import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Module;
 import static com.questhelper.QuestHelperOverlay.TITLED_CONTENT_COLOR;
+import com.questhelper.QuestHelperPlugin;
 import com.questhelper.QuestVarbits;
+import com.questhelper.questhelpers.QuestHelper;
+import com.questhelper.questhelpers.QuestUtil;
 import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.conditional.ConditionForStep;
+import com.questhelper.steps.choice.DialogChoiceStep;
+import com.questhelper.steps.choice.DialogChoiceSteps;
 import com.questhelper.steps.choice.WidgetChoiceStep;
 import com.questhelper.steps.choice.WidgetChoiceSteps;
-import com.questhelper.steps.conditional.ConditionForStep;
+import com.questhelper.steps.overlay.IconOverlay;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.Client;
 import net.runelite.api.SpriteID;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.widgets.WidgetID;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.SpriteManager;
-import com.questhelper.questhelpers.QuestHelper;
-import com.questhelper.QuestHelperPlugin;
-import com.questhelper.steps.choice.DialogChoiceStep;
-import com.questhelper.steps.choice.DialogChoiceSteps;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
-import net.runelite.client.util.ImageUtil;
 
 public abstract class QuestStep implements Module
 {
@@ -65,13 +69,18 @@ public abstract class QuestStep implements Module
 	protected ClientThread clientThread;
 
 	@Inject
+	ItemManager itemManager;
+
+	@Inject
 	SpriteManager spriteManager;
 
 	@Getter
-	protected ArrayList<String> text;
+	protected List<String> text;
 
-	protected int ARROW_SHIFT_X = 8;
-	protected int ARROW_SHIFT_Y = 20;
+	@Getter
+	protected List<String> overlayText = new ArrayList<>();
+
+	protected int ARROW_SHIFT_Y = 15;
 
 	/* Locking applies to ConditionalSteps. Intended to be used as a method of forcing a step to run if it's been locked */
 	private boolean locked;
@@ -89,7 +98,7 @@ public abstract class QuestStep implements Module
 
 	@Getter
 	@Setter
-	private ConditionForStep lockingCondition;
+	private Requirement lockingCondition;
 
 	private int currentCutsceneStatus = 0;
 	protected boolean inCutscene;
@@ -110,7 +119,7 @@ public abstract class QuestStep implements Module
 	protected WidgetChoiceSteps widgetChoices = new WidgetChoiceSteps();
 
 	@Getter
-	private final ArrayList<QuestStep> substeps = new ArrayList<>();
+	private final List<QuestStep> substeps = new ArrayList<>();
 
 	@Getter
 	@Setter
@@ -123,14 +132,25 @@ public abstract class QuestStep implements Module
 
 	public QuestStep(QuestHelper questHelper, String text)
 	{
+		// use explicit ArrayList because we need the 'text' list to be mutable
 		this.text = new ArrayList<>(Collections.singletonList(text));
 		this.questHelper = questHelper;
 	}
 
-	public QuestStep(QuestHelper questHelper, ArrayList<String> text)
+	public QuestStep(QuestHelper questHelper, List<String> text)
 	{
 		this.text = text;
 		this.questHelper = questHelper;
+	}
+
+	public void setOverlayText(String text)
+	{
+		this.overlayText.add(text);
+	}
+
+	public void setOverlayText(String... text)
+	{
+		this.overlayText.addAll(Arrays.asList(text));
 	}
 
 	@Override
@@ -142,6 +162,8 @@ public abstract class QuestStep implements Module
 	{
 		clientThread.invokeLater(this::highlightChoice);
 		clientThread.invokeLater(this::highlightWidgetChoice);
+
+		setupIcon();
 	}
 
 	public void shutDown()
@@ -179,14 +201,14 @@ public abstract class QuestStep implements Module
 	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded event)
 	{
-		if (event.getGroupId() == 219)
+		if (event.getGroupId() == WidgetID.DIALOG_OPTION_GROUP_ID) // 219
 		{
 			clientThread.invokeLater(this::highlightChoice);
 		}
 
 		for (WidgetChoiceStep choice : widgetChoices.getChoices())
 		{
-			if (event.getGroupId() == choice.getGroupId())
+			if (event.getGroupId() == choice.getGroupIdForChecking())
 			{
 				clientThread.invokeLater(this::highlightWidgetChoice);
 			}
@@ -220,10 +242,10 @@ public abstract class QuestStep implements Module
 
 	public void setText(String text)
 	{
-		this.text = new ArrayList<>(Collections.singletonList(text));
+		this.text = QuestUtil.toArrayList(text);
 	}
 
-	public void setText(ArrayList<String> text)
+	public void setText(List<String> text)
 	{
 		this.text = text;
 	}
@@ -235,35 +257,48 @@ public abstract class QuestStep implements Module
 
 	public void addDialogStep(String choice)
 	{
-		choices.addChoice(new DialogChoiceStep(choice));
+		choices.addChoice(new DialogChoiceStep(questHelper.getConfig(), choice));
 	}
 
 	public void addDialogStepWithExclusion(String choice, String exclusionString)
 	{
-		choices.addDialogChoiceWithExclusion(new DialogChoiceStep(choice), exclusionString);
+		choices.addDialogChoiceWithExclusion(new DialogChoiceStep(questHelper.getConfig(), choice), exclusionString);
+	}
+
+	public void addDialogStepWithExclusions(String choice, String... exclusionString)
+	{
+		choices.addDialogChoiceWithExclusions(new DialogChoiceStep(questHelper.getConfig(), choice), exclusionString);
 	}
 
 	public void addDialogStep(int id, String choice)
 	{
-		choices.addChoice(new DialogChoiceStep(id, choice));
+		choices.addChoice(new DialogChoiceStep(questHelper.getConfig(), id, choice));
 	}
 
 	public void addDialogSteps(String... newChoices)
 	{
 		for (String choice : newChoices)
 		{
-			choices.addChoice(new DialogChoiceStep(choice));
+			choices.addChoice(new DialogChoiceStep(questHelper.getConfig(), choice));
 		}
 	}
 
 	public void addWidgetChoice(String text, int groupID, int childID)
 	{
-		widgetChoices.addChoice(new WidgetChoiceStep(text, groupID, childID));
+		widgetChoices.addChoice(new WidgetChoiceStep(questHelper.getConfig(), text, groupID, childID));
+	}
+
+	public void addWidgetChoice(String text, int groupID, int childID, int groupIDForChecking)
+	{
+		WidgetChoiceStep newChoice = new WidgetChoiceStep(questHelper.getConfig(), text, groupID, childID);
+		newChoice.setGroupIdForChecking(groupIDForChecking);
+		widgetChoices.addChoice(newChoice);
+
 	}
 
 	public void addWidgetChoice(int id, int groupID, int childID)
 	{
-		widgetChoices.addChoice(new WidgetChoiceStep(id, groupID, childID));
+		widgetChoices.addChoice(new WidgetChoiceStep(questHelper.getConfig(), id, groupID, childID));
 	}
 
 	public void makeOverlayHint(PanelComponent panelComponent, QuestHelperPlugin plugin, Requirement... additionalRequirements)
@@ -271,34 +306,33 @@ public abstract class QuestStep implements Module
 		makeOverlayHint(panelComponent, plugin, null, additionalRequirements);
 	}
 
-	public void makeOverlayHint(PanelComponent panelComponent, QuestHelperPlugin plugin, ArrayList<String> additionalText, Requirement... additionalRequirements)
+	public void makeOverlayHint(PanelComponent panelComponent, QuestHelperPlugin plugin, List<String> additionalText, Requirement... additionalRequirements)
 	{
 		addTitleToPanel(panelComponent);
 
 		if (additionalText != null)
 		{
-			for (String line : additionalText)
-			{
-				if (!line.isEmpty())
-				{
-					addTextToPanel(panelComponent, line);
-				}
-			}
+			additionalText.stream()
+				.filter(s -> !s.isEmpty())
+				.forEach(line -> addTextToPanel(panelComponent, line));
+
 			if (text != null && (text.size() > 0 && !text.get(0).isEmpty()))
 			{
 				addTextToPanel(panelComponent, "");
 			}
 		}
 
-		if (text != null)
+		if (!overlayText.isEmpty())
 		{
-			for (String line : text)
-			{
-				if (!line.isEmpty())
-				{
-					addTextToPanel(panelComponent, line);
-				}
-			}
+			overlayText.stream()
+				.filter(s -> !s.isEmpty())
+				.forEach(line -> addTextToPanel(panelComponent, line));
+		}
+		else if (text != null)
+		{
+			text.stream()
+				.filter(s -> !s.isEmpty())
+				.forEach(line -> addTextToPanel(panelComponent, line));
 		}
 	}
 
@@ -337,7 +371,7 @@ public abstract class QuestStep implements Module
 
 	public boolean isLocked()
 	{
-		boolean autoLocked = lockingCondition != null && lockingCondition.checkCondition(client);
+		boolean autoLocked = lockingCondition != null && lockingCondition.check(client);
 		unlockable = !autoLocked;
 		if (autoLocked)
 		{
@@ -356,18 +390,20 @@ public abstract class QuestStep implements Module
 		return getActiveStep();
 	}
 
+	protected void setupIcon()
+	{
+		if (iconItemID != -1 && icon == null)
+		{
+			icon = IconOverlay.createIconImage(itemManager.getImage(iconItemID));
+		}
+		else if (icon == null)
+		{
+			icon = getQuestImage();
+		}
+	}
+
 	public BufferedImage getQuestImage()
 	{
 		return spriteManager.getSprite(SpriteID.TAB_QUESTS, 0);
-	}
-
-	public BufferedImage getArrow()
-	{
-		return ImageUtil.getResourceStreamFromClass(getClass(), "/quest_arrow.png");
-	}
-
-	public BufferedImage getSmallArrow()
-	{
-		return ImageUtil.getResourceStreamFromClass(getClass(), "/quest_minimap_arrow_small.png");
 	}
 }

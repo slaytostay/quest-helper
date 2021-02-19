@@ -24,46 +24,59 @@
  */
 package com.questhelper.quests.rovingelves;
 
+import com.questhelper.ItemCollections;
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.util.LogicType;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ItemStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.ROVING_ELVES
 )
 public class RovingElves extends BasicQuestHelper
 {
-	ItemRequirement glarialsPebble, pebbleHint, keyHint, key, spade, rope, prayerPotions, food, seed, blessedSeed, highlightRope, blessedSeedHighlight;
+	//Items Required
+	ItemRequirement glarialsPebble, pebbleHint, keyHint, key, spade, rope, seed, blessedSeed, highlightRope, blessedSeedHighlight;
 
-	ConditionForStep inGlarialsTomb, onDeadTreeIsland, onLedge, onHudonIsland, inFalls, seedNearby, hasSeed, hadBlessedSeed, hasKey, inThroneRoom;
+	//Items Recommended
+	//I don't know amounts of teleports, hopefully someone can fix that later
+	ItemRequirement prayerPotions, food, ardougneTeleports, camelotTeleports, iowerthCampTeleports, skillsNecklace;
+
+
+	Requirement inGlarialsTomb, onDeadTreeIsland, onLedge, onHudonIsland, inFalls, seedNearby, hasSeed, hadBlessedSeed, hasKey, inThroneRoom;
 
 	QuestStep talkToIslwyn, talkToEluned, enterGlarialsTombstone, killGuardian, pickUpSeed, returnSeedToEluned, boardRaft, useRopeOnRock, useRopeOnTree, enterFalls,
 		searchFallsCrate, useKeyOnFallsDoor, plantSeed, returnToIslwyn;
 
+	//Zones
 	Zone glarialTomb, deadTreeIsland, ledge, hudonIsland, falls, throneRoom;
 
 	@Override
@@ -105,16 +118,16 @@ public class RovingElves extends BasicQuestHelper
 	{
 		seed = new ItemRequirement("Consecration seed", ItemID.CONSECRATION_SEED);
 		blessedSeed = new ItemRequirement("Consecration seed", ItemID.CONSECRATION_SEED_4206);
-		blessedSeed.setTip("You can get another from Eluned");
+		blessedSeed.setTooltip("You can get another from Eluned");
 
 		blessedSeedHighlight = new ItemRequirement("Consecration seed", ItemID.CONSECRATION_SEED_4206);
-		blessedSeedHighlight.setTip("You can get another from Eluned");
+		blessedSeedHighlight.setTooltip("You can get another from Eluned");
 		blessedSeedHighlight.setHighlightInInventory(true);
 
 		glarialsPebble = new ItemRequirement("Glarial's pebble", ItemID.GLARIALS_PEBBLE);
-		glarialsPebble.setTip("You can get another from Golrie under Tree Gnome Village");
+		glarialsPebble.setTooltip("You can get another from Golrie under Tree Gnome Village");
 		key = new ItemRequirement("Key", ItemID.KEY_298);
-		key.setTip("You can get another from inside Baxtorian Falls");
+		key.setTooltip("You can get another from inside Baxtorian Falls");
 
 		keyHint = new ItemRequirement("Key (obtainable in quest)", ItemID.KEY_293);
 
@@ -123,22 +136,26 @@ public class RovingElves extends BasicQuestHelper
 		rope = new ItemRequirement("Rope", ItemID.ROPE);
 		highlightRope = new ItemRequirement("Rope", ItemID.ROPE);
 		highlightRope.setHighlightInInventory(true);
-		prayerPotions = new ItemRequirement("Prayer potions", ItemID.PRAYER_POTION4);
-		food = new ItemRequirement("Food", -1, -1);
+		prayerPotions = new ItemRequirement("A few prayer potions", ItemID.PRAYER_POTION4);
+		skillsNecklace = new ItemRequirement("Skills necklace", ItemCollections.getSkillsNecklaces(), 1);
+		ardougneTeleports = new ItemRequirement("Ardougne teleports", ItemID.ARDOUGNE_TELEPORT, -1);
+		camelotTeleports = new ItemRequirement("Camelot Teleports", ItemID.CAMELOT_TELEPORT, -1);
+		iowerthCampTeleports = new ItemRequirement("Iowerth camp teleports", ItemID.IORWERTH_CAMP_TELEPORT, -1);
+		food = new ItemRequirement("Food", ItemCollections.getGoodEatingFood(), -1);
 	}
 
 	public void setupConditions()
 	{
-		onDeadTreeIsland = new ZoneCondition(deadTreeIsland);
-		onHudonIsland = new ZoneCondition(hudonIsland);
-		onLedge = new ZoneCondition(ledge);
-		inFalls = new ZoneCondition(falls);
-		inGlarialsTomb = new ZoneCondition(glarialTomb);
-		inThroneRoom = new ZoneCondition(throneRoom);
-		hasSeed = new ItemRequirementCondition(seed);
-		hadBlessedSeed = new Conditions(true, LogicType.OR, new ItemRequirementCondition(blessedSeed));
-		seedNearby = new ItemCondition(seed);
-		hasKey = new ItemRequirementCondition(key);
+		onDeadTreeIsland = new ZoneRequirement(deadTreeIsland);
+		onHudonIsland = new ZoneRequirement(hudonIsland);
+		onLedge = new ZoneRequirement(ledge);
+		inFalls = new ZoneRequirement(falls);
+		inGlarialsTomb = new ZoneRequirement(glarialTomb);
+		inThroneRoom = new ZoneRequirement(throneRoom);
+		hasSeed = new ItemRequirements(seed);
+		hadBlessedSeed = new Conditions(true, LogicType.OR, new ItemRequirements(blessedSeed));
+		seedNearby = new ItemOnTileRequirement(seed);
+		hasKey = new ItemRequirements(key);
 
 		// 8374 0->1 when leaving?
 	}
@@ -185,35 +202,46 @@ public class RovingElves extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(spade, rope, pebbleHint, keyHint));
+		return Arrays.asList(spade, rope, pebbleHint, keyHint);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(prayerPotions, food));
+		return Arrays.asList(prayerPotions, food, skillsNecklace, ardougneTeleports, camelotTeleports, iowerthCampTeleports);
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Collections.singletonList("Moss Guardian (level 84) whilst bare-handed"));
+		return Collections.singletonList("Moss Guardian (level 84) without runes, weapons, or armour");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.REGICIDE, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.WATERFALL_QUEST, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.AGILITY, 56, true));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
 		allSteps.add(new PanelDetails("Starting off",
-			new ArrayList<>(Arrays.asList(talkToIslwyn, talkToEluned))));
+			Arrays.asList(talkToIslwyn, talkToEluned)));
 
 		allSteps.add(new PanelDetails("Get the seed",
-			new ArrayList<>(Arrays.asList(enterGlarialsTombstone, killGuardian, pickUpSeed, returnSeedToEluned)), glarialsPebble));
+			Arrays.asList(enterGlarialsTombstone, killGuardian, pickUpSeed, returnSeedToEluned), glarialsPebble));
 
 		allSteps.add(new PanelDetails("Plant the seed",
-			new ArrayList<>(Arrays.asList(boardRaft, useRopeOnRock, useRopeOnTree, enterFalls, searchFallsCrate, useKeyOnFallsDoor, plantSeed, returnToIslwyn)), spade, rope, blessedSeed));
+			Arrays.asList(boardRaft, useRopeOnRock, useRopeOnTree, enterFalls, searchFallsCrate, useKeyOnFallsDoor,
+				plantSeed, returnToIslwyn), spade, rope, blessedSeed));
 		return allSteps;
 	}
 }

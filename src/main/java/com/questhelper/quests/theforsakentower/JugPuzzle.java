@@ -25,26 +25,26 @@
 package com.questhelper.quests.theforsakentower;
 
 import com.google.inject.Inject;
-import com.questhelper.requirements.ItemRequirement;
 import com.questhelper.QuestHelperPlugin;
 import com.questhelper.Zone;
 import com.questhelper.panel.PanelDetails;
 import com.questhelper.questhelpers.QuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
 import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.util.LogicType;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.LogicType;
 import com.questhelper.steps.OwnerStep;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.runelite.api.Client;
@@ -76,7 +76,7 @@ public class JugPuzzle extends QuestStep implements OwnerStep
 
 	ItemRequirement tinderbox, fiveGallon, eightGallon;
 
-	ConditionForStep has5Gallon, has8Gallon, missingTinderbox, hasFilledWithFuel, inFirstFloor, inSecondFloor, inBasement;
+	Requirement has5Gallon, has8Gallon, missingTinderbox, hasFilledWithFuel, inFirstFloor, inSecondFloor, inBasement;
 
 	DetailedQuestStep syncStep, searchCupboardTinderbox, searchCupboardJug, fill5Gallon, use5GallonOn8, fill5Gallon2, use5GallonOn82, empty8Gallon, use5GallonOn83, fill5Gallon3, use5GallonOn84, fill5Gallon4, use5GallonOn85, use5GallonOnFurnace,
 		lightFurnace, restartPuzzle, goUpToGroundFloor, goDownToGroundFloor, goDownToFirstFloor;
@@ -172,38 +172,38 @@ public class JugPuzzle extends QuestStep implements OwnerStep
 			}
 		}
 
-		if (!has5Gallon.checkCondition(client))
+		if (!has5Gallon.check(client))
 		{
 			jugs.put("5", 0);
 		}
 
-		if (!has8Gallon.checkCondition(client))
+		if (!has8Gallon.check(client))
 		{
 			jugs.put("8", 0);
 		}
 
 
-		if (inBasement.checkCondition(client))
+		if (inBasement.check(client))
 		{
 			startUpStep(goUpToGroundFloor);
 		}
-		else if (inFirstFloor.checkCondition(client))
+		else if (inFirstFloor.check(client))
 		{
 			startUpStep(goDownToGroundFloor);
 		}
-		else if (inSecondFloor.checkCondition(client))
+		else if (inSecondFloor.check(client))
 		{
 			startUpStep(goDownToFirstFloor);
 		}
-		else if (missingTinderbox.checkCondition(client))
+		else if (missingTinderbox.check(client))
 		{
 			startUpStep(searchCupboardTinderbox);
 		}
-		else if (hasFilledWithFuel.checkCondition(client))
+		else if (hasFilledWithFuel.check(client))
 		{
 			startUpStep(lightFurnace);
 		}
-		else if (!has5Gallon.checkCondition(client) || !has8Gallon.checkCondition(client))
+		else if (!has5Gallon.check(client) || !has8Gallon.check(client))
 		{
 			startUpStep(searchCupboardJug);
 		}
@@ -291,7 +291,7 @@ public class JugPuzzle extends QuestStep implements OwnerStep
 	}
 
 	@Override
-	public void makeOverlayHint(PanelComponent panelComponent, QuestHelperPlugin plugin, Requirement... requirements)
+	public void makeOverlayHint(PanelComponent panelComponent, QuestHelperPlugin plugin,Requirement ... requirements)
 	{
 		if (currentStep != null)
 		{
@@ -339,13 +339,13 @@ public class JugPuzzle extends QuestStep implements OwnerStep
 
 	private void setupConditions()
 	{
-		has5Gallon = new ItemRequirementCondition(fiveGallon);
-		has8Gallon = new ItemRequirementCondition(eightGallon);
-		missingTinderbox = new ItemRequirementCondition(LogicType.NAND, tinderbox);
-		hasFilledWithFuel = new VarbitCondition(7798, 3);
-		inFirstFloor = new ZoneCondition(firstFloor);
-		inSecondFloor = new ZoneCondition(secondFloor);
-		inBasement = new ZoneCondition(basement);
+		has5Gallon = new ItemRequirements(fiveGallon);
+		has8Gallon = new ItemRequirements(eightGallon);
+		missingTinderbox = new ItemRequirements(LogicType.NAND, tinderbox);
+		hasFilledWithFuel = new VarbitRequirement(7798, 3);
+		inFirstFloor = new ZoneRequirement(firstFloor);
+		inSecondFloor = new ZoneRequirement(secondFloor);
+		inBasement = new ZoneRequirement(basement);
 	}
 
 	private void setupSteps()
@@ -380,12 +380,12 @@ public class JugPuzzle extends QuestStep implements OwnerStep
 
 	}
 
-	public ArrayList<PanelDetails> panelDetails()
+	public List<PanelDetails> panelDetails()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		List<PanelDetails> allSteps = new ArrayList<>();
 		PanelDetails furnacePanel = new PanelDetails("Furnace puzzle",
-			new ArrayList<>(Arrays.asList(searchCupboardTinderbox, searchCupboardJug, fill5Gallon, use5GallonOn8, fill5Gallon2, use5GallonOn82, empty8Gallon, use5GallonOn83,
-				fill5Gallon3, use5GallonOn84, fill5Gallon4, use5GallonOn85, use5GallonOnFurnace, lightFurnace)));
+			Arrays.asList(searchCupboardTinderbox, searchCupboardJug, fill5Gallon, use5GallonOn8, fill5Gallon2, use5GallonOn82, empty8Gallon, use5GallonOn83,
+				fill5Gallon3, use5GallonOn84, fill5Gallon4, use5GallonOn85, use5GallonOnFurnace, lightFurnace));
 		furnacePanel.setLockingStep(this);
 		allSteps.add(furnacePanel);
 		return allSteps;

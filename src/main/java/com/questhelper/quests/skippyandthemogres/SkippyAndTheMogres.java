@@ -24,33 +24,37 @@
  */
 package com.questhelper.quests.skippyandthemogres;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedQuestStep;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.SKIPPY_AND_THE_MOGRES
 )
 public class SkippyAndTheMogres extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement bucketOfWater, nettleTea, chocolateDust, bucketOfMilk, snapeGrass, chocolateMilk, hangoverCure;
 
-	ConditionForStep hasChocolateMilk, hasHangoverCure;
+	Requirement hasChocolateMilk, hasHangoverCure;
 
 	QuestStep soberSkippy, useTeaOnSkippy, useChocolateDustOnMilk, useSnapeGrassOnMilk, useHangoverCure;
 
@@ -85,7 +89,7 @@ public class SkippyAndTheMogres extends BasicQuestHelper
 		chocolateDust = new ItemRequirement("Chocolate dust", ItemID.CHOCOLATE_DUST);
 		chocolateDust.setHighlightInInventory(true);
 		nettleTea = new ItemRequirement("Nettle tea", ItemID.NETTLE_TEA);
-		nettleTea.setTip("You can make this by using nettles on a bowl of water, then cooking it");
+		nettleTea.setTooltip("You can make this by using nettles on a bowl of water, then cooking it");
 		snapeGrass = new ItemRequirement("Snape grass", ItemID.SNAPE_GRASS);
 		snapeGrass.setHighlightInInventory(true);
 		chocolateMilk = new ItemRequirement("Chocolatey milk", ItemID.CHOCOLATEY_MILK);
@@ -94,8 +98,8 @@ public class SkippyAndTheMogres extends BasicQuestHelper
 
 	public void setupConditions()
 	{
-		hasHangoverCure = new ItemRequirementCondition(hangoverCure);
-		hasChocolateMilk = new ItemRequirementCondition(chocolateMilk);
+		hasHangoverCure = new ItemRequirements(hangoverCure);
+		hasChocolateMilk = new ItemRequirements(chocolateMilk);
 	}
 
 	public void setupSteps()
@@ -111,7 +115,7 @@ public class SkippyAndTheMogres extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(bucketOfWater);
@@ -123,10 +127,18 @@ public class SkippyAndTheMogres extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
-		allSteps.add(new PanelDetails("Help Skippy", new ArrayList<>(Arrays.asList(soberSkippy, useTeaOnSkippy, useChocolateDustOnMilk, useSnapeGrassOnMilk, useHangoverCure)), bucketOfWater, nettleTea, bucketOfMilk, chocolateDust, snapeGrass));
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new SkillRequirement(Skill.COOKING, 20));
+		return req;
+	}
+
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+		allSteps.add(new PanelDetails("Help Skippy", Arrays.asList(soberSkippy, useTeaOnSkippy, useChocolateDustOnMilk, useSnapeGrassOnMilk, useHangoverCure), bucketOfWater, nettleTea, bucketOfMilk, chocolateDust, snapeGrass));
 		return allSteps;
 	}
 }

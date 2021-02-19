@@ -24,51 +24,59 @@
  */
 package com.questhelper.quests.shadowofthestorm;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.Zone;
+import com.questhelper.banktab.BankSlotIcons;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.requirements.quest.QuestRequirement;
+import com.questhelper.requirements.Requirement;
+import com.questhelper.requirements.player.SkillRequirement;
+import com.questhelper.requirements.var.VarbitRequirement;
+import com.questhelper.requirements.ZoneRequirement;
+import com.questhelper.requirements.conditional.Conditions;
+import com.questhelper.requirements.item.ItemOnTileRequirement;
+import com.questhelper.requirements.util.Operation;
 import com.questhelper.steps.ConditionalStep;
 import com.questhelper.steps.DetailedOwnerStep;
 import com.questhelper.steps.DetailedQuestStep;
 import com.questhelper.steps.ItemStep;
+import com.questhelper.steps.NpcStep;
 import com.questhelper.steps.ObjectStep;
-import com.questhelper.steps.conditional.Conditions;
-import com.questhelper.steps.conditional.ItemCondition;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
-import com.questhelper.steps.conditional.Operation;
-import com.questhelper.steps.conditional.VarbitCondition;
-import com.questhelper.steps.conditional.ZoneCondition;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
+import net.runelite.api.QuestState;
+import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.Zone;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.NpcStep;
-import com.questhelper.steps.QuestStep;
-import com.questhelper.steps.conditional.ConditionForStep;
 
 @QuestDescriptor(
 	quest = QuestHelperQuest.SHADOW_OF_THE_STORM
 )
 public class ShadowOfTheStorm extends BasicQuestHelper
 {
+	//Items Required
 	ItemRequirement darkItems, silverlight, strangeImplement, blackMushroomInk, pestle, vial, silverBar, silverlightHighlighted, blackMushroomHighlighted,
-		silverlightDyedEquipped, sigilMould, silverlightDyed, strangeImplementHighlighted, combatGear, coinsForCarpet, sigil, book, bookHighlighted,
+		silverlightDyedEquipped, sigilMould, silverlightDyed, strangeImplementHighlighted, sigil, book, bookHighlighted,
 		sigilHighlighted, sigil2;
 
-	ConditionForStep inRuin, inThroneRoom, hasMushroom, hasDyedSilverlight, hasImplement, hasSigil, hasBook, hasSigilMould, talkedToGolem,
+	//Items Recommended
+	ItemRequirement combatGear, coinsForCarpet;
+
+	Requirement inRuin, inThroneRoom, hasMushroom, hasDyedSilverlight, hasImplement, hasSigil, hasBook, hasSigilMould, talkedToGolem,
 		talkedToMatthew, inCircleSpot, sigilNearby, evilDaveMoved, baddenMoved, reenMoved, golemMoved, golemRejected, golemReprogrammed,
 		inSecondCircleSpot;
-
-	Zone ruin, throneRoom, circleSpot, secondCircleSpot;
 
 	DetailedQuestStep talkToReen, talkToBadden, pickMushroom, dyeSilverlight, goIntoRuin, pickUpStrangeImplement, talkToEvilDave, enterPortal,
 		talkToDenath, talkToJennifer, talkToMatthew, smeltSigil, talkToGolem, readBook, enterRuinAfterBook, enterPortalAfterBook,
@@ -81,6 +89,9 @@ public class ShadowOfTheStorm extends BasicQuestHelper
 	DetailedOwnerStep searchKiln;
 
 	IncantationStep readIncantation, incantRitual;
+
+	//Zones
+	Zone ruin, throneRoom, circleSpot, secondCircleSpot;
 
 	@Override
 	public Map<Integer, QuestStep> loadSteps()
@@ -181,12 +192,13 @@ public class ShadowOfTheStorm extends BasicQuestHelper
 			ItemID.ANTISANTA_GLOVES, ItemID.ANTISANTA_JACKET, ItemID.ANTISANTA_MASK, ItemID.ANTISANTA_PANTALOONS, ItemID.WIZARD_HAT, ItemID.BLACK_CAPE, ItemID.BLACK_PARTYHAT, ItemID.BLACK_HWEEN_MASK, ItemID.BLACK_DRAGON_MASK, ItemID.BLACK_UNICORN_MASK, ItemID.BLACK_DEMON_MASK,
 			ItemID.BLACK_DHIDE_BODY, ItemID.BLACK_DHIDE_CHAPS, ItemID.BLACK_DHIDE_VAMBRACES, ItemID.BLACK_ROBE);
 		silverlight = new ItemRequirement("Silverlight", ItemID.SILVERLIGHT);
-		silverlight.setTip("You can get another from Father Reen in Al Kharid if you've lost it");
+		silverlight.setTooltip("You can get another from Father Reen in Al Kharid if you've lost it");
+		silverlight.addAlternates(ItemID.SILVERLIGHT_6745); // silverlight dyed black
 		strangeImplement = new ItemRequirement("Strange implement", ItemID.STRANGE_IMPLEMENT);
-		strangeImplement.setTip("You can find another in the underground of Uzer");
+		strangeImplement.setTooltip("You can find another in the underground of Uzer");
 		strangeImplementHighlighted = new ItemRequirement("Strange implement", ItemID.STRANGE_IMPLEMENT);
 		strangeImplementHighlighted.setHighlightInInventory(true);
-		strangeImplementHighlighted.setTip("You can find another in the underground of Uzer");
+		strangeImplementHighlighted.setTooltip("You can find another in the underground of Uzer");
 		blackMushroomInk = new ItemRequirement("Black mushroom ink", ItemID.BLACK_MUSHROOM_INK);
 		pestle = new ItemRequirement("Pestle and mortar", ItemID.PESTLE_AND_MORTAR);
 		vial = new ItemRequirement("Vial", ItemID.VIAL);
@@ -199,11 +211,12 @@ public class ShadowOfTheStorm extends BasicQuestHelper
 		silverlightDyedEquipped = new ItemRequirement("Silverlight (dyed)", ItemID.SILVERLIGHT_6745, 1, true);
 		sigilMould = new ItemRequirement("Demonic sigil mould", ItemID.DEMONIC_SIGIL_MOULD);
 		combatGear = new ItemRequirement("Combat gear + potions", -1, -1);
-		coinsForCarpet = new ItemRequirement("400+ coins for carpet rides", -1, -1);
+		combatGear.setDisplayItemId(BankSlotIcons.getCombatGear());
+		coinsForCarpet = new ItemRequirement("Coins or more for carpet rides", ItemID.COINS_995, 400);
 		sigil = new ItemRequirement("Demonic sigil", ItemID.DEMONIC_SIGIL);
-		sigil.setTip("You can make another if needed with the demonic sigil mould");
+		sigil.setTooltip("You can make another if needed with the demonic sigil mould");
 		sigil2 = new ItemRequirement("Demonic sigil", ItemID.DEMONIC_SIGIL, 2);
-		sigil2.setTip("You can make another if needed with the demonic sigil mould (which you can get from Jennifer)");
+		sigil2.setTooltip("You can make another if needed with the demonic sigil mould (which you can get from Jennifer)");
 		sigilHighlighted = new ItemRequirement("Demonic sigil", ItemID.DEMONIC_SIGIL);
 		sigilHighlighted.setHighlightInInventory(true);
 		book = new ItemRequirement("Demonic tome", ItemID.DEMONIC_TOME);
@@ -213,27 +226,27 @@ public class ShadowOfTheStorm extends BasicQuestHelper
 
 	private void setupConditions()
 	{
-		inRuin = new ZoneCondition(ruin);
-		inThroneRoom = new ZoneCondition(throneRoom);
-		inCircleSpot = new ZoneCondition(circleSpot);
-		inSecondCircleSpot = new ZoneCondition(secondCircleSpot);
+		inRuin = new ZoneRequirement(ruin);
+		inThroneRoom = new ZoneRequirement(throneRoom);
+		inCircleSpot = new ZoneRequirement(circleSpot);
+		inSecondCircleSpot = new ZoneRequirement(secondCircleSpot);
 
-		hasDyedSilverlight = new ItemRequirementCondition(silverlightDyed);
-		hasMushroom = new ItemRequirementCondition(blackMushroomHighlighted);
-		hasImplement = new ItemRequirementCondition(strangeImplement);
-		hasSigil = new ItemRequirementCondition(sigil);
-		hasBook = new ItemRequirementCondition(book);
-		hasSigilMould = new ItemRequirementCondition(sigilMould);
+		hasDyedSilverlight = new ItemRequirements(silverlightDyed);
+		hasMushroom = new ItemRequirements(blackMushroomHighlighted);
+		hasImplement = new ItemRequirements(strangeImplement);
+		hasSigil = new ItemRequirements(sigil);
+		hasBook = new ItemRequirements(book);
+		hasSigilMould = new ItemRequirements(sigilMould);
 
-		talkedToMatthew = new VarbitCondition(1372, 50, Operation.GREATER_EQUAL);
-		talkedToGolem = new VarbitCondition(1372, 60, Operation.GREATER_EQUAL);
-		sigilNearby = new ItemCondition(sigil);
-		evilDaveMoved = new VarbitCondition(1380, 2, Operation.GREATER_EQUAL);
-		baddenMoved = new VarbitCondition(1381, 2, Operation.GREATER_EQUAL);
-		reenMoved = new VarbitCondition(1382, 2, Operation.GREATER_EQUAL);
-		golemRejected = new VarbitCondition(1379, 1, Operation.GREATER_EQUAL);
-		golemReprogrammed = new VarbitCondition(1379, 2, Operation.GREATER_EQUAL);
-		golemMoved = new VarbitCondition(1379, 3, Operation.GREATER_EQUAL);
+		talkedToMatthew = new VarbitRequirement(1372, 50, Operation.GREATER_EQUAL);
+		talkedToGolem = new VarbitRequirement(1372, 60, Operation.GREATER_EQUAL);
+		sigilNearby = new ItemOnTileRequirement(sigil);
+		evilDaveMoved = new VarbitRequirement(1380, 2, Operation.GREATER_EQUAL);
+		baddenMoved = new VarbitRequirement(1381, 2, Operation.GREATER_EQUAL);
+		reenMoved = new VarbitRequirement(1382, 2, Operation.GREATER_EQUAL);
+		golemRejected = new VarbitRequirement(1379, 1, Operation.GREATER_EQUAL);
+		golemReprogrammed = new VarbitRequirement(1379, 2, Operation.GREATER_EQUAL);
+		golemMoved = new VarbitRequirement(1379, 3, Operation.GREATER_EQUAL);
 	}
 
 	private void setupSteps()
@@ -312,41 +325,51 @@ public class ShadowOfTheStorm extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getNotes()
+	public List<String> getNotes()
 	{
-		return new ArrayList<>(Arrays.asList("You will need 3 black items for a part of the quest. Potential items would be:",
+		return Arrays.asList("You will need 3 black items for a part of the quest. Potential items would be:",
 			"- Desert shirt/robe dyed with black mushroom ink", "- Black armour", "- Priest gown top/bottom", "- Black wizard hat",
-			"- Dark mystic", "- Ghostly robes", "- Shade robes", "- Black dragonhide", "- Black cape", "- One of the various black holiday event items"));
+			"- Dark mystic", "- Ghostly robes", "- Shade robes", "- Black dragonhide", "- Black cape", "- One of the various black holiday event items");
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Collections.singletonList("Agrith-Naar (level 100)"));
+		return Collections.singletonList("Agrith-Naar (level 100)");
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
-		return new ArrayList<>(Arrays.asList(silverlight, darkItems, silverBar));
+		return Arrays.asList(silverlight, darkItems, silverBar);
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
-		return new ArrayList<>(Arrays.asList(combatGear, coinsForCarpet));
+		return Arrays.asList(combatGear, coinsForCarpet);
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels()
+	public List<Requirement> getGeneralRequirements()
 	{
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+		ArrayList<Requirement> req = new ArrayList<>();
+		req.add(new QuestRequirement(QuestHelperQuest.THE_GOLEM, QuestState.FINISHED));
+		req.add(new QuestRequirement(QuestHelperQuest.DEMON_SLAYER, QuestState.FINISHED));
+		req.add(new SkillRequirement(Skill.CRAFTING, 30, true));
+		return req;
+	}
 
-		allSteps.add(new PanelDetails("Starting off", new ArrayList<>(Collections.singletonList(talkToReen))));
-		allSteps.add(new PanelDetails("Infiltrate the cult", new ArrayList<>(Arrays.asList(talkToBadden, pickMushroom, dyeSilverlight, goIntoRuin, pickUpStrangeImplement, talkToEvilDave, talkToJennifer, talkToMatthew)), silverlight, darkItems));
-		allSteps.add(new PanelDetails("Uncovering the truth", new ArrayList<>(Arrays.asList(smeltSigil, talkToGolem, searchKiln, readBook, talkToMatthewAfterBook, standInCircle, readIncantation)), silverBar, silverlightDyed, combatGear));
-		allSteps.add(new PanelDetails("Defeating Agrith-Naar", new ArrayList<>(Arrays.asList(pickUpSigil, leavePortal, pickUpSigil2, tellDaveToReturn, talkToBaddenAfterRitual, talkToReenAfterRitual, talkToTheGolemAfterRitual, useImplementOnGolem, talkToGolemAfterReprogramming,
-			talkToMatthewToStartFight, standInCircleAgain, incantRitual, killDemon, unequipDarklight)), silverlightDyed, combatGear));
+	@Override
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
+
+		allSteps.add(new PanelDetails("Starting off", Collections.singletonList(talkToReen)));
+		allSteps.add(new PanelDetails("Infiltrate the cult", Arrays.asList(talkToBadden, pickMushroom, dyeSilverlight, goIntoRuin, pickUpStrangeImplement, talkToEvilDave, talkToJennifer, talkToMatthew), silverlight, darkItems));
+		allSteps.add(new PanelDetails("Uncovering the truth", Arrays.asList(smeltSigil, talkToGolem, searchKiln, readBook, talkToMatthewAfterBook, standInCircle, readIncantation), silverBar, silverlightDyed, combatGear));
+		allSteps.add(new PanelDetails("Defeating Agrith-Naar", Arrays.asList(pickUpSigil, leavePortal, pickUpSigil2, tellDaveToReturn, talkToBaddenAfterRitual, talkToReenAfterRitual, talkToTheGolemAfterRitual, useImplementOnGolem, talkToGolemAfterReprogramming,
+			talkToMatthewToStartFight, standInCircleAgain, incantRitual, killDemon, unequipDarklight), silverlightDyed, combatGear));
 		return allSteps;
 	}
 }

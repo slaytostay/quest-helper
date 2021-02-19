@@ -24,44 +24,54 @@
  */
 package com.questhelper.quests.piratestreasure;
 
+import com.questhelper.QuestDescriptor;
 import com.questhelper.QuestHelperQuest;
+import com.questhelper.panel.PanelDetails;
+import com.questhelper.questhelpers.BasicQuestHelper;
+import com.questhelper.requirements.item.ItemRequirement;
+import com.questhelper.requirements.item.ItemRequirements;
+import com.questhelper.steps.ConditionalStep;
+import com.questhelper.steps.DetailedQuestStep;
+import com.questhelper.steps.DigStep;
+import com.questhelper.steps.NpcStep;
+import com.questhelper.steps.ObjectStep;
+import com.questhelper.steps.QuestStep;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import net.runelite.api.ItemID;
 import net.runelite.api.NpcID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldPoint;
-import com.questhelper.requirements.ItemRequirement;
-import com.questhelper.QuestDescriptor;
-import com.questhelper.panel.PanelDetails;
-import com.questhelper.questhelpers.BasicQuestHelper;
-import com.questhelper.steps.*;
-
-import java.util.HashMap;
-import java.util.Map;
-import com.questhelper.steps.conditional.ItemRequirementCondition;
 
 @QuestDescriptor(
         quest = QuestHelperQuest.PIRATES_TREASURE
 )
 public class PiratesTreasure extends BasicQuestHelper
 {
-	private ItemRequirement sixtyCoins, spade;
+	//ItemRequirements
+	ItemRequirement sixtyCoins, spade;
 
 	private NpcStep speakToRedbeard;
+
 	private RumSmugglingStep smuggleRum;
+
 	private QuestStep readPirateMessage;
+
 	private ObjectStep openChest;
+
 	private QuestStep digUpTreasure;
 
 	@Override
-    public Map<Integer, QuestStep> loadSteps()
-    {
-    	sixtyCoins = new ItemRequirement("Coins", ItemID.COINS_995, 60);
-    	spade = new ItemRequirement("Spade", ItemID.SPADE);
+	public Map<Integer, QuestStep> loadSteps()
+	{
+		sixtyCoins = new ItemRequirement("Coins", ItemID.COINS_995, 60);
+		spade = new ItemRequirement("Spade", ItemID.SPADE);
 
-        Map<Integer, QuestStep> steps = new HashMap<>();
+		Map<Integer, QuestStep> steps = new HashMap<>();
 
 		speakToRedbeard = new NpcStep(this, NpcID.REDBEARD_FRANK, new WorldPoint(3053, 3251, 0),
 			"Talk to Redbeard Frank in Port Sarim.");
@@ -72,35 +82,35 @@ public class PiratesTreasure extends BasicQuestHelper
 
 		smuggleRum = new RumSmugglingStep(this);
 
-        steps.put(1, smuggleRum);
+		steps.put(1, smuggleRum);
 
 		ItemRequirement pirateMessage = new ItemRequirement("Pirate message", ItemID.PIRATE_MESSAGE);
-        ItemRequirement chestKey = new ItemRequirement("Chest key", ItemID.CHEST_KEY);
-        chestKey.setTip("You can get another one from Redbeard Frank");
+		ItemRequirement chestKey = new ItemRequirement("Chest key", ItemID.CHEST_KEY);
+		chestKey.setTooltip("You can get another one from Redbeard Frank");
 
-		ItemRequirementCondition hasPirateMessage = new ItemRequirementCondition(pirateMessage);
+		ItemRequirements hasPirateMessage = new ItemRequirements(pirateMessage);
 
-        readPirateMessage = new DetailedQuestStep(this, "Read the Pirate message.", pirateMessage);
+		readPirateMessage = new DetailedQuestStep(this, "Read the Pirate message.", pirateMessage);
 		openChest = new ObjectStep(this, ObjectID.CHEST_2079, new WorldPoint(3219, 3396, 1),
-                "Open the chest upstairs in The Blue Moon Inn in Varrock by using the key on it.",
-                chestKey);
+			"Open the chest upstairs in The Blue Moon Inn in Varrock by using the key on it.",
+			chestKey);
 		openChest.addDialogStep("Ok thanks, I'll go and get it.");
 		openChest.addIcon(ItemID.CHEST_KEY);
 
-        ConditionalStep getTreasureMap = new ConditionalStep(this, openChest);
-        getTreasureMap.addStep(hasPirateMessage, readPirateMessage);
+		ConditionalStep getTreasureMap = new ConditionalStep(this, openChest);
+		getTreasureMap.addStep(hasPirateMessage, readPirateMessage);
 
-        steps.put(2, getTreasureMap);
+		steps.put(2, getTreasureMap);
 
-        digUpTreasure = new DigStep(this, new WorldPoint(2999, 3383, 0),
+		digUpTreasure = new DigStep(this, new WorldPoint(2999, 3383, 0),
 			"Dig in the middle of the cross in Falador Park, and kill the Gardener (level 4) who appears. Once killed, dig again.");
 
-        steps.put(3, digUpTreasure);
-        return steps;
-    }
+		steps.put(3, digUpTreasure);
+		return steps;
+	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRequirements()
+	public List<ItemRequirement> getItemRequirements()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(sixtyCoins);
@@ -110,7 +120,7 @@ public class PiratesTreasure extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<ItemRequirement> getItemRecommended()
+	public List<ItemRequirement> getItemRecommended()
 	{
 		ArrayList<ItemRequirement> reqs = new ArrayList<>();
 		reqs.add(new ItemRequirement("A teleport to Varrock", ItemID.VARROCK_TELEPORT));
@@ -121,18 +131,19 @@ public class PiratesTreasure extends BasicQuestHelper
 	}
 
 	@Override
-	public ArrayList<String> getCombatRequirements()
+	public List<String> getCombatRequirements()
 	{
-		return new ArrayList<>(Arrays.asList("Gardener (level 4)"));
+		return Collections.singletonList("Gardener (level 4)");
 	}
 
 	@Override
-	public ArrayList<PanelDetails> getPanels() {
-		ArrayList<PanelDetails> allSteps = new ArrayList<>();
+	public List<PanelDetails> getPanels()
+	{
+		List<PanelDetails> allSteps = new ArrayList<>();
 
-		allSteps.add(new PanelDetails("Talk to Redbeard Frank", new ArrayList<>(Collections.singletonList(speakToRedbeard)), sixtyCoins));
+		allSteps.add(new PanelDetails("Talk to Redbeard Frank", Collections.singletonList(speakToRedbeard), sixtyCoins));
 		allSteps.addAll(smuggleRum.panelDetails());
-		allSteps.add(new PanelDetails("Discover the treasure", new ArrayList<>(Arrays.asList(openChest, readPirateMessage, digUpTreasure)), spade));
+		allSteps.add(new PanelDetails("Discover the treasure", Arrays.asList(openChest, readPirateMessage, digUpTreasure), spade));
 
 		return allSteps;
 	}
